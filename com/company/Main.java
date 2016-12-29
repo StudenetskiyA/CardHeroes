@@ -16,6 +16,7 @@ public class Main {
 
         Card simpleCard3 = new Card(board);
         simpleCard3.name="3";
+        simpleCard3.text="%Рывок%";
         simpleCard3.cost=1;
         simpleCard3.type=2;
         simpleCard3.power=1;
@@ -31,7 +32,7 @@ public class Main {
         player.hp=30;
         Player enemy = new Player(simpleDeck,board);
         enemy.hp=30;
-        
+
         player.newTurn();
         //System.out.println("PlayerCard:"+player.handToString());
         //System.out.println("InDeckCard:"+player.deck.deckToString());
@@ -47,7 +48,7 @@ public class Main {
 //        System.out.println("Board:"+player.board.boardToString());
 //        board.playerCreature.get(0).takeDamage(1);
 //        System.out.println("Board:"+player.board.boardToString());
-        player.newTurn();
+      //  player.newTurn();
         board.playerCreature.get(0).attackPlayer(enemy);
         System.out.println("HPD:"+player.damage+"/"+enemy.damage+","+"Board:"+player.board.boardToString());
         System.out.println("PlayerCard:"+player.handToString());

@@ -18,7 +18,12 @@ public class Board {
 
     public void addCreatureToPlayerBoard(Card _creature){
         Creature summonCreature = new Creature(_creature,this);
+        if (_creature.text.contains("%Рывок%")){
+            summonCreature.isSummonedJust=false;
+        }
+
         playerCreature.add(summonCreature);
+
     }
 
     public void removeCreatureFromPlayerBoard(Creature _creature){
