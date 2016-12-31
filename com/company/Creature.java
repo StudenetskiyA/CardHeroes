@@ -28,6 +28,7 @@ public class Creature extends Card {
         if (!isSummonedJust) {
             if (!isTapped){
                 tapCreature();
+                //TODO firststrike
                 target.takeDamage(power);
                 takeDamage(target.power);
             }
