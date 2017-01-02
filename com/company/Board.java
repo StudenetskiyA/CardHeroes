@@ -21,9 +21,7 @@ public class Board {
         if (_creature.text.contains("%Рывок%")){
             summonCreature.isSummonedJust=false;
         }
-
         playerCreature.add(summonCreature);
-
     }
 
     public void removeCreatureFromPlayerBoard(Creature _creature){

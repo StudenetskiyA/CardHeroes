@@ -15,6 +15,8 @@ public class Creature extends Card {
         super(_board);
     power = _card.power;
     tougness = _card.hp;
+    image = _card.image;
+    cost = _card.cost;
     isTapped=false;
     isSummonedJust=true;
     name= _card.name;

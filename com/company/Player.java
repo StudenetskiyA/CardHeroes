@@ -36,8 +36,8 @@ public class Player extends Card{
         drawCard();
     }
 
-    void playCard(int cardN){
-        Card _card=cardInHand.get(cardN);
+    void playCard(Card _card){
+      //  Card _card=cardInHand.get(cardN);
         if (untappedCoin>=_card.cost){
             untappedCoin-=_card.cost;
             //put on table or cast spell
@@ -49,7 +49,7 @@ public class Player extends Card{
                 board.addCreatureToPlayerBoard(_card);
             }
             //remove from hand
-            cardInHand.remove(cardN);
+            cardInHand.remove(_card);
         }
         else{
             System.out.println("Not enough coin");
