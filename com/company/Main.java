@@ -21,15 +21,15 @@ public class Main extends JFrame{
     private static double CARD_SIZE_FROM_SCREEN = 0.12;
 
     private static Main main;
-    //JLabel label;
+
     private static ViewField viewField;
-    private static  JLabel deckClick;
+    private static JLabel deckClick;
     private static JLabel cardClick[]= new JLabel[9];
     private static JLabel playerUnitClick[]= new JLabel[9];
-
     private static JLabel battlegroundClick = new JLabel();
-
     private static JLabel playerCoinLabel;
+    public static JLabel gameLog;
+
     private static Image background;
     private static Image heroImage;
     private static Image enemyImage;
@@ -66,13 +66,19 @@ public class Main extends JFrame{
 
         viewField = new ViewField();
 
-
         playerCoinLabel = new JLabel();
         playerCoinLabel.setLocation(0,0);
         playerCoinLabel.setSize(1,1);
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         playerCoinLabel.setForeground(Color.WHITE);
+        gameLog = new JLabel();
+        gameLog.setLocation(0,0);
+        gameLog.setSize(250,700);
+        gameLog.setHorizontalAlignment(SwingConstants.LEFT);
+        gameLog.setVerticalAlignment(SwingConstants.TOP);
+        gameLog.setForeground(Color.WHITE);
+
         viewField.setLayout(new BorderLayout());
 
         deckClick = new JLabel("");
@@ -93,7 +99,7 @@ public class Main extends JFrame{
       //
         viewField.add(battlegroundClick);
         viewField.add(deckClick);
-      //  viewField.add(cardClick);
+        viewField.add(gameLog);
         viewField.add(playerCoinLabel);
 
         main.add(viewField);
@@ -117,10 +123,13 @@ public class Main extends JFrame{
         Deck simpleDeck = new Deck(simpleDeckCards);
         player = new Player(simpleDeck,board);
         player.hp=30;
+        player.playerName="Jeremy";
         enemy = new Player(simpleDeck,board);
         enemy.hp=30;
+        enemy.playerName="Bob";
 
         player.newTurn();
+       // gameLog.setText(gameLog.getText()+"New turn");
         player.drawCard();
 
         refillField();

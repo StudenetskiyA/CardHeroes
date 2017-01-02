@@ -9,6 +9,7 @@ import java.util.Collection;
 public class Player extends Card{
     int damage;
    // public int hp;
+    String playerName;
     public int totalCoin;
     public int untappedCoin;
     public Deck deck;
@@ -22,8 +23,10 @@ public class Player extends Card{
     }
 
     public void newTurn(){
-        System.out.println("New turn("+board.turnCount+")");
+       // System.out.println("New turn("+board.turnCount+")");
         board.turnCount++;
+        Main.gameLog.setText(Main.gameLog.getText()+"<html>Ход номер "+board.turnCount+", игрок "+playerName+"<br>");
+
         //Get coin
         if (totalCoin<10) totalCoin++;
         //Untap
@@ -52,11 +55,12 @@ public class Player extends Card{
             cardInHand.remove(_card);
         }
         else{
-            System.out.println("Not enough coin");
+            Main.gameLog.setText(Main.gameLog.getText()+"Не хватает монет.<br>");
         }
     }
     void drawCard(){
         cardInHand.add(deck.drawTopDeck());
+        Main.gameLog.setText(Main.gameLog.getText()+"Игрок "+playerName+" берет карту.<br>");
     }
 
     public void takeDamage(int dmg){

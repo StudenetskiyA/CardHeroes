@@ -9,7 +9,7 @@ public class Board {
     public ArrayList<Creature> playerCreature;
     public ArrayList<Creature> enemyCreature;
 
-    public int turnCount=1;
+    public int turnCount=0;
 
     public Board(){
         playerCreature = new ArrayList<Creature>();
@@ -22,6 +22,7 @@ public class Board {
             summonCreature.isSummonedJust=false;
         }
         playerCreature.add(summonCreature);
+        Main.gameLog.setText(Main.gameLog.getText()+"Вызов существа "+summonCreature.name+".<br>");
     }
 
     public void removeCreatureFromPlayerBoard(Creature _creature){
