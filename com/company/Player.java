@@ -16,7 +16,7 @@ public class Player extends Card{
    // public String heroName;
 
     public Player(Deck _deck, Board _board){
-        super(_board);
+        super(_board,0,"Player",1,0,"",0,0);
         deck=_deck;
         cardInHand = new ArrayList<Card>();
     }

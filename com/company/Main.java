@@ -103,33 +103,11 @@ public class Main extends JFrame{
 
         board =new Board();
 
-        Card simpleCard = new Card(board);
-        simpleCard.name="Раскат грома";
-        simpleCard.text="";
-        simpleCard.cost=1;
-        simpleCard.type=1;
-        simpleCard.image="Раскат грома.jpg";
+        Card simpleCard = new Card(board,1,"Раскат грома",1,1,"",0,0);
+        Card simpleCard2 = new Card(board,1,"Гьерхор",1,2,"",2,2);
+        Card simpleCard3 = new Card(board,2,"Гном",1,2,"",3,3);
 
-        Card simpleCard2 = new Card(board);
-        simpleCard2.name="Гьерхор";
-        simpleCard2.text="";
-        simpleCard2.cost=1;
-        simpleCard2.type=2;
-        simpleCard2.power=2;
-        simpleCard2.hp=2;
-        simpleCard2.image="Гьерхор.jpg";
-
-        Card simpleCard3 = new Card(board);
-        simpleCard3.name="Гном";
-        simpleCard3.text="";
-        //  simpleCard3.text="%Рывок%";
-        simpleCard3.cost=2;
-        simpleCard3.type=2;
-        simpleCard3.power=3;
-        simpleCard3.hp=3;
-        simpleCard3.image="Гном.jpg";
-
-        ArrayList<Card> simpleDeckCards = new ArrayList<Card>();
+        ArrayList<Card> simpleDeckCards = new ArrayList<>();
         simpleDeckCards.add(simpleCard);
         simpleDeckCards.add(simpleCard);
         simpleDeckCards.add(simpleCard);
