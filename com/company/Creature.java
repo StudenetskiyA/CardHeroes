@@ -6,10 +6,10 @@ package com.company;
 public class Creature extends Card {
     public int power;
     public int tougness;
-    int damage;
-
     public boolean isTapped;
     public boolean isSummonedJust;
+    int damage;
+
 
     public Creature(Card _card, Board _board){
         super(_board,_card.cost,_card.name,_card.color,_card.type,_card.text,_card.power,_card.hp);
