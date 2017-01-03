@@ -44,18 +44,9 @@ public class Creature extends Card {
     }
 
     public void attackPlayer(Player target){
-        if (!isSummonedJust) {
-            if (!isTapped){
                 tapCreature();
                 target.takeDamage(power);
-            }
-            else {
-                System.out.println("Tapped creature can't attack.");
-            }
-        }
-        else {
-            System.out.println("This creature just enter board.");
-        }
+                Main.printToView("Существо "+name+" атакует героя.");
     }
 
     public void takeDamage(int dmg){

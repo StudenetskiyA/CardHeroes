@@ -31,9 +31,11 @@ public class Player extends Card{
         if (totalCoin<10) totalCoin++;
         //Untap
         untappedCoin=totalCoin;
+
         for (Creature creature:board.playerCreature//BAD
              ) {
             creature.isSummonedJust=false;
+            creature.isTapped=false;
         }
         //Draw
         drawCard();

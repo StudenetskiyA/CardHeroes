@@ -5,14 +5,17 @@ import sun.misc.JavaLangAccess;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+
 
 public class Main extends JFrame{
 
@@ -32,6 +35,7 @@ public class Main extends JFrame{
     private static JLabel cardClick[]= new JLabel[9];
     private static JLabel playerUnitClick[]= new JLabel[9];
     private static JLabel battlegroundClick = new JLabel();
+    private static JLabel enemyHeroClick = new JLabel();
     private static JLabel playerCoinLabel = new JLabel();
     public static JLabel gameLog=new JLabel();
     private static JLabel endTurnClick=new JLabel();
@@ -52,6 +56,7 @@ private static Image endTurnImage;
     private static Player enemy;
 
     private static Card cardMem;
+    private static Creature creatureMem;
 
     public static void main(String[] args) {
         try {
@@ -83,19 +88,26 @@ private static Image endTurnImage;
 
         viewField.setLayout(new BorderLayout());
 
-        deckClick.addMouseListener(mouseListener(1,0));
-        battlegroundClick.addMouseListener(mouseListener(3,0));
-        endTurnClick.addMouseListener(mouseListener(9,0));
+        deckClick.addMouseMotionListener(new  MyListener(MyListener.Compo.Deck,0));
+        deckClick.addMouseListener(new  MyListener(MyListener.Compo.Deck,0));
+        battlegroundClick.addMouseMotionListener(new  MyListener(MyListener.Compo.Board,0));
+        battlegroundClick.addMouseListener(new  MyListener(MyListener.Compo.Board,0));
+        endTurnClick.addMouseListener(new  MyListener(MyListener.Compo.EndTurnButton,0));
+        enemyHeroClick.addMouseListener(new  MyListener(MyListener.Compo.EnemyHero,0));
+        enemyHeroClick.addMouseMotionListener(new  MyListener(MyListener.Compo.EnemyHero,0));
+
 
         for (int i=0;i<cardClick.length;i++){
             cardClick[i]=new JLabel();
             viewField.add(cardClick[i]);
-            cardClick[i].addMouseListener(mouseListener(2,i));
+            cardClick[i].addMouseListener(new MyListener(MyListener.Compo.CardInHand,i));
+            cardClick[i].addMouseMotionListener(new MyListener(MyListener.Compo.CardInHand,i));
         }
         for (int i=0;i<playerUnitClick.length;i++){
             playerUnitClick[i]=new JLabel();
             viewField.add(playerUnitClick[i]);
-            playerUnitClick[i].addMouseListener(mouseListener(4,i));
+            playerUnitClick[i].addMouseListener(new MyListener(MyListener.Compo.CreatureInPlay,i));
+            playerUnitClick[i].addMouseMotionListener(new MyListener(MyListener.Compo.CreatureInPlay,i));
         }
       //
         viewField.add(battlegroundClick);
@@ -103,6 +115,7 @@ private static Image endTurnImage;
         viewField.add(gameLog);
         viewField.add(endTurnClick);
         viewField.add(playerCoinLabel);
+        viewField.add(enemyHeroClick);
 
         main.add(viewField);
 
@@ -136,74 +149,102 @@ private static Image endTurnImage;
         refillField();
     }
 
+    public static void printToView(String txt){
+        Main.gameLog.setText(Main.gameLog.getText()+txt+"<br>");
+    }
     private static void refillField(){
     }
 
-    private static MouseListener mouseListener(int onWhat,int num){
-        return new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (onWhat==1)  player.drawCard();
-                if (onWhat==9) player.newTurn();
+    private static String whereMyMouse;
+
+    private static class MyListener extends MouseInputAdapter {
+        enum Compo {Deck,CardInHand,CreatureInPlay,Board,EnemyHero,EnemyUnit,EndTurnButton};
+        Compo onWhat;
+        int num;
+
+        MyListener(Compo _compo,int _code){
+            onWhat=_compo;
+            num=_code;
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            if (onWhat==Compo.Deck)  player.drawCard();
+            if (onWhat==Compo.EndTurnButton) player.newTurn();
+        }
+
+        public void mousePressed(MouseEvent e) {
+            // you may not need this method
+        }
+
+        public void mouseEntered(MouseEvent event) {
+            whereMyMouse=onWhat.toString();
+        }
+
+        public void mouseExited(MouseEvent event) {
+            whereMyMouse="";
+        }
+
+        public void mouseReleased(MouseEvent e) {
+          //  printToView("Бросил на "+whereMyMouse);
+
+            if (whereMyMouse==Compo.Board.toString()) {//TODO and check what you drop!
+                if (cardMem.type == 2) {//creature
+                    System.out.println("Release on battleground," + cardMem.name);
+                    player.playCard(cardMem);
+
+                    refillField();
+                }
             }
+            else if (whereMyMouse==Compo.EnemyHero.toString()){//enemy hero
+                board.playerCreature.get(num).attackPlayer(enemy);
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (onWhat==2){
-                    System.out.println("Click on card"+player.cardInHand.get(num).name);
-                    cardMem = player.cardInHand.get(num);
-                }
-                }
+            }
+            cardMem=null;
+            creatureMem=null;
+        }
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                if (onWhat==2) {
-                    if (cardMem.type == 2) {//creature
-                        System.out.println("Release on battleground," + cardMem.name);
-                        player.playCard(cardMem);
-                        refillField();
+        public void mouseDragged(MouseEvent e) {
+            // do your code
+            //printToView("Схватил");
+            if (onWhat==Compo.CardInHand){//Creature in hand
+                  cardMem = player.cardInHand.get(num);
+            }
+            else if(onWhat==Compo.CreatureInPlay){//Creature in play
+                if (board.playerCreature.get(num).isTapped){printToView("Повернутое существо не может атаковать.");}
+                else {
+                    if (board.playerCreature.get(num).isSummonedJust){printToView("Это существо вошло в игру на этом ходу.");}
+                    else {
+                        System.out.println("Pressed on card" + player.cardInHand.get(num).name);
+                        creatureMem = board.playerCreature.get(num);
                     }
                 }
             }
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
 
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-
-            }
-        };
+        }
     }
 
     private static BufferedImage tapImage(BufferedImage src){
         double rotationRequired = Math.toRadians (90);
-        double locationX = src.getWidth(null) / 2;
-        double locationY = src.getHeight(null)/ 2;
-       // src.
-        AffineTransform tx = new AffineTransform();//AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
-       // tx= AffineTrasfor
-        //AffineTransformOp op = new AffineTransformOp();//(tx, AffineTransformOp.TYPE_BILINEAR);
+        AffineTransform tx = new AffineTransform();
         tx.translate(0.5*src.getHeight(), 0.5*src.getWidth());
         tx.rotate(rotationRequired);
         tx.translate(-0.5*src.getWidth(), -0.5*src.getHeight());
-        //BufferedImage dest = src;
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(src,null);
-
     }
 
     private static void onRepaint(Graphics g){
         playerCoinLabel.setText(player.untappedCoin+"/"+player.totalCoin);
         gameLog.setSize((int)(main.getWidth()*0.2),main.getHeight());
        g.drawImage(background,0,0, main.getWidth(),main.getHeight(),null);
+        battlegroundClick.setLocation(gameLog.getWidth()+ B0RDER_LEFT,200);
+        battlegroundClick.setSize(main.getWidth()-B0RDER_RIGHT-endTurnClick.getWidth()-gameLog.getWidth()- B0RDER_LEFT,200);
+        g.drawRect(gameLog.getWidth()+ B0RDER_LEFT,200,main.getWidth()-B0RDER_RIGHT-endTurnClick.getWidth()-gameLog.getWidth()- B0RDER_LEFT,200);
        g.drawImage(endTurnImage,main.getWidth()- B0RDER_RIGHT - endTurnImage.getWidth(null),(int)(main.getHeight()/2),null);
         endTurnClick.setLocation(main.getWidth()- B0RDER_RIGHT - endTurnImage.getWidth(null),(int)(main.getHeight()/2));
         endTurnClick.setSize(endTurnImage.getWidth(null),endTurnImage.getHeight(null));
-       g.drawRect(100,200,600,200);
-       int heroW = (int)(main.getWidth()*CARD_SIZE_FROM_SCREEN);
+        int heroW = (int)(main.getWidth()*CARD_SIZE_FROM_SCREEN);
        int heroH = (int)(heroW*heroImage.getHeight(null)/heroImage.getWidth(null));
        int smallCardW = (int)(heroW*0.7);
        int smallCardH = (int)(heroH*0.7);
@@ -215,7 +256,10 @@ private static Image endTurnImage;
        deckClick.setSize(smallCardW,smallCardH);
 
        g.drawImage(enemyImage,main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP,heroW,heroH,null);
-       g.drawImage(enemyCoinImage,smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN,B0RDER_TOP,smallCardW,smallCardH,null);
+        enemyHeroClick.setLocation(main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP);
+        enemyHeroClick.setSize(heroW,heroH);
+
+        g.drawImage(enemyCoinImage,smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN,B0RDER_TOP,smallCardW,smallCardH,null);
 
         BufferedImage im;
        int numUnit=0;
@@ -225,16 +269,16 @@ private static Image endTurnImage;
                 if (creature.image!=null) {
                     try {
                         im = ImageIO.read(Main.class.getResourceAsStream(creature.image));
-                        creature.isTapped=true;
                         if (creature.isTapped){
                             g.drawImage(tapImage(im), gameLog.getWidth()+ B0RDER_LEFT +(int)(numUnit*heroW), 200, heroH,heroW, null);
-                        ///    g.drawRect(gameLog.getWidth()+ B0RDER_LEFT +(int)(numUnit*heroW), 200, heroH,heroW);
-                        }
+                            playerUnitClick[numUnit].setSize(heroH,heroW);
+                         }
                         else{
                             g.drawImage(im, gameLog.getWidth()+ B0RDER_LEFT +(int)(numUnit*heroW), 200, heroW, heroH, null);
+                            playerUnitClick[numUnit].setSize(heroW,heroH);
                         }
-                        playerUnitClick[numUnit].setLocation(B0RDER_LEFT +(int)(numUnit*heroW),200);
-                        playerUnitClick[numUnit].setSize(heroW,heroH);
+                        playerUnitClick[numUnit].setLocation(gameLog.getWidth()+B0RDER_LEFT +(int)(numUnit*heroW),200);
+
                         numUnit++;
                         //TODO number card
                     } catch (IOException e) {
