@@ -98,6 +98,7 @@ public class Main extends JFrame{
         enemyHeroClick.addMouseListener(new  MyListener(MyListener.Compo.EnemyHero,0));
         enemyHeroClick.addMouseMotionListener(new  MyListener(MyListener.Compo.EnemyHero,0));
 
+        viewField.setVisible(false);
         for (int i=0;i<cardClick.length;i++){
             cardClick[i]=new JLabel();
             viewField.add(cardClick[i]);
@@ -119,21 +120,21 @@ public class Main extends JFrame{
       //
         viewField.add(battlegroundClick);
         viewField.add(deckClick);
-
         viewField.add(endTurnClick);
         viewField.add(enemyHeroClick);
         viewField.add(playerCoinLabel);
         viewField.add(enemyDamageLabel);
         viewField.add(gameLog);
-
+        viewField.validate();
         main.add(viewField);
-        main.repaint();
+        viewField.repaint();
+       // main.repaint();
 
         main.setVisible(true);
 
         board =new Board();
 
-        Card simpleCard = new Card(board,1,"Раскат грома",1,1,"Ранить выбранное существо на 1.",0,0);
+        Card simpleCard = new Card(board,1,"Раскат грома",1,1,"Ранить выбранное существо на 2.",0,0);
         Card simpleCard2 = new Card(board,1,"Гьерхор",1,2,"",2,2);
         Card simpleCard3 = new Card(board,2,"Гном",1,2,"",3,3);
 
@@ -148,6 +149,8 @@ public class Main extends JFrame{
         player = new Player(simpleDeck,board,"Jeremy",30);
         enemy = new Player(simpleDeck,board,"Bob",30);
 
+        System.out.println("Game start.");
+        viewField.setVisible(true);
         player.newTurn();
         player.drawCard();
     }
@@ -211,7 +214,6 @@ public class Main extends JFrame{
         }
 
         public void mouseDragged(MouseEvent e) {
-            //printToView("Схватил");
             if (onWhat==Compo.CardInHand){//Creature in hand
                   cardMem = player.cardInHand.get(num);
             }
@@ -240,6 +242,7 @@ public class Main extends JFrame{
         return op.filter(src,null);
     }
 
+
     private static void onRepaint(Graphics g) throws IOException {
         int heroW = (int)(main.getWidth()*CARD_SIZE_FROM_SCREEN);
         int heroH = (int)(heroW*heroImage.getHeight(null)/heroImage.getWidth(null));
@@ -253,6 +256,7 @@ public class Main extends JFrame{
         gameLog.setSize((int)(main.getWidth()*0.2),main.getHeight());
 
         g.drawImage(background,0,0, main.getWidth(),main.getHeight(),null);
+
         battlegroundClick.setLocation(gameLog.getWidth()+ B0RDER_LEFT,200);
         battlegroundClick.setSize(main.getWidth()-B0RDER_RIGHT-endTurnClick.getWidth()-gameLog.getWidth()- B0RDER_LEFT,200);
         g.drawRect(gameLog.getWidth()+ B0RDER_LEFT,200,main.getWidth()-B0RDER_RIGHT-endTurnClick.getWidth()-gameLog.getWidth()- B0RDER_LEFT,200);
@@ -263,12 +267,21 @@ public class Main extends JFrame{
         g.drawImage(heroImage,main.getWidth()-heroW-B0RDER_RIGHT,main.getHeight()-heroH-B0RDER_BOTTOM,heroW,heroH,null);
         //Hero deck
         g.drawImage(heroDeckImage,smallCardW*2+B0RDER_LEFT+B0RDER_BETWEEN,main.getHeight()-smallCardH-B0RDER_BOTTOM,smallCardW,smallCardH,null);
-
         deckClick.setLocation(smallCardW*2+B0RDER_LEFT+B0RDER_BETWEEN,main.getHeight()-smallCardH-B0RDER_BOTTOM);
         deckClick.setSize(smallCardW,smallCardH);
+        //Hero coin
+        g.drawImage(heroCoinImage,smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN,main.getHeight()-smallCardH-B0RDER_BOTTOM,smallCardW,smallCardH,null);
         playerCoinLabel.setLocation(smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN+(int)(smallCardW*0.5),main.getHeight()-smallCardH-B0RDER_BOTTOM+(int)(smallCardH*0.8));
         playerCoinLabel.setText(player.untappedCoin+"/"+player.totalCoin);
-
+        //Hero graveyard
+        if (player.graveyard.size()==0) {
+            g.drawImage(heroGraveyardImage, smallCardW + B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+        }
+        else {
+            im = ImageIO.read(Main.class.getResourceAsStream(player.graveyard.get(player.graveyard.size()-1).image));
+            g.drawImage(im, smallCardW + B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+        }
+        //Enemy
         g.drawImage(enemyImage,main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP,heroW,heroH,null);
         enemyHeroClick.setLocation(main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP);
         enemyHeroClick.setSize(heroW,heroH);
@@ -278,8 +291,6 @@ public class Main extends JFrame{
 
         g.drawImage(enemyCoinImage,smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN,B0RDER_TOP,smallCardW,smallCardH,null);
 
-        BufferedImage im;
-       int numUnit=0;
         if (!board.playerCreature.isEmpty()) {
             for (Creature creature : board.playerCreature
                     ) {
@@ -308,8 +319,11 @@ public class Main extends JFrame{
         }
 
         if (!player.cardInHand.isEmpty()) {
-            for (Card card : player.cardInHand
-                    ) {
+            for (int i=0;i<player.cardInHand.size();i++)
+            //for (Card card : player.cardInHand)   // I don't know why, but it create ConcurrentModificationException
+            {
+                Card card=player.cardInHand.get(i);
+                System.out.println("load card in hand");
                 if (card.image!=null) {
                     try {
                         im = ImageIO.read(Main.class.getResourceAsStream(card.image));
@@ -327,11 +341,17 @@ public class Main extends JFrame{
         }
 
     private static class ViewField extends JPanel{
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            onRepaint(g);
-           // repaint();
+            try {
+                onRepaint(g);//its too slow!! TODO repaint not many time
+            } catch (IOException e) {
+                System.out.println("Error in onRepaint.");
+                e.printStackTrace();
+            }
         }
+
     }
 }
