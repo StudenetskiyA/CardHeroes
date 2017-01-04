@@ -7,7 +7,7 @@ import java.util.Collection;
  * Created by samsung on 30.12.2016.
  */
 public class Player extends Card{
-    int damage;
+    public int damage;
    // public int hp;
     String playerName;
     public int totalCoin;

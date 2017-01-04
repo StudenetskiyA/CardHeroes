@@ -5,6 +5,7 @@ import sun.misc.JavaLangAccess;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -37,6 +38,7 @@ public class Main extends JFrame{
     private static JLabel battlegroundClick = new JLabel();
     private static JLabel enemyHeroClick = new JLabel();
     private static JLabel playerCoinLabel = new JLabel();
+    private static JLabel enemyDamageLabel = new JLabel();
     public static JLabel gameLog=new JLabel();
     private static JLabel endTurnClick=new JLabel();
 
@@ -75,18 +77,24 @@ private static Image endTurnImage;
         main.setLocation(0,0);
         main.setSize(1300,700);
 
-        playerCoinLabel.setLocation(0,0);
-        playerCoinLabel.setSize(1,1);
+
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         playerCoinLabel.setForeground(Color.WHITE);
+
+        enemyDamageLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        enemyDamageLabel.setVerticalAlignment(SwingConstants.TOP);
+        enemyDamageLabel.setForeground(Color.RED);
+        enemyDamageLabel.setFont(new Font(enemyDamageLabel.getFont().getName(),Font.PLAIN,20));
+
+
         gameLog.setLocation(0,0);
-        //gameLog.setSize(250,700);
+        gameLog.setSize(1,1);
         gameLog.setHorizontalAlignment(SwingConstants.LEFT);
         gameLog.setVerticalAlignment(SwingConstants.TOP);
         gameLog.setForeground(Color.WHITE);
 
-        viewField.setLayout(new BorderLayout());
+     //   viewField.setLayout(new BorderLayout());
 
         deckClick.addMouseMotionListener(new  MyListener(MyListener.Compo.Deck,0));
         deckClick.addMouseListener(new  MyListener(MyListener.Compo.Deck,0));
@@ -112,14 +120,16 @@ private static Image endTurnImage;
       //
         viewField.add(battlegroundClick);
         viewField.add(deckClick);
-        viewField.add(gameLog);
+
         viewField.add(endTurnClick);
-        viewField.add(playerCoinLabel);
         viewField.add(enemyHeroClick);
+        viewField.add(playerCoinLabel);
+        viewField.add(enemyDamageLabel);
+        viewField.add(gameLog);
 
         main.add(viewField);
-
         main.repaint();
+
         main.setVisible(true);
 
         board =new Board();
@@ -146,7 +156,7 @@ private static Image endTurnImage;
         player.newTurn();
         player.drawCard();
 
-        refillField();
+        //refillField();
     }
 
     public static void printToView(String txt){
@@ -235,7 +245,7 @@ private static Image endTurnImage;
     }
 
     private static void onRepaint(Graphics g){
-        playerCoinLabel.setText(player.untappedCoin+"/"+player.totalCoin);
+        gameLog.setLocation(0,0);
         gameLog.setSize((int)(main.getWidth()*0.2),main.getHeight());
        g.drawImage(background,0,0, main.getWidth(),main.getHeight(),null);
         battlegroundClick.setLocation(gameLog.getWidth()+ B0RDER_LEFT,200);
@@ -254,10 +264,15 @@ private static Image endTurnImage;
 
        deckClick.setLocation(smallCardW*2+B0RDER_LEFT+B0RDER_BETWEEN,main.getHeight()-smallCardH-B0RDER_BOTTOM);
        deckClick.setSize(smallCardW,smallCardH);
+        playerCoinLabel.setLocation(smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN+(int)(smallCardW*0.5),main.getHeight()-smallCardH-B0RDER_BOTTOM+(int)(smallCardH*0.8));
+        playerCoinLabel.setText(player.untappedCoin+"/"+player.totalCoin);
 
-       g.drawImage(enemyImage,main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP,heroW,heroH,null);
+        g.drawImage(enemyImage,main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP,heroW,heroH,null);
         enemyHeroClick.setLocation(main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP);
         enemyHeroClick.setSize(heroW,heroH);
+        enemyDamageLabel.setLocation(enemyHeroClick.getX()+enemyHeroClick.getWidth()/3,enemyHeroClick.getY()+enemyHeroClick.getHeight()/3);
+        if (enemy.damage!=0) enemyDamageLabel.setText(enemy.damage+"");
+        else enemyDamageLabel.setText("");
 
         g.drawImage(enemyCoinImage,smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN,B0RDER_TOP,smallCardW,smallCardH,null);
 
@@ -307,8 +322,7 @@ private static Image endTurnImage;
                 }
             }
         }
-        playerCoinLabel.setLocation(smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN+(int)(smallCardW*0.5),main.getHeight()-smallCardH-B0RDER_BOTTOM+(int)(smallCardH*0.8));
-    }
+        }
 
     private static class ViewField extends JPanel{
         @Override
