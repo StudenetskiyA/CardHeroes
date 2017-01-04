@@ -57,7 +57,7 @@ public class Main extends JFrame{
     private static Card cardMem;
     private static Creature creatureMem;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         try {
             background = ImageIO.read(Main.class.getResourceAsStream("Background.jpg"));
             heroImage = ImageIO.read(Main.class.getResourceAsStream("Тарна.png"));
@@ -65,6 +65,7 @@ public class Main extends JFrame{
             heroCoinImage = ImageIO.read(Main.class.getResourceAsStream("Coin.png"));
             enemyCoinImage = ImageIO.read(Main.class.getResourceAsStream("Coin.png"));
             heroDeckImage = ImageIO.read(Main.class.getResourceAsStream("Deck.png"));
+            heroGraveyardImage =  ImageIO.read(Main.class.getResourceAsStream("Graveyard.png"));
             enemyDeckImage = ImageIO.read(Main.class.getResourceAsStream("Deck.png"));
             endTurnImage = ImageIO.read(Main.class.getResourceAsStream("Endturn.png"));
         } catch (IOException e) {
@@ -239,26 +240,32 @@ public class Main extends JFrame{
         return op.filter(src,null);
     }
 
-    private static void onRepaint(Graphics g){
+    private static void onRepaint(Graphics g) throws IOException {
+        int heroW = (int)(main.getWidth()*CARD_SIZE_FROM_SCREEN);
+        int heroH = (int)(heroW*heroImage.getHeight(null)/heroImage.getWidth(null));
+        int smallCardW = (int)(heroW*0.7);
+        int smallCardH = (int)(heroH*0.7);
+        BufferedImage im;
+        int numUnit=0;
+        int numCardInHand=0;
+
         gameLog.setLocation(0,0);
         gameLog.setSize((int)(main.getWidth()*0.2),main.getHeight());
-       g.drawImage(background,0,0, main.getWidth(),main.getHeight(),null);
+
+        g.drawImage(background,0,0, main.getWidth(),main.getHeight(),null);
         battlegroundClick.setLocation(gameLog.getWidth()+ B0RDER_LEFT,200);
         battlegroundClick.setSize(main.getWidth()-B0RDER_RIGHT-endTurnClick.getWidth()-gameLog.getWidth()- B0RDER_LEFT,200);
         g.drawRect(gameLog.getWidth()+ B0RDER_LEFT,200,main.getWidth()-B0RDER_RIGHT-endTurnClick.getWidth()-gameLog.getWidth()- B0RDER_LEFT,200);
-       g.drawImage(endTurnImage,main.getWidth()- B0RDER_RIGHT - endTurnImage.getWidth(null),(int)(main.getHeight()/2),null);
+        g.drawImage(endTurnImage,main.getWidth()- B0RDER_RIGHT - endTurnImage.getWidth(null),(int)(main.getHeight()/2),null);
         endTurnClick.setLocation(main.getWidth()- B0RDER_RIGHT - endTurnImage.getWidth(null),(int)(main.getHeight()/2));
         endTurnClick.setSize(endTurnImage.getWidth(null),endTurnImage.getHeight(null));
-        int heroW = (int)(main.getWidth()*CARD_SIZE_FROM_SCREEN);
-       int heroH = (int)(heroW*heroImage.getHeight(null)/heroImage.getWidth(null));
-       int smallCardW = (int)(heroW*0.7);
-       int smallCardH = (int)(heroH*0.7);
-       g.drawImage(heroImage,main.getWidth()-heroW-B0RDER_RIGHT,main.getHeight()-heroH-B0RDER_BOTTOM,heroW,heroH,null);
-       g.drawImage(heroCoinImage,smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN,main.getHeight()-smallCardH-B0RDER_BOTTOM,smallCardW,smallCardH,null);
+        //Hero
+        g.drawImage(heroImage,main.getWidth()-heroW-B0RDER_RIGHT,main.getHeight()-heroH-B0RDER_BOTTOM,heroW,heroH,null);
+        //Hero deck
         g.drawImage(heroDeckImage,smallCardW*2+B0RDER_LEFT+B0RDER_BETWEEN,main.getHeight()-smallCardH-B0RDER_BOTTOM,smallCardW,smallCardH,null);
 
-       deckClick.setLocation(smallCardW*2+B0RDER_LEFT+B0RDER_BETWEEN,main.getHeight()-smallCardH-B0RDER_BOTTOM);
-       deckClick.setSize(smallCardW,smallCardH);
+        deckClick.setLocation(smallCardW*2+B0RDER_LEFT+B0RDER_BETWEEN,main.getHeight()-smallCardH-B0RDER_BOTTOM);
+        deckClick.setSize(smallCardW,smallCardH);
         playerCoinLabel.setLocation(smallCardW*3+B0RDER_LEFT+B0RDER_BETWEEN+(int)(smallCardW*0.5),main.getHeight()-smallCardH-B0RDER_BOTTOM+(int)(smallCardH*0.8));
         playerCoinLabel.setText(player.untappedCoin+"/"+player.totalCoin);
 
@@ -299,8 +306,6 @@ public class Main extends JFrame{
                 }
             }
         }
-
-        int numCardInHand=0;
 
         if (!player.cardInHand.isEmpty()) {
             for (Card card : player.cardInHand
