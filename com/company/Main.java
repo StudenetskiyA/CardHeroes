@@ -1,32 +1,28 @@
 package com.company;
 
-
-import sun.misc.JavaLangAccess;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
-
 public class Main extends JFrame{
-
     private static int B0RDER_RIGHT = 20;
     private static int B0RDER_LEFT = 0;
     private static int B0RDER_BOTTOM = 40;
     private static int B0RDER_TOP = 10;
     private static int B0RDER_BETWEEN = 20;
 
-    private static double CARD_PROP = 1.4;
+    private static double HERO_DAMAGE_WHERE_TO_SHOW_X = 0.3;
+    private static double HERO_DAMAGE_WHERE_TO_SHOW_Y = 0.3;
+    private static double CREATURE_DAMAGE_WHERE_TO_SHOW_X = 0.3;
+    private static double CREATURE_DAMAGE_WHERE_TO_SHOW_Y = 0.3;
+
     private static double CARD_SIZE_FROM_SCREEN = 0.12;
 
     private static Main main = new Main();
@@ -35,6 +31,7 @@ public class Main extends JFrame{
     private static JLabel deckClick = new JLabel();
     private static JLabel cardClick[]= new JLabel[9];
     private static JLabel playerUnitClick[]= new JLabel[9];
+    private static JLabel playerUnitLabel[]= new JLabel[9];
     private static JLabel battlegroundClick = new JLabel();
     private static JLabel enemyHeroClick = new JLabel();
     private static JLabel playerCoinLabel = new JLabel();
@@ -48,7 +45,7 @@ public class Main extends JFrame{
     private static Image heroCoinImage;
     private static Image enemyCoinImage;
     private static Image heroDeckImage;
-private static Image endTurnImage;
+    private static Image endTurnImage;
     private static Image heroGraveyardImage;
     private static Image enemyDeckImage;
     private static Image enemyGraveyardImage;
@@ -77,7 +74,6 @@ private static Image endTurnImage;
         main.setLocation(0,0);
         main.setSize(1300,700);
 
-
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         playerCoinLabel.setForeground(Color.WHITE);
@@ -87,14 +83,11 @@ private static Image endTurnImage;
         enemyDamageLabel.setForeground(Color.RED);
         enemyDamageLabel.setFont(new Font(enemyDamageLabel.getFont().getName(),Font.PLAIN,20));
 
-
         gameLog.setLocation(0,0);
         gameLog.setSize(1,1);
         gameLog.setHorizontalAlignment(SwingConstants.LEFT);
         gameLog.setVerticalAlignment(SwingConstants.TOP);
         gameLog.setForeground(Color.WHITE);
-
-     //   viewField.setLayout(new BorderLayout());
 
         deckClick.addMouseMotionListener(new  MyListener(MyListener.Compo.Deck,0));
         deckClick.addMouseListener(new  MyListener(MyListener.Compo.Deck,0));
@@ -104,7 +97,6 @@ private static Image endTurnImage;
         enemyHeroClick.addMouseListener(new  MyListener(MyListener.Compo.EnemyHero,0));
         enemyHeroClick.addMouseMotionListener(new  MyListener(MyListener.Compo.EnemyHero,0));
 
-
         for (int i=0;i<cardClick.length;i++){
             cardClick[i]=new JLabel();
             viewField.add(cardClick[i]);
@@ -113,9 +105,15 @@ private static Image endTurnImage;
         }
         for (int i=0;i<playerUnitClick.length;i++){
             playerUnitClick[i]=new JLabel();
+            playerUnitLabel[i]=new JLabel();
             viewField.add(playerUnitClick[i]);
+            viewField.add(playerUnitLabel[i]);
             playerUnitClick[i].addMouseListener(new MyListener(MyListener.Compo.CreatureInPlay,i));
             playerUnitClick[i].addMouseMotionListener(new MyListener(MyListener.Compo.CreatureInPlay,i));
+            playerUnitLabel[i].setHorizontalAlignment(SwingConstants.LEFT);
+            playerUnitLabel[i].setVerticalAlignment(SwingConstants.TOP);
+            playerUnitLabel[i].setForeground(Color.RED);
+            playerUnitLabel[i].setFont(new Font(enemyDamageLabel.getFont().getName(),Font.PLAIN,20));
         }
       //
         viewField.add(battlegroundClick);
@@ -134,7 +132,7 @@ private static Image endTurnImage;
 
         board =new Board();
 
-        Card simpleCard = new Card(board,1,"Раскат грома",1,1,"",0,0);
+        Card simpleCard = new Card(board,1,"Раскат грома",1,1,"Ранить выбранное существо на 1.",0,0);
         Card simpleCard2 = new Card(board,1,"Гьерхор",1,2,"",2,2);
         Card simpleCard3 = new Card(board,2,"Гном",1,2,"",3,3);
 
@@ -146,26 +144,19 @@ private static Image endTurnImage;
         simpleDeckCards.add(simpleCard3);
 
         Deck simpleDeck = new Deck(simpleDeckCards);
-        player = new Player(simpleDeck,board);
-        player.hp=30;
-        player.playerName="Jeremy";
-        enemy = new Player(simpleDeck,board);
-        enemy.hp=30;
-        enemy.playerName="Bob";
+        player = new Player(simpleDeck,board,"Jeremy",30);
+        enemy = new Player(simpleDeck,board,"Bob",30);
 
         player.newTurn();
         player.drawCard();
-
-        //refillField();
     }
 
     public static void printToView(String txt){
         Main.gameLog.setText(Main.gameLog.getText()+txt+"<br>");
     }
-    private static void refillField(){
-    }
 
     private static String whereMyMouse;
+    private static int whereMyMouseNum;
 
     private static class MyListener extends MouseInputAdapter {
         enum Compo {Deck,CardInHand,CreatureInPlay,Board,EnemyHero,EnemyUnit,EndTurnButton};
@@ -188,6 +179,7 @@ private static Image endTurnImage;
 
         public void mouseEntered(MouseEvent event) {
             whereMyMouse=onWhat.toString();
+            whereMyMouseNum = num;
         }
 
         public void mouseExited(MouseEvent event) {
@@ -195,26 +187,29 @@ private static Image endTurnImage;
         }
 
         public void mouseReleased(MouseEvent e) {
-          //  printToView("Бросил на "+whereMyMouse);
-
-            if (whereMyMouse==Compo.Board.toString()) {//TODO and check what you drop!
-                if (cardMem.type == 2) {//creature
+            if ((whereMyMouse==Compo.Board.toString()) && (cardMem.type==2)) {
+                //  put on board
                     System.out.println("Release on battleground," + cardMem.name);
-                    player.playCard(cardMem);
-
-                    refillField();
-                }
+                    player.playCard(cardMem,null,null);
             }
-            else if (whereMyMouse==Compo.EnemyHero.toString()){//enemy hero
-                board.playerCreature.get(num).attackPlayer(enemy);
-
+            else if ((whereMyMouse==Compo.EnemyHero.toString()) && (creatureMem!=null)){
+                //enemy hero attack by creature
+               creatureMem.attackPlayer(enemy);
             }
+            else if ((whereMyMouse==Compo.EnemyHero.toString()) && (cardMem.type==1)){
+                //enemy hero attack by spell from hand
+                player.playCard(cardMem,null,enemy);
+            }
+            else if ((whereMyMouse==Compo.CreatureInPlay.toString()) && (cardMem.type==1)){
+                //spell from hand to creature in play
+                player.playCard(cardMem,board.playerCreature.get(whereMyMouseNum),null);
+            }
+
             cardMem=null;
             creatureMem=null;
         }
 
         public void mouseDragged(MouseEvent e) {
-            // do your code
             //printToView("Схватил");
             if (onWhat==Compo.CardInHand){//Creature in hand
                   cardMem = player.cardInHand.get(num);
@@ -224,7 +219,7 @@ private static Image endTurnImage;
                 else {
                     if (board.playerCreature.get(num).isSummonedJust){printToView("Это существо вошло в игру на этом ходу.");}
                     else {
-                        System.out.println("Pressed on card" + player.cardInHand.get(num).name);
+                       // System.out.println("Pressed on card" + player.cardInHand.get(num).name);
                         creatureMem = board.playerCreature.get(num);
                     }
                 }
@@ -270,7 +265,7 @@ private static Image endTurnImage;
         g.drawImage(enemyImage,main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP,heroW,heroH,null);
         enemyHeroClick.setLocation(main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP);
         enemyHeroClick.setSize(heroW,heroH);
-        enemyDamageLabel.setLocation(enemyHeroClick.getX()+enemyHeroClick.getWidth()/3,enemyHeroClick.getY()+enemyHeroClick.getHeight()/3);
+        enemyDamageLabel.setLocation(enemyHeroClick.getX()+(int)(enemyHeroClick.getWidth()*HERO_DAMAGE_WHERE_TO_SHOW_X),enemyHeroClick.getY()+(int)(enemyHeroClick.getHeight()*HERO_DAMAGE_WHERE_TO_SHOW_Y));
         if (enemy.damage!=0) enemyDamageLabel.setText(enemy.damage+"");
         else enemyDamageLabel.setText("");
 
@@ -293,9 +288,11 @@ private static Image endTurnImage;
                             playerUnitClick[numUnit].setSize(heroW,heroH);
                         }
                         playerUnitClick[numUnit].setLocation(gameLog.getWidth()+B0RDER_LEFT +(int)(numUnit*heroW),200);
-
+                        if (creature.damage!=0){
+                            playerUnitLabel[numUnit].setLocation(playerUnitClick[numUnit].getX()+(int)(playerUnitClick[numUnit].getWidth()*CREATURE_DAMAGE_WHERE_TO_SHOW_X),playerUnitClick[numUnit].getY()+(int)(playerUnitClick[numUnit].getHeight()*CREATURE_DAMAGE_WHERE_TO_SHOW_Y));
+                            playerUnitLabel[numUnit].setText(creature.damage+"");
+                        }
                         numUnit++;
-                        //TODO number card
                     } catch (IOException e) {
                         System.out.println("Can't load image.");
                     }

@@ -8,17 +8,16 @@ import java.util.Collection;
  */
 public class Player extends Card{
     public int damage;
-   // public int hp;
     String playerName;
     public int totalCoin;
     public int untappedCoin;
     public Deck deck;
     public ArrayList<Card> cardInHand;
-   // public String heroName;
 
-    public Player(Deck _deck, Board _board){
-        super(_board,0,"Player",1,0,"",0,0);
+    public Player(Deck _deck, Board _board,String _playerName,int _hp){
+        super(_board,0,"Тарна",1,0,"",0,_hp);
         deck=_deck;
+        playerName=_playerName;
         cardInHand = new ArrayList<Card>();
     }
 
@@ -41,13 +40,20 @@ public class Player extends Card{
         drawCard();
     }
 
-    void playCard(Card _card){
+    void playCard(Card _card, Creature _targetCreature, Player _targetPlayer){
       //  Card _card=cardInHand.get(cardN);
         if (untappedCoin>=_card.cost){
             untappedCoin-=_card.cost;
             //put on table or cast spell
-            if (_card.type==1){
+            if (_card.type==1) {
                 //release text on spell
+                //check target
+                if (_targetPlayer != null) {
+                    _card.playOnPlayer(_targetPlayer);
+                }
+                if (_targetCreature != null) {
+                    _card.playOnCreature(_targetCreature);
+                }
             }
             else if (_card.type==2){
                 //creature

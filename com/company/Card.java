@@ -25,4 +25,39 @@ public class Card {
         power=_power;
         hp=_hp;
     }
+
+    public int getNumericAfterText(String fromText, String afterText){
+        int begin = fromText.indexOf(afterText);
+        int end1 = text.indexOf(" ",begin+afterText.length()+1);
+        if (end1==-1) end1=1000;
+        int end2 = text.indexOf(".",begin+afterText.length()+1);
+        if (end2==-1) end2=1000;
+        int end = Math.min(end1,end2);
+        String dmg = fromText.substring(begin+afterText.length()+1,end);
+        int numdmg=0;
+        try{
+            numdmg = Integer.parseInt(dmg);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return numdmg;
+    }
+
+    public void playOnCreature(Creature creature){
+        if (text.contains("Ранить выбранное существо на")){
+            int dmg = getNumericAfterText(text,"Ранить выбранное существо на");
+            creature.takeDamage(dmg);
+            Main.printToView(creature.name+" получил "+dmg+" урона.");
+        }
+    }
+
+    public void playOnPlayer(Player player){
+        if (text.contains("Ранить выбранного героя на")){
+            int dmg = getNumericAfterText(text,"Ранить выбранного героя на");
+            player.takeDamage(dmg);
+            Main.printToView(player.playerName+" получил "+dmg+" урона.");
+        }
+
+    }
 }
