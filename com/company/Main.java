@@ -73,7 +73,7 @@ public class Main extends JFrame{
         }
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         main.setLocation(0,0);
-        main.setSize(1300,700);
+        main.setSize(1382,744);
 
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);
@@ -99,6 +99,7 @@ public class Main extends JFrame{
         enemyHeroClick.addMouseMotionListener(new  MyListener(MyListener.Compo.EnemyHero,0));
 
         viewField.setVisible(false);
+        viewField.setLocation(0,0);
         for (int i=0;i<cardClick.length;i++){
             cardClick[i]=new JLabel();
             viewField.add(cardClick[i]);
@@ -150,6 +151,10 @@ public class Main extends JFrame{
         enemy = new Player(simpleDeck,board,"Bob",30);
 
         System.out.println("Game start.");
+        GraphicsEnvironment env =
+                GraphicsEnvironment.getLocalGraphicsEnvironment();
+        main.setMaximizedBounds(env.getMaximumWindowBounds());
+        main.setExtendedState(main.getExtendedState() | main.MAXIMIZED_BOTH);
         viewField.setVisible(true);
         player.newTurn();
         player.drawCard();
@@ -252,6 +257,7 @@ public class Main extends JFrame{
         int numUnit=0;
         int numCardInHand=0;
 
+//printToView(main.getX()+" "+main.getY());
         gameLog.setLocation(0,0);
         gameLog.setSize((int)(main.getWidth()*0.2),main.getHeight());
 
