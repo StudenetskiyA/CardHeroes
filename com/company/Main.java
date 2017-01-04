@@ -57,7 +57,7 @@ public class Main extends JFrame{
     private static Card cardMem;
     private static Creature creatureMem;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         try {
             background = ImageIO.read(Main.class.getResourceAsStream("Background.jpg"));
             heroImage = ImageIO.read(Main.class.getResourceAsStream("Тарна.png"));
@@ -98,6 +98,7 @@ public class Main extends JFrame{
         enemyHeroClick.addMouseListener(new  MyListener(MyListener.Compo.EnemyHero,0));
         enemyHeroClick.addMouseMotionListener(new  MyListener(MyListener.Compo.EnemyHero,0));
 
+        viewField.setVisible(false);
         for (int i=0;i<cardClick.length;i++){
             cardClick[i]=new JLabel();
             viewField.add(cardClick[i]);
@@ -119,15 +120,15 @@ public class Main extends JFrame{
       //
         viewField.add(battlegroundClick);
         viewField.add(deckClick);
-
         viewField.add(endTurnClick);
         viewField.add(enemyHeroClick);
         viewField.add(playerCoinLabel);
         viewField.add(enemyDamageLabel);
         viewField.add(gameLog);
-
+        viewField.validate();
         main.add(viewField);
-        main.repaint();
+        viewField.repaint();
+       // main.repaint();
 
         main.setVisible(true);
 
@@ -148,6 +149,8 @@ public class Main extends JFrame{
         player = new Player(simpleDeck,board,"Jeremy",30);
         enemy = new Player(simpleDeck,board,"Bob",30);
 
+        System.out.println("Game start.");
+        viewField.setVisible(true);
         player.newTurn();
         player.drawCard();
     }
@@ -211,7 +214,6 @@ public class Main extends JFrame{
         }
 
         public void mouseDragged(MouseEvent e) {
-            //printToView("Схватил");
             if (onWhat==Compo.CardInHand){//Creature in hand
                   cardMem = player.cardInHand.get(num);
             }
@@ -240,6 +242,7 @@ public class Main extends JFrame{
         return op.filter(src,null);
     }
 
+
     private static void onRepaint(Graphics g) throws IOException {
         int heroW = (int)(main.getWidth()*CARD_SIZE_FROM_SCREEN);
         int heroH = (int)(heroW*heroImage.getHeight(null)/heroImage.getWidth(null));
@@ -250,7 +253,9 @@ public class Main extends JFrame{
 
         gameLog.setLocation(0,0);
         gameLog.setSize((int)(main.getWidth()*0.2),main.getHeight());
+
         g.drawImage(background,0,0, main.getWidth(),main.getHeight(),null);
+
         battlegroundClick.setLocation(gameLog.getWidth()+ B0RDER_LEFT,200);
         battlegroundClick.setSize(main.getWidth()-B0RDER_RIGHT-endTurnClick.getWidth()-gameLog.getWidth()- B0RDER_LEFT,200);
         g.drawRect(gameLog.getWidth()+ B0RDER_LEFT,200,main.getWidth()-B0RDER_RIGHT-endTurnClick.getWidth()-gameLog.getWidth()- B0RDER_LEFT,200);
@@ -315,8 +320,10 @@ public class Main extends JFrame{
         int numCardInHand=0;
 
         if (!player.cardInHand.isEmpty()) {
-            for (Card card : player.cardInHand
-                    ) {
+            for (int i=0;i<player.cardInHand.size();i++)
+            //for (Card card : player.cardInHand)   // I don't know why, but it create ConcurrentModificationException
+            {
+                Card card=player.cardInHand.get(i);
                 System.out.println("load card in hand");
                 if (card.image!=null) {
                     try {
@@ -335,14 +342,17 @@ public class Main extends JFrame{
         }
 
     private static class ViewField extends JPanel{
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             try {
                 onRepaint(g);//its too slow!! TODO repaint not many time
             } catch (IOException e) {
+                System.out.println("Error in onRepaint.");
                 e.printStackTrace();
             }
         }
+
     }
 }
