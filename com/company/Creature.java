@@ -8,10 +8,11 @@ public class Creature extends Card {
     public int tougness;
     public boolean isTapped;
     public boolean isSummonedJust;
+    public Player owner;
     int damage;
 
 
-    public Creature(Card _card, Board _board){
+    public Creature(Card _card, Board _board, Player _owner){
         super(_board,_card.cost,_card.name,_card.color,_card.type,_card.text,_card.power,_card.hp);
     power = _card.power;
     tougness = _card.hp;
@@ -20,6 +21,7 @@ public class Creature extends Card {
     isTapped=false;
     isSummonedJust=true;
     name= _card.name;
+    owner=_owner;
     }
 
     void tapCreature(){
@@ -54,7 +56,12 @@ public class Creature extends Card {
             damage+=dmg;
         }
         else {
-            board.removeCreatureFromPlayerBoard(this);
+           die();
         }
+    }
+
+    public void die(){
+        board.removeCreatureFromPlayerBoard(this);
+        owner.graveyard.add(this);
     }
 }

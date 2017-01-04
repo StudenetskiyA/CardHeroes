@@ -16,8 +16,8 @@ public class Board {
         enemyCreature = new ArrayList<Creature>();
     }
 
-    public void addCreatureToPlayerBoard(Card _creature){
-        Creature summonCreature = new Creature(_creature,this);
+    public void addCreatureToBoard(Card _creature, Player _player){
+        Creature summonCreature = new Creature(_creature,this,_player);
         if (_creature.text.contains("%Рывок%")){
             summonCreature.isSummonedJust=false;
         }
@@ -27,15 +27,5 @@ public class Board {
 
     public void removeCreatureFromPlayerBoard(Creature _creature){
         playerCreature.remove(_creature);//TODO Check it
-    }
-
-    public String boardToString(){
-        String tmp="PlayerCreature:";
-        for (Creature card: playerCreature
-                ) {
-            tmp+=card.name+"("+card.power+","+card.tougness+","+card.damage+","+card.isTapped+","+card.isSummonedJust+")";
-            tmp+=",";
-        }
-        return tmp;
     }
 }

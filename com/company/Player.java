@@ -13,16 +13,17 @@ public class Player extends Card{
     public int untappedCoin;
     public Deck deck;
     public ArrayList<Card> cardInHand;
+    public ArrayList<Card> graveyard;
 
     public Player(Deck _deck, Board _board,String _playerName,int _hp){
         super(_board,0,"Тарна",1,0,"",0,_hp);
         deck=_deck;
         playerName=_playerName;
         cardInHand = new ArrayList<Card>();
+        graveyard = new ArrayList<Card>();
     }
 
     public void newTurn(){
-       // System.out.println("New turn("+board.turnCount+")");
         board.turnCount++;
         Main.gameLog.setText(Main.gameLog.getText()+"<html>Ход номер "+board.turnCount+", игрок "+playerName+"<br>");
 
@@ -57,7 +58,7 @@ public class Player extends Card{
             }
             else if (_card.type==2){
                 //creature
-                board.addCreatureToPlayerBoard(_card);
+                board.addCreatureToBoard(_card,this);
             }
             //remove from hand
             cardInHand.remove(_card);
