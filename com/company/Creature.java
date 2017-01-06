@@ -49,6 +49,9 @@ public class Creature extends Card {
                 tapCreature();
                 target.takeDamage(power);
                 Main.printToView("Существо "+name+" атакует героя.");
+                int num = board.creature.get(owner.numberPlayer).indexOf(this);
+        System.out.println("$ATTACKPLAYER(" +owner.playerName+","+ num +")");
+        Client.sendToServer("$ATTACKPLAYER(" +owner.playerName+","+ num +")");
     }
 
     public void takeDamage(int dmg){

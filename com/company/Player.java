@@ -59,7 +59,9 @@ public class Player extends Card{
     }
 
     void playCard(Card _card, Creature _targetCreature, Player _targetPlayer){
-    //    Client.sendToServer("#play:"+_card.name+","+_targetCreature.name+","+_targetPlayer.name,playerName);
+        int num = cardInHand.indexOf(_card);
+        if (num==-1) return;
+
         if (untappedCoin>=_card.cost){
             untappedCoin-=_card.cost;
             //put on table or cast spell
@@ -68,14 +70,24 @@ public class Player extends Card{
                 //check target
                 if (_targetPlayer != null) {
                     _card.playOnPlayer(_targetPlayer);
+                    int t=0;
+                    if (_targetPlayer.playerName.equals(playerName)) t=2;
+                    else t=1;
+                    System.out.println("$PLAYCARD(" +playerName+","+ num + ",-1,"+t+")");
+                    Client.sendToServer("$PLAYCARD(" + playerName+","+num + ",-1,"+t+")");
                 }
                 if (_targetCreature != null) {
                     _card.playOnCreature(_targetCreature);
+                    int n= board.creature.get(numberPlayer).indexOf(_targetCreature);
+                    System.out.println("$PLAYCARD(" +playerName+","+ num + ","+n+",-1)");
+                    Client.sendToServer("$PLAYCARD(" +playerName+","+ num + ","+n+",-1)");
                 }
             }
             else if (_card.type==2){
                 //creature
                 board.addCreatureToBoard(_card,this);
+                System.out.println("$PLAYCARD(" +playerName+","+ num + "," + "-1,-1)");
+                Client.sendToServer("$PLAYCARD(" +playerName+","+ num + "," + "-1,-1)");
             }
             //remove from hand
             cardInHand.remove(_card);
