@@ -1,19 +1,29 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by samsung on 30.12.2016.
  */
 public class Board {
-    public ArrayList<Creature> playerCreature;
-    public ArrayList<Creature> enemyCreature;
+   // public ArrayList<Creature> playerCreature;
+   // public ArrayList<Creature> enemyCreature;
+    public List<ArrayList<Creature>> creature;
+    public Player firstPlayer;
+    public Player secondPlayer;
+    public boolean isActiveFirst;
 
     public int turnCount=0;
 
-    public Board(){
-        playerCreature = new ArrayList<Creature>();
-        enemyCreature = new ArrayList<Creature>();
+    public Board(Player _f, Player _s){
+        firstPlayer = _f;
+        secondPlayer = _s;
+     //   playerCreature = new ArrayList<Creature>();
+     //   enemyCreature = new ArrayList<Creature>();
+        creature = new ArrayList<ArrayList<Creature>> (2);
+        creature.add(new ArrayList<Creature>());
+        creature.add(new ArrayList<Creature>());
     }
 
     public void addCreatureToBoard(Card _creature, Player _player){
@@ -21,11 +31,12 @@ public class Board {
         if (_creature.text.contains("%Рывок%")){
             summonCreature.isSummonedJust=false;
         }
-        playerCreature.add(summonCreature);
-        Main.gameLog.setText(Main.gameLog.getText()+"Вызов существа "+summonCreature.name+".<br>");
+        int np = _player.numberPlayer;
+        creature.get(np).add(summonCreature);
+       Main.printToView("Вызов существа "+summonCreature.name);
     }
 
     public void removeCreatureFromPlayerBoard(Creature _creature){
-        playerCreature.remove(_creature);//TODO Check it
+        creature.get(_creature.owner.numberPlayer).remove(_creature);//TODO Check it
     }
 }

@@ -16,6 +16,10 @@ public class Deck {
         return 0;
     }
 
+    public boolean haveTopDeck(){
+        if (cards.size()==0) return false;
+        else return true;
+    }
     public Card drawTopDeck(){
         Card tmp=cards.get(cards.size()-1);
         cards.remove(cards.size()-1);

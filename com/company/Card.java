@@ -1,5 +1,7 @@
 package com.company;
 
+import java.util.ArrayList;
+
 /**
  * Created by samsung on 30.12.2016.
  */
@@ -26,6 +28,27 @@ public class Card {
         hp=_hp;
     }
 
+
+    public static ArrayList<String> getTextBetween(String fromText){
+        ArrayList<String> rtrn = new ArrayList<String>();
+        String beforeText = "(";
+        fromText = fromText.substring(fromText.indexOf(beforeText),fromText.length()-1);
+        int start=0;
+        while (true){
+            int end = fromText.indexOf(",",start+1);
+            String dmg;
+            if (end!=-1) dmg = fromText.substring(start+1,end);
+            else {
+                dmg=fromText.substring(start+1,fromText.length());
+                rtrn.add(dmg);
+                break;
+            }
+            start +=dmg.length()+1;
+            rtrn.add(dmg);
+        }
+        return rtrn;
+    }
+
     public int getNumericAfterText(String fromText, String afterText){
         int begin = fromText.indexOf(afterText);
         int end1 = text.indexOf(" ",begin+afterText.length()+1);
@@ -40,7 +63,6 @@ public class Card {
         }catch (Exception e) {
             e.printStackTrace();
         }
-
         return numdmg;
     }
 

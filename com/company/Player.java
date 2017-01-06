@@ -1,12 +1,12 @@
 package com.company;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Created by samsung on 30.12.2016.
  */
 public class Player extends Card{
+    public int numberPlayer;
     public int damage;
     String playerName;
     public int totalCoin;
@@ -15,24 +15,41 @@ public class Player extends Card{
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
 
-    public Player(Deck _deck, Board _board,String _playerName,int _hp){
+    public Player(Deck _deck, Board _board,String _playerName,int _n, int _hp){
         super(_board,0,"Тарна",1,0,"",0,_hp);
         deck=_deck;
         playerName=_playerName;
         cardInHand = new ArrayList<Card>();
         graveyard = new ArrayList<Card>();
+        numberPlayer=_n;
+    }
+
+    public void endTurn(){
+        newTurn();
+//    if (board.isActiveFirst){
+//        board.isActiveFirst=false;
+//        board.secondPlayer.newTurn();
+//    }
+//    else{
+//        board.isActiveFirst=true;
+//        board.secondPlayer.newTurn();
+//        while (true){
+//            String fromServer = Client.readFromServer();
+//            if (fromServer!=null) Main.printToView(fromServer);
+//        }
+//    }
     }
 
     public void newTurn(){
         board.turnCount++;
-        Main.gameLog.setText(Main.gameLog.getText()+"<html>Ход номер "+board.turnCount+", игрок "+playerName+"<br>");
+        Main.printToView("Ход номер "+board.turnCount+", игрок "+playerName);
 
         //Get coin
         if (totalCoin<10) totalCoin++;
         //Untap
         untappedCoin=totalCoin;
 
-        for (Creature creature:board.playerCreature//BAD
+        for (Creature creature:board.creature.get(numberPlayer)
              ) {
             creature.isSummonedJust=false;
             creature.isTapped=false;
@@ -42,7 +59,7 @@ public class Player extends Card{
     }
 
     void playCard(Card _card, Creature _targetCreature, Player _targetPlayer){
-      //  Card _card=cardInHand.get(cardN);
+    //    Client.sendToServer("#play:"+_card.name+","+_targetCreature.name+","+_targetPlayer.name,playerName);
         if (untappedCoin>=_card.cost){
             untappedCoin-=_card.cost;
             //put on table or cast spell
@@ -64,12 +81,16 @@ public class Player extends Card{
             cardInHand.remove(_card);
         }
         else{
-            Main.gameLog.setText(Main.gameLog.getText()+"Не хватает монет.<br>");
+            Main.printToView("Не хватает монет.");
         }
     }
     void drawCard(){
+        if (deck.haveTopDeck())
         cardInHand.add(deck.drawTopDeck());
-        Main.gameLog.setText(Main.gameLog.getText()+"Игрок "+playerName+" берет карту.<br>");
+        else {
+            Main.printToView("Deck is empty.");
+        }
+        Main.printToView("Игрок "+playerName+" берет карту.");
     }
 
     public void takeDamage(int dmg){
