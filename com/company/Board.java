@@ -7,8 +7,6 @@ import java.util.List;
  * Created by samsung on 30.12.2016.
  */
 public class Board {
-   // public ArrayList<Creature> playerCreature;
-   // public ArrayList<Creature> enemyCreature;
     public List<ArrayList<Creature>> creature;
     public Player firstPlayer;
     public Player secondPlayer;
@@ -19,12 +17,10 @@ public class Board {
     public Board(Player _f, Player _s){
         firstPlayer = _f;
         secondPlayer = _s;
-     //   playerCreature = new ArrayList<Creature>();
-     //   enemyCreature = new ArrayList<Creature>();
         creature = new ArrayList<ArrayList<Creature>> (2);
         creature.add(new ArrayList<Creature>());
         creature.add(new ArrayList<Creature>());
-    }
+     }
 
     public void addCreatureToBoard(Card _creature, Player _player){
         Creature summonCreature = new Creature(_creature,this,_player);

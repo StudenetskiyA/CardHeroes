@@ -1,11 +1,9 @@
 package com.company;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * Created by samsung on 06.01.2017.
@@ -13,9 +11,9 @@ import java.net.Socket;
 public class Client {
     static DataInputStream in;
     static DataOutputStream out;
+    public static boolean connected=false;
 
-    static void connect(int serverPort, String address){
-        try {
+    static void connect(int serverPort, String address) throws IOException {
             InetAddress ipAddress = InetAddress.getByName(address); // создаем объект который отображает вышеописанный IP-адрес.
             System.out.println("Try to connect to socket with IP address " + address + " and port " + serverPort + "?");
             Socket socket;
@@ -32,10 +30,8 @@ public class Client {
 
             // Конвертируем потоки в другой тип, чтоб легче обрабатывать текстовые сообщения.
             out = new DataOutputStream(sout);
-        }
-        catch (Exception x) {
-            x.printStackTrace();
-        }
+
+            connected=true;
     }
 
     static String readFromServer(){
@@ -53,15 +49,17 @@ public class Client {
         }
     }
 
-    static void sendToServer(String text, String userName){
+    static void sendToServer(String text){
+        if (connected){
         try {
-            System.out.println("Sending this line to the server...");
-            out.writeUTF(userName + ":" + text); // отсылаем введенную строку текста серверу.
+            System.out.println("2Server: "+text);
+            out.writeUTF(text); // отсылаем введенную строку текста серверу.
             out.flush(); // заставляем поток закончить передачу данных.
         }
         catch (Exception x) {
             x.printStackTrace();
         }
+    }
     }
 
 }
