@@ -45,10 +45,12 @@ public class Main extends JFrame{
     private static JLabel playerUnitLabel[]= new JLabel[9];
     private static JLabel battlegroundClick = new JLabel();
     private static JLabel enemyHeroClick = new JLabel();
+    private static JLabel playerHeroClick = new JLabel();
     private static JLabel playerCoinLabel = new JLabel();
     private static JLabel enemyCoinLabel = new JLabel();
     private static JLabel playerGraveyardClick = new JLabel();
     private static JLabel enemyGraveyardClick = new JLabel();
+    private static JLabel playerDamageLabel = new JLabel();
     private static JLabel enemyDamageLabel = new JLabel();
     public static JLabel gameLog=new JLabel();
     private static JLabel endTurnClick=new JLabel();
@@ -69,6 +71,7 @@ public class Main extends JFrame{
     private static Creature creatureMem;
 
     public static void main(String[] args) throws IOException {
+
         try {
             background = ImageIO.read(Main.class.getResourceAsStream("Background.jpg"));
             heroImage = ImageIO.read(Main.class.getResourceAsStream("Тарна.png"));
@@ -81,8 +84,6 @@ public class Main extends JFrame{
             e.printStackTrace();
         }
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-       // main.setLocation(0,0);
-       // main.setSize(1382,744);
 
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);
@@ -96,6 +97,10 @@ public class Main extends JFrame{
         enemyDamageLabel.setVerticalAlignment(SwingConstants.TOP);
         enemyDamageLabel.setForeground(Color.RED);
         enemyDamageLabel.setFont(new Font(enemyDamageLabel.getFont().getName(),Font.PLAIN,20));
+        playerDamageLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        playerDamageLabel.setVerticalAlignment(SwingConstants.TOP);
+        playerDamageLabel.setForeground(Color.RED);
+        playerDamageLabel.setFont(new Font(playerDamageLabel.getFont().getName(),Font.PLAIN,20));
 
         gameLog.setLocation(0,0);
         gameLog.setSize(1,1);
@@ -110,6 +115,8 @@ public class Main extends JFrame{
         endTurnClick.addMouseListener(new  MyListener(MyListener.Compo.EndTurnButton,0));
         enemyHeroClick.addMouseListener(new  MyListener(MyListener.Compo.EnemyHero,0));
         enemyHeroClick.addMouseMotionListener(new  MyListener(MyListener.Compo.EnemyHero,0));
+        playerHeroClick.addMouseListener(new  MyListener(MyListener.Compo.PlayerHero,0));
+        playerHeroClick.addMouseMotionListener(new  MyListener(MyListener.Compo.PlayerHero,0));
 
         viewField.setVisible(false);
         viewField.setLocation(0,0);
@@ -140,8 +147,10 @@ public class Main extends JFrame{
         viewField.add(enemyGraveyardClick);
         viewField.add(endTurnClick);
         viewField.add(enemyHeroClick);
+        viewField.add(playerHeroClick);
         viewField.add(playerCoinLabel);
         viewField.add(enemyCoinLabel);
+        viewField.add(playerDamageLabel);
         viewField.add(enemyDamageLabel);
         viewField.add(gameLog);
         viewField.validate();
@@ -171,31 +180,41 @@ public class Main extends JFrame{
         simpleDeckCards2.add(simpleCard2);
         simpleDeckCards2.add(simpleCard2);
 
+String par1="";
+String par2="";
+
+        for (int i=0;i<args.length;i++) {
+            System.out.println(args[i]);
+            if (i==1) par1=args[i];
+            if (i==2) par2=args[i];
+            if (i==0) serverPort=Integer.parseInt(args[i]);
+        }
+
         Deck simpleDeck = new Deck(simpleDeckCards);
         Deck simpleEnemyDeck = new Deck(simpleDeckCards2);
-        player = new Player(simpleDeck,board,"Jeremy",0,30);
-        enemy = new Player(simpleEnemyDeck,board,"Bob",1,30);
+
+        if (par1.equals("Jeremy")) simpleDeck =new Deck(simpleDeckCards);
+        if (par1.equals("Bob")) simpleDeck =new Deck(simpleDeckCards2);
+        if (par2.equals("Jeremy")) simpleEnemyDeck =new Deck(simpleDeckCards);
+        if (par2.equals("Bob")) simpleEnemyDeck =new Deck(simpleDeckCards2);
+
+        player = new Player(simpleDeck,board,par1,0,30);
+        enemy = new Player(simpleEnemyDeck,board,par2,1,30);
 
         System.out.println("Game start.");
         main.setLocation(477,0);
         main.setSize(890,688);
+        //FULL SCREEN
       //  GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
       //  main.setMaximizedBounds(env.getMaximumWindowBounds());
       //  main.setExtendedState(main.getExtendedState() | main.MAXIMIZED_BOTH);
         viewField.setVisible(true);
-
         Client.connect(serverPort,address);
         board.isActiveFirst=true;
-
-//        player.drawCard();
-//        player.drawCard();
-//        player.drawCard();
-//        enemy.drawCard();
-//        enemy.drawCard();
-//        enemy.drawCard();
-//
-//
-//        player.newTurn();
+        Main.gameLog.setText("<html>");
+        printToView("Player="+player.playerName+",port="+serverPort);
+        player.takeDamage(10);
+        enemy.takeDamage(7);
         while (true)
         {
             String fromServer = Client.readFromServer();
@@ -225,34 +244,38 @@ public class Main extends JFrame{
                 {
                     if (Integer.parseInt(parameter.get(2))!=-1)
                     player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))),board.creature.get(0).get(Integer.parseInt(parameter.get(2))),null);//TODO
-                    else player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))),null,enemy);//TODO
+                    else player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))),null,enemy);
                 }
                 else if (enemy.playerName.equals(parameter.get(0)))
                 {
                     if (Integer.parseInt(parameter.get(2))!=-1)
                         enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))),board.creature.get(1).get(Integer.parseInt(parameter.get(2))),null);//TODO
-                    else enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))),null,player);//TODO
+                    else enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))),null,player);
                 }
             }
-            else if (fromServer.contains("$ATTACKPLAYER(")){//$ATTACKPLAYER(Player, [1]-enemy,[2]-self)
+            else if (fromServer.contains("$ATTACKPLAYER(")){//$ATTACKPLAYER(Player, Creature, [1]-enemy,[2]-self)
                 ArrayList<String> parameter=Card.getTextBetween(fromServer);
                 if (player.playerName.equals(parameter.get(0)))
                 {
-                    board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackPlayer(enemy);//TODO not enemy
+                    board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackPlayer(enemy);//TODO test not enemy
+                }
+                if (enemy.playerName.equals(parameter.get(0)))
+                {
+                    board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackPlayer(player);
                 }
             }
         }
     }
 
     public static void printToView(String txt){
-        Main.gameLog.setText("<html>"+Main.gameLog.getText()+txt+"<br>");
+        Main.gameLog.setText(Main.gameLog.getText()+txt+"<br>");
     }
 
     private static String whereMyMouse;
     private static int whereMyMouseNum;
 
     private static class MyListener extends MouseInputAdapter {
-        enum Compo {Deck,CardInHand,CreatureInPlay,Board,EnemyHero,EnemyUnit,EndTurnButton};
+        enum Compo {Deck,CardInHand,CreatureInPlay,Board,EnemyHero,PlayerHero,EnemyUnit,EndTurnButton}
         Compo onWhat;
         int num;
 
@@ -362,6 +385,18 @@ public class Main extends JFrame{
         endTurnClick.setSize(endTurnImage.getWidth(null),endTurnImage.getHeight(null));
         //Hero
         g.drawImage(heroImage,main.getWidth()-heroW-B0RDER_RIGHT,main.getHeight()-heroH-B0RDER_BOTTOM,heroW,heroH,null);
+        g.drawImage(enemyImage,main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP,heroW,heroH,null);
+        enemyHeroClick.setLocation(main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP);
+        enemyHeroClick.setSize(heroW,heroH);
+        playerHeroClick.setLocation(main.getWidth()-heroW-B0RDER_RIGHT,main.getHeight()-heroH-B0RDER_BOTTOM);
+        playerHeroClick.setSize(heroW,heroH);
+        playerDamageLabel.setLocation(playerHeroClick.getX()+(int)(playerHeroClick.getWidth()*HERO_DAMAGE_WHERE_TO_SHOW_X),playerHeroClick.getY()+(int)(playerHeroClick.getHeight()*HERO_DAMAGE_WHERE_TO_SHOW_Y));
+        if (player.damage!=0) playerDamageLabel.setText(player.damage+"");
+        else playerDamageLabel.setText("");
+        enemyDamageLabel.setLocation(enemyHeroClick.getX()+(int)(enemyHeroClick.getWidth()*HERO_DAMAGE_WHERE_TO_SHOW_X),enemyHeroClick.getY()+(int)(enemyHeroClick.getHeight()*HERO_DAMAGE_WHERE_TO_SHOW_Y));
+        if (enemy.damage!=0) enemyDamageLabel.setText(enemy.damage+"");
+        else enemyDamageLabel.setText("");
+
         //Hero&enemy deck
         g.drawImage(heroDeckImage,B0RDER_LEFT,main.getHeight()-smallCardH-B0RDER_BOTTOM,smallCardW,smallCardH,null);
         deckClick.setLocation(B0RDER_LEFT,main.getHeight()-smallCardH-B0RDER_BOTTOM);
@@ -394,13 +429,6 @@ public class Main extends JFrame{
         g.drawImage(heroCoinImage,playerGraveyardClick.getX()+playerGraveyardClick.getWidth()+B0RDER_BETWEEN,B0RDER_TOP,smallCardW,smallCardH,null);
         enemyCoinLabel.setLocation(playerGraveyardClick.getX()+playerGraveyardClick.getWidth()+B0RDER_BETWEEN+(int)(smallCardW*0.5),B0RDER_TOP+(int)(smallCardH*0.8));
         enemyCoinLabel.setText(enemy.untappedCoin+"/"+enemy.totalCoin);
-        //Enemy
-        g.drawImage(enemyImage,main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP,heroW,heroH,null);
-        enemyHeroClick.setLocation(main.getWidth()-heroW-B0RDER_RIGHT,B0RDER_TOP);
-        enemyHeroClick.setSize(heroW,heroH);
-        enemyDamageLabel.setLocation(enemyHeroClick.getX()+(int)(enemyHeroClick.getWidth()*HERO_DAMAGE_WHERE_TO_SHOW_X),enemyHeroClick.getY()+(int)(enemyHeroClick.getHeight()*HERO_DAMAGE_WHERE_TO_SHOW_Y));
-        if (enemy.damage!=0) enemyDamageLabel.setText(enemy.damage+"");
-        else enemyDamageLabel.setText("");
         //player creature
         drawPlayerCreature(g,0);
         drawPlayerCreature(g,1);
