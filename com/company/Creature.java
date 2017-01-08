@@ -12,8 +12,8 @@ public class Creature extends Card {
     int damage;
 
 
-    public Creature(Card _card, Board _board, Player _owner){
-        super(_board,_card.cost,_card.name,_card.color,_card.type,_card.text,_card.power,_card.hp);
+    public Creature(Card _card, Player _owner){
+        super(_card.cost,_card.name,_card.color,_card.type,_card.text,_card.power,_card.hp);
     power = _card.power;
     tougness = _card.hp;
     image = _card.image;
@@ -29,29 +29,18 @@ public class Creature extends Card {
     }
 
     public void attackCreature(Creature target){
-        if (!isSummonedJust) {
-            if (!isTapped){
                 tapCreature();
                 //TODO firststrike
+                //TODO Block Check
                 target.takeDamage(power);
                 takeDamage(target.power);
-            }
-            else {
-                System.out.println("Tapped creature can't attack.");
-            }
-        }
-        else {
-            System.out.println("This creature just enter board.");
-        }
+                Main.printToView(name+" атакует: "+target.name+".");
     }
 
     public void attackPlayer(Player target){
                 tapCreature();
                 target.takeDamage(power);
                 Main.printToView("Существо "+name+" атакует героя.");
-                int num = board.creature.get(owner.numberPlayer).indexOf(this);
-        System.out.println("$ATTACKPLAYER(" +owner.playerName+","+ num +")");
-        Client.sendToServer("$ATTACKPLAYER(" +owner.playerName+","+ num +")");
     }
 
     public void takeDamage(int dmg){
@@ -64,7 +53,7 @@ public class Creature extends Card {
     }
 
     public void die(){
-        board.removeCreatureFromPlayerBoard(this);
-        owner.graveyard.add(this);
+        Board.removeCreatureFromPlayerBoard(this);
+        Board.putCardToGraveyard(this, this.owner);
     }
 }

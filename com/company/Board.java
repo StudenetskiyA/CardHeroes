@@ -7,32 +7,38 @@ import java.util.List;
  * Created by samsung on 30.12.2016.
  */
 public class Board {
-    public List<ArrayList<Creature>> creature;
-    public Player firstPlayer;
-    public Player secondPlayer;
-    public boolean isActiveFirst;
+    public static List<ArrayList<Creature>> creature;
+    public static Player firstPlayer;
+    public static Player secondPlayer;
+    public static boolean isActiveFirst;
 
-    public int turnCount=0;
+    public static int turnCount=0;
 
-    public Board(Player _f, Player _s){
-        firstPlayer = _f;
-        secondPlayer = _s;
+    public Board(){
+       // firstPlayer = _f;
+       // secondPlayer = _s;
         creature = new ArrayList<ArrayList<Creature>> (2);
         creature.add(new ArrayList<Creature>());
         creature.add(new ArrayList<Creature>());
-     }
+        isActiveFirst=true;
+    }
 
-    public void addCreatureToBoard(Card _creature, Player _player){
-        Creature summonCreature = new Creature(_creature,this,_player);
-        if (_creature.text.contains("%Рывок%")){
+
+    public static void addCreatureToBoard(Card _creature, Player _player){
+        Creature summonCreature = new Creature(_creature,_player);
+        if (_creature.text.contains("Рывок.")){
             summonCreature.isSummonedJust=false;
         }
         int np = _player.numberPlayer;
         creature.get(np).add(summonCreature);
-       Main.printToView("Вызов существа "+summonCreature.name);
+        Main.printToView("Вызов существа "+summonCreature.name);
     }
 
-    public void removeCreatureFromPlayerBoard(Creature _creature){
+    public static void putCardToGraveyard(Card _card, Player _owner){
+        _owner.graveyard.add(_card);
+    }
+
+    public static void removeCreatureFromPlayerBoard(Creature _creature){
         creature.get(_creature.owner.numberPlayer).remove(_creature);//TODO Check it
     }
 }

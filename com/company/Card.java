@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Created by samsung on 30.12.2016.
  */
 public class Card {
-    Board board;
+   // Board board;
     public int cost;
     public String name;
     public String text;
@@ -16,8 +16,8 @@ public class Card {
     public int power;//only for creature, ignore for other
     public int hp;//only for creature and hero, its maximum health, not current
 
-    public Card(Board _board,int _cost, String _name, int _color, int _type, String _text, int _power,int _hp){
-        board=_board;
+    public Card(int _cost, String _name, int _color, int _type, String _text, int _power,int _hp){
+     //   board=_board;
         name=_name;
         text=_text;
         cost=_cost;
@@ -32,20 +32,22 @@ public class Card {
     public static ArrayList<String> getTextBetween(String fromText){
         ArrayList<String> rtrn = new ArrayList<String>();
         String beforeText = "(";
-        fromText = fromText.substring(fromText.indexOf(beforeText),fromText.length()-1);
-        int start=0;
-        while (true){
-            int end = fromText.indexOf(",",start+1);
-            String dmg;
-            if (end!=-1) dmg = fromText.substring(start+1,end);
-            else {
-                dmg=fromText.substring(start+1,fromText.length());
-                rtrn.add(dmg);
-                break;
-            }
-            start +=dmg.length()+1;
-            rtrn.add(dmg);
-        }
+        fromText = fromText.substring(fromText.indexOf(beforeText)+1,fromText.length()-1);
+        String [] par = fromText.split(",");
+//        int start=0;
+//        while (true){
+//            int end = fromText.indexOf(",",start+1);
+//            String dmg;
+//            if (end!=-1) dmg = fromText.substring(start+1,end);
+//            else {
+//                dmg=fromText.substring(start+1,fromText.length());
+//                rtrn.add(dmg);
+//                break;
+//            }
+//            start +=dmg.length()+1;
+          for (int i=0;i<par.length;i++)
+            rtrn.add(par[i]);
+        //}
         return rtrn;
     }
 

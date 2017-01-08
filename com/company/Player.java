@@ -16,7 +16,7 @@ public class Player extends Card{
     public ArrayList<Card> graveyard;
 
     public Player(Deck _deck, Board _board,String _playerName,int _n, int _hp){
-        super(_board,0,"Тарна",1,0,"",0,_hp);
+        super(0,"Тарна",1,0,"",0,_hp);
         deck=_deck;
         playerName=_playerName;
         cardInHand = new ArrayList<Card>();
@@ -25,31 +25,28 @@ public class Player extends Card{
     }
 
     public void endTurn(){
-        newTurn();
-//    if (board.isActiveFirst){
-//        board.isActiveFirst=false;
-//        board.secondPlayer.newTurn();
-//    }
-//    else{
-//        board.isActiveFirst=true;
-//        board.secondPlayer.newTurn();
-//        while (true){
-//            String fromServer = Client.readFromServer();
-//            if (fromServer!=null) Main.printToView(fromServer);
-//        }
-//    }
+    if (Board.isActiveFirst){
+        Board.isActiveFirst=false;
+        System.out.println("$NEWTURN(" +Board.secondPlayer.playerName+")");
+        Client.writeLine("$NEWTURN(" +Board.secondPlayer.playerName+")");
+    }
+    else{
+        Board.isActiveFirst=true;
+        System.out.println("$NEWTURN(" +Board.firstPlayer.playerName+")");
+        Client.writeLine("$NEWTURN(" +Board.firstPlayer.playerName+")");
+    }
     }
 
     public void newTurn(){
-        board.turnCount++;
-        Main.printToView("Ход номер "+board.turnCount+", игрок "+playerName);
+        Board.turnCount++;
+        Main.printToView("Ход номер "+Board.turnCount+", игрок "+playerName);
 
         //Get coin
         if (totalCoin<10) totalCoin++;
         //Untap
         untappedCoin=totalCoin;
 
-        for (Creature creature:board.creature.get(numberPlayer)
+        for (Creature creature:Board.creature.get(numberPlayer)
              ) {
             creature.isSummonedJust=false;
             creature.isTapped=false;
@@ -70,24 +67,15 @@ public class Player extends Card{
                 //check target
                 if (_targetPlayer != null) {
                     _card.playOnPlayer(_targetPlayer);
-                    int t=0;
-                    if (_targetPlayer.playerName.equals(playerName)) t=2;
-                    else t=1;
-                    System.out.println("$PLAYCARD(" +playerName+","+ num + ",-1,"+t+")");
-                    Client.sendToServer("$PLAYCARD(" + playerName+","+num + ",-1,"+t+")");
                 }
                 if (_targetCreature != null) {
                     _card.playOnCreature(_targetCreature);
-                    int n= board.creature.get(numberPlayer).indexOf(_targetCreature);
-                    System.out.println("$PLAYCARD(" +playerName+","+ num + ","+n+",-1)");
-                    Client.sendToServer("$PLAYCARD(" +playerName+","+ num + ","+n+",-1)");
                 }
+                Board.putCardToGraveyard(_card,this);
             }
             else if (_card.type==2){
                 //creature
-                board.addCreatureToBoard(_card,this);
-                System.out.println("$PLAYCARD(" +playerName+","+ num + "," + "-1,-1)");
-                Client.sendToServer("$PLAYCARD(" +playerName+","+ num + "," + "-1,-1)");
+                Board.addCreatureToBoard(_card,this);
             }
             //remove from hand
             cardInHand.remove(_card);
@@ -99,10 +87,10 @@ public class Player extends Card{
     void drawCard(){
         if (deck.haveTopDeck())
         cardInHand.add(deck.drawTopDeck());
+            //   Main.printToView("Игрок "+playerName+" берет карту.");
         else {
-            Main.printToView("Deck is empty.");
+            Main.printToView("Deck of "+playerName+" is empty.");
         }
-        Main.printToView("Игрок "+playerName+" берет карту.");
     }
 
     public void takeDamage(int dmg){

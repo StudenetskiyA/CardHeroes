@@ -28,7 +28,7 @@ public class Main extends JFrame {
     private static final double CREATURE_DAMAGE_WHERE_TO_SHOW_Y = 0.3;
     private static final double CARD_SIZE_FROM_SCREEN = 0.09;
     private static Main main = new Main();
-
+    public static boolean isMyTurn = false;
     private static int heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
     private static int heroH = (heroW * 400 / 283);
     private static int smallCardW = (int) (heroW * 0.7);
@@ -39,7 +39,7 @@ public class Main extends JFrame {
     private static JLabel deckClick = new JLabel();
     private static JLabel cardClick[] = new JLabel[9];
     private static JLabel playerUnitClick[][] = new JLabel[2][9];
-    private static JLabel playerUnitLabel[] = new JLabel[9];
+    private static JLabel playerUnitLabel[][] = new JLabel[2][9];
     private static JLabel battlegroundClick = new JLabel();
     private static JLabel enemyHeroClick = new JLabel();
     private static JLabel playerHeroClick = new JLabel();
@@ -57,6 +57,7 @@ public class Main extends JFrame {
     private static Image enemyImage;
     private static Image heroCoinImage;
     private static Image heroDeckImage;
+    private static Image notMyTurnImage;
     private static Image endTurnImage;
     private static Image heroGraveyardImage;
 
@@ -76,8 +77,8 @@ public class Main extends JFrame {
         loadImage();
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setInitialProperties();
-        board = new Board(player, enemy);
         loadCardDeck();
+        board = new Board();
 
         String par1 = "";
         String par2 = "";
@@ -99,6 +100,13 @@ public class Main extends JFrame {
 
         player = new Player(simpleDeck, board, par1, 0, 30);
         enemy = new Player(simpleEnemyDeck, board, par2, 1, 30);
+Board.firstPlayer=player;
+Board.secondPlayer=enemy;
+
+player.untappedCoin=5;
+player.totalCoin=5;
+        enemy.untappedCoin=5;
+        enemy.totalCoin=5;
 
         System.out.println("Game start.");
         main.setLocation(477, 0);
@@ -117,67 +125,98 @@ public class Main extends JFrame {
         Main.gameLog.setText("<html>");
         printToView("Player=" + player.playerName + ",port=" + serverPort);
 
+        gameLog.setAutoscrolls(true);
+
         cycleServerRead();
     }
 
-    private static void cycleServerRead(){
+    private static void cycleServerRead() throws IOException {
         while (true) {
-            String fromServer = Client.readFromServer();
-            String whatPlayer;
+            String fromServer = Client.readLine();
+            if (fromServer!=null)
+            System.out.println("Server: "+fromServer);
+
             if (fromServer.contains("$DISCONNECT")) {
                 System.out.println("Disconnect");
                 break;
             } else if (fromServer.contains("$DRAWCARD(")) {
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                System.out.println("Draw Card " + parameter.get(0));
+              //  System.out.println("Draw Card " + parameter.get(0));
                 if (player.playerName.equals(parameter.get(0))) player.drawCard();
                 else if (enemy.playerName.equals(parameter.get(0))) enemy.drawCard();
+            } else if (fromServer.contains("$ENDTURN(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    System.out.println("End turn " + parameter.get(0));
+                    if (player.playerName.equals(parameter.get(0))) {isMyTurn=false;enemy.newTurn();}
+                    else if (enemy.playerName.equals(parameter.get(0))) {isMyTurn=true;player.newTurn();}
             } else if (fromServer.contains("$NEWTURN(")) {
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
                 System.out.println("Draw Card " + parameter.get(0));
-                if (player.playerName.equals(parameter.get(0))) player.newTurn();
-                else if (enemy.playerName.equals(parameter.get(0))) enemy.newTurn();
+                if (player.playerName.equals(parameter.get(0))) { isMyTurn=true;player.newTurn();}
+                else if (enemy.playerName.equals(parameter.get(0))) {isMyTurn=false;enemy.newTurn();}
             } else if (fromServer.contains("$PLAYCARD(")) {
                 //$PLAYCARD(player, numInHand, targetCreature, targetPlayer[1,2])
-                //$PLAYCARD(Jeremy,0,-1,1) - play 0 card to enemy.
-                //$PLAYCARD(Bob,2,-1,2) - play 2 card to self hero.
-                //$PLAYCARD(Jeremy,0,-1,-1) - play 0 card to board.
+                //$PLAYCARD(Jeremy,0,-1,Bob) - play 0 card to enemy.
+                //$PLAYCARD(Jeremy,2,-1,-1) - play 2th card to board.
+                //$PLAYCARD(Bob,1,1,Jeremy) - play 1th card to 1th creature of Jeremy
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
                 if (player.playerName.equals(parameter.get(0))) {
-                    if (Integer.parseInt(parameter.get(2)) != -1)//target creature
-                        player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
-                    else {
-                        if (Integer.parseInt(parameter.get(2)) == 1)//enemy
+                    if (!parameter.get(2).equals("-1")) {//if card targets creature
+                        if ((parameter.get(3).equals(enemy.playerName)))
+                        player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
+                        else //to self creature
+                            player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
+                    }
+                        else {
+                        if (parameter.get(3).equals(enemy.playerName))//enemy
                         player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), null, enemy);
-                        else player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), null, player);
+                        else if (parameter.get(3).equals(player.playerName))//target - self player
+                            player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), null, player);
+                        else player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
                     }
                 } else if (enemy.playerName.equals(parameter.get(0))) {
-                    if (Integer.parseInt(parameter.get(2)) != -1)
-                        enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
-                    else {
-                        if (Integer.parseInt(parameter.get(2)) == 1)//enemy
-                        enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), null, player);
-                        else  enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), null, enemy);
+                    if (!parameter.get(2).equals("-1")) {
+                        if ((parameter.get(3).equals(enemy.playerName)))
+                            enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
+                        else
+                            enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
+                    }
+                        else {
+                        if (parameter.get(3).equals(enemy.playerName))//enemy
+                            enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), null, enemy);
+                        else if (parameter.get(3).equals(player.playerName))//target - self player
+                            enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), null, player);
+                        else enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
                     }
                 }
-            } else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
+            }
+            else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
                 if (player.playerName.equals(parameter.get(0))) {
-                    board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackPlayer(enemy);//TODO test not enemy
+                    board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackPlayer(enemy);
                 }
                 if (enemy.playerName.equals(parameter.get(0))) {
                     board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackPlayer(player);
                 }
             }
+            else if (fromServer.contains("$ATTACKCREATURE(")) {//$ATTACKREATURE(Player, Creature, TargetCreature)
+                ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                if (player.playerName.equals(parameter.get(0))) {
+                    board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackCreature(board.creature.get(1).get(Integer.parseInt(parameter.get(2))));
+                }
+                if (enemy.playerName.equals(parameter.get(0))) {
+                    board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackCreature(board.creature.get(0).get(Integer.parseInt(parameter.get(2))));
+                }
+            }
         }
     }
-
     public static void printToView(String txt) {
         Main.gameLog.setText(Main.gameLog.getText() + txt + "<br>");
+        if (gameLog.getText().length()>600) Main.gameLog.setText("<html>"+gameLog.getText().substring(gameLog.getText().length()-600,gameLog.getText().length()));
     }
 
     private static class MyListener extends MouseInputAdapter {
-        enum Compo {Deck, CardInHand, CreatureInPlay, Board, EnemyHero, PlayerHero, EnemyUnit, EndTurnButton}
+        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, EndTurnButton}
 
         Compo onWhat;
         int num;
@@ -188,8 +227,15 @@ public class Main extends JFrame {
         }
 
         public void mouseClicked(MouseEvent e) {
-            if (onWhat == Compo.Deck) player.drawCard();
-            if (onWhat == Compo.EndTurnButton) player.endTurn();//newTurn();
+            if (onWhat == Compo.Deck) {
+                System.out.println("$DRAWCARD(" +player.playerName+")");
+                Client.writeLine("$DRAWCARD(" +player.playerName+")");
+            }
+            if ((onWhat == Compo.EndTurnButton) && (isMyTurn)){
+                System.out.println("$ENDTURN(" +player.playerName+")");
+                Client.writeLine("$ENDTURN(" +player.playerName+")");
+               // player.endTurn();
+            }
         }
 
         public void mousePressed(MouseEvent e) {
@@ -199,27 +245,64 @@ public class Main extends JFrame {
         public void mouseEntered(MouseEvent event) {
             whereMyMouse = onWhat.toString();
             whereMyMouseNum = num;
+
+            //Hilight destination
+            if (cardMem!=null){
+                //
+            }
+                //  printToView(whereMyMouse);
         }
 
         public void mouseExited(MouseEvent event) {
-            whereMyMouse = "";
+            whereMyMouse = "";whereMyMouseNum =0;
         }
 
         public void mouseReleased(MouseEvent e) {
-            if ((whereMyMouse == Compo.Board.toString()) && (cardMem.type == 2)) {
-                //put creature on board
-                player.playCard(cardMem, null, null);
-            } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (creatureMem != null)) {
-                //enemy hero attack by creature
-                creatureMem.attackPlayer(enemy);
-            } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (cardMem.type == 1)) {
-                //enemy hero attack by spell from hand
-                player.playCard(cardMem, null, enemy);
-            } else if ((whereMyMouse == Compo.CreatureInPlay.toString()) && (cardMem.type == 1)) {
-                //spell from hand to creature in play
-                player.playCard(cardMem, board.creature.get(0).get(whereMyMouseNum), null);
+            if (isMyTurn) {
+                if ((whereMyMouse == Compo.Board.toString()) && (cardMem!=null)) {
+                    //put creature on board
+                    System.out.println("$PLAYCARD(" + player.playerName + "," + num + ",-1,-1)");
+                    Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + ",-1,-1)");
+                    // player.playCard(cardMem, null, null);
+                } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (creatureMem != null)) {
+                    //enemy hero attack by creature
+                    if (creatureMem.isTapped) {
+                        printToView("Повернутое существо не может атаковать.");
+                    } else {
+                        if (creatureMem.isSummonedJust) {
+                            printToView("Это существо вошло в игру на этом ходу.");
+                        } else {
+                            System.out.println("$ATTACKPLAYER(" + player.playerName + "," + num + ")");
+                            Client.writeLine("$ATTACKPLAYER(" + player.playerName + "," + num + ")");
+                        }
+                    }
+                } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (creatureMem != null)) {
+                    //enemy creature attack by player creature
+                    if (creatureMem.isTapped) {
+                        printToView("Повернутое существо не может атаковать.");
+                    } else {
+                        if (creatureMem.isSummonedJust) {
+                            printToView("Это существо вошло в игру на этом ходу.");
+                        } else {
+                            System.out.println("$ATTACKCREATURE(" + player.playerName + "," + num + ","+whereMyMouseNum+")");
+                            Client.writeLine("$ATTACKCREATURE(" + player.playerName + "," + num + ","+whereMyMouseNum+")");
+                        }
+                    }
+                }else if ((whereMyMouse == Compo.EnemyHero.toString()) && (cardMem!=null)) {
+                    //enemy hero attack by spell from hand
+                    System.out.println("$PLAYCARD(" + player.playerName + "," + num + ",-1," + enemy.playerName + ")");
+                    Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + ",-1," + enemy.playerName + ")");
+                } else if ((whereMyMouse == Compo.CreatureInMyPlay.toString()) && (cardMem!=null)) {
+                    //spell from hand to my creature in play
+                    System.out.println("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + player.playerName + ")");
+                    Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + player.playerName + ")");
+                } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (cardMem!=null)) {
+                    //spell from hand to enemy creature in play
+                    System.out.println("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + enemy.playerName + ")");
+                    Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + enemy.playerName + ")");
+                }
             }
-
+            else {printToView("Сейчас идет не ваш ход.");}
             cardMem = null;
             creatureMem = null;
         }
@@ -227,17 +310,8 @@ public class Main extends JFrame {
         public void mouseDragged(MouseEvent e) {
             if (onWhat == Compo.CardInHand) {//Creature in hand
                 cardMem = player.cardInHand.get(num);
-            } else if (onWhat == Compo.CreatureInPlay) {//Creature in play
-                if (board.creature.get(0).get(num).isTapped) {
-                    printToView("Повернутое существо не может атаковать.");
-                } else {
-                    if (board.creature.get(0).get(num).isSummonedJust) {
-                        printToView("Это существо вошло в игру на этом ходу.");
-                    } else {
-                        // System.out.println("Pressed on card" + player.cardInHand.get(num).name);
-                        creatureMem = board.creature.get(0).get(num);
-                    }
-                }
+            } else if (onWhat == Compo.CreatureInMyPlay) {//Creature in play
+                creatureMem = board.creature.get(0).get(num);
             }
 
 
@@ -275,7 +349,11 @@ public class Main extends JFrame {
         battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - cardX - heroW - B0RDER_BETWEEN, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - heroH * 2);
         g.drawRect(battlegroundClick.getX(), battlegroundClick.getY(), battlegroundClick.getWidth(), battlegroundClick.getHeight());//TODO Image of battleground
         //End turn button
+        if (isMyTurn)
         g.drawImage(endTurnImage, main.getWidth() - B0RDER_RIGHT - endTurnImage.getWidth(null), main.getHeight() / 2, null);
+        else
+            g.drawImage(notMyTurnImage, main.getWidth() - B0RDER_RIGHT - endTurnImage.getWidth(null), main.getHeight() / 2, null);
+
         endTurnClick.setLocation(main.getWidth() - B0RDER_RIGHT - endTurnImage.getWidth(null), main.getHeight() / 2);
         endTurnClick.setSize(endTurnImage.getWidth(null), endTurnImage.getHeight(null));
         //Heroes
@@ -312,7 +390,7 @@ public class Main extends JFrame {
             g.drawImage(heroGraveyardImage, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
         } else {
             im = ImageIO.read(Main.class.getResourceAsStream(enemy.graveyard.get(enemy.graveyard.size() - 1).image));
-            g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP , smallCardW, smallCardH, null);
         }
         //Hero&enemy coin
         g.drawImage(heroCoinImage, playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
@@ -368,14 +446,15 @@ public class Main extends JFrame {
                         if (creature.isTapped) {
                             g.drawImage(tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h, heroH, heroW, null);
                             playerUnitClick[np][numUnit].setSize(heroH, heroW);
+                            playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);//May be write not center?
                         } else {
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW), h, heroW, heroH, null);
+                            playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);
                             playerUnitClick[np][numUnit].setSize(heroW, heroH);
-                            playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), battlegroundClick.getY() + battlegroundClick.getHeight() - heroH);
                         }
                         if (creature.damage != 0) {//TODO
-                            playerUnitLabel[numUnit].setLocation(playerUnitClick[np][numUnit].getX() + (int) (playerUnitClick[np][numUnit].getWidth() * CREATURE_DAMAGE_WHERE_TO_SHOW_X), playerUnitClick[np][numUnit].getY() + (int) (playerUnitClick[np][numUnit].getHeight() * CREATURE_DAMAGE_WHERE_TO_SHOW_Y));
-                            playerUnitLabel[numUnit].setText(creature.damage + "");
+                            playerUnitLabel[np][numUnit].setLocation(playerUnitClick[np][numUnit].getX() + (int) (playerUnitClick[np][numUnit].getWidth() * CREATURE_DAMAGE_WHERE_TO_SHOW_X), playerUnitClick[np][numUnit].getY() + (int) (playerUnitClick[np][numUnit].getHeight() * CREATURE_DAMAGE_WHERE_TO_SHOW_Y));
+                            playerUnitLabel[np][numUnit].setText(creature.damage + "");
                         }
                         numUnit++;
                     } catch (IOException e) {
@@ -396,16 +475,17 @@ public class Main extends JFrame {
             heroDeckImage = ImageIO.read(Main.class.getResourceAsStream("Deck.png"));
             heroGraveyardImage = ImageIO.read(Main.class.getResourceAsStream("Graveyard.png"));
             endTurnImage = ImageIO.read(Main.class.getResourceAsStream("Endturn.png"));
+            notMyTurnImage = ImageIO.read(Main.class.getResourceAsStream("Notmyturn.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private static void loadCardDeck() {
-        Card simpleCard = new Card(board, 1, "Раскат грома", 1, 1, "Ранить выбранное существо на 2.", 0, 0);
-        Card simpleCard2 = new Card(board, 1, "Гьерхор", 1, 2, "", 2, 2);
-        Card simpleCard3 = new Card(board, 2, "Гном", 1, 2, "", 3, 3);
-        Card simpleCard4 = new Card(board, 1, "Поглощение душ", 1, 1, "Ранить выбранного героя на 3.", 0, 0);
+        Card simpleCard = new Card(1, "Раскат грома", 1, 1, "Ранить выбранное существо на 2.", 0, 0);
+        Card simpleCard2 = new Card( 1, "Гьерхор", 1, 2, "Рывок.", 2, 2);
+        Card simpleCard3 = new Card( 2, "Гном", 1, 2, "", 3, 3);
+        Card simpleCard4 = new Card(1, "Поглощение душ", 1, 1, "Ранить выбранного героя на 3.", 0, 0);
         simpleDeckCards = new ArrayList<>();
         simpleDeckCards.add(simpleCard);
         simpleDeckCards.add(simpleCard2);
@@ -466,15 +546,21 @@ public class Main extends JFrame {
         for (int ii = 0; ii <= 1; ii++) {
             for (int i = 0; i < playerUnitClick[ii].length; i++) {
                 playerUnitClick[ii][i] = new JLabel();
-                playerUnitLabel[i] = new JLabel();
+                playerUnitLabel[ii][i] = new JLabel();
                 viewField.add(playerUnitClick[ii][i]);
-                viewField.add(playerUnitLabel[i]);
-                playerUnitClick[ii][i].addMouseListener(new MyListener(MyListener.Compo.CreatureInPlay, i));
-                playerUnitClick[ii][i].addMouseMotionListener(new MyListener(MyListener.Compo.CreatureInPlay, i));
-                playerUnitLabel[i].setHorizontalAlignment(SwingConstants.LEFT);
-                playerUnitLabel[i].setVerticalAlignment(SwingConstants.TOP);
-                playerUnitLabel[i].setForeground(Color.RED);
-                playerUnitLabel[i].setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
+                viewField.add(playerUnitLabel[ii][i]);
+                if (ii==0) {
+                    playerUnitClick[ii][i].addMouseListener(new MyListener(MyListener.Compo.CreatureInMyPlay, i));
+                    playerUnitClick[ii][i].addMouseMotionListener(new MyListener(MyListener.Compo.CreatureInMyPlay, i));
+                }
+                else{
+                    playerUnitClick[ii][i].addMouseListener(new MyListener(MyListener.Compo.EnemyUnitInPlay, i));
+                    playerUnitClick[ii][i].addMouseMotionListener(new MyListener(MyListener.Compo.EnemyUnitInPlay, i));
+                }
+                playerUnitLabel[ii][i].setHorizontalAlignment(SwingConstants.LEFT);
+                playerUnitLabel[ii][i].setVerticalAlignment(SwingConstants.TOP);
+                playerUnitLabel[ii][i].setForeground(Color.RED);
+                playerUnitLabel[ii][i].setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
             }
         }
         //
