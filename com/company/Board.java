@@ -34,6 +34,10 @@ public class Board {
         Main.printToView("Вызов существа "+summonCreature.name);
     }
 
+    public static Player opponent(Player pl){
+        if (pl==firstPlayer) return secondPlayer;
+        else return firstPlayer;
+    }
     public static void putCardToGraveyard(Card _card, Player _owner){
         _owner.graveyard.add(_card);
     }

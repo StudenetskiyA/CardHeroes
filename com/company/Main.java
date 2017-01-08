@@ -28,7 +28,6 @@ public class Main extends JFrame {
     private static final double CREATURE_DAMAGE_WHERE_TO_SHOW_Y = 0.3;
     private static final double CARD_SIZE_FROM_SCREEN = 0.09;
     private static Main main = new Main();
-    public static boolean isMyTurn = false;
     private static int heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
     private static int heroH = (heroW * 400 / 283);
     private static int smallCardW = (int) (heroW * 0.7);
@@ -72,6 +71,10 @@ public class Main extends JFrame {
 
     private static String whereMyMouse;
     private static int whereMyMouseNum;
+
+    enum playerStatus {MyTurn,EnemyTurn,IChoiseBlocker,EnemyChoiseBlocker}
+
+    public static playerStatus isMyTurn = playerStatus.EnemyTurn;
 
     public static void main(String[] args) throws IOException {
         loadImage();
@@ -131,6 +134,8 @@ player.totalCoin=5;
     }
 
     private static void cycleServerRead() throws IOException {
+
+
         while (true) {
             String fromServer = Client.readLine();
             if (fromServer!=null)
@@ -147,13 +152,13 @@ player.totalCoin=5;
             } else if (fromServer.contains("$ENDTURN(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     System.out.println("End turn " + parameter.get(0));
-                    if (player.playerName.equals(parameter.get(0))) {isMyTurn=false;enemy.newTurn();}
-                    else if (enemy.playerName.equals(parameter.get(0))) {isMyTurn=true;player.newTurn();}
+                    if (player.playerName.equals(parameter.get(0))) {isMyTurn=playerStatus.EnemyTurn;enemy.newTurn();}
+                    else if (enemy.playerName.equals(parameter.get(0))) {isMyTurn=playerStatus.MyTurn;player.newTurn();}
             } else if (fromServer.contains("$NEWTURN(")) {
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
                 System.out.println("Draw Card " + parameter.get(0));
-                if (player.playerName.equals(parameter.get(0))) { isMyTurn=true;player.newTurn();}
-                else if (enemy.playerName.equals(parameter.get(0))) {isMyTurn=false;enemy.newTurn();}
+                if (player.playerName.equals(parameter.get(0))) { isMyTurn=playerStatus.MyTurn;player.newTurn();}
+                else if (enemy.playerName.equals(parameter.get(0))) {isMyTurn=playerStatus.EnemyTurn;enemy.newTurn();}
             } else if (fromServer.contains("$PLAYCARD(")) {
                 //$PLAYCARD(player, numInHand, targetCreature, targetPlayer[1,2])
                 //$PLAYCARD(Jeremy,0,-1,Bob) - play 0 card to enemy.
@@ -231,10 +236,9 @@ player.totalCoin=5;
                 System.out.println("$DRAWCARD(" +player.playerName+")");
                 Client.writeLine("$DRAWCARD(" +player.playerName+")");
             }
-            if ((onWhat == Compo.EndTurnButton) && (isMyTurn)){
+            if ((onWhat == Compo.EndTurnButton) && (isMyTurn==playerStatus.MyTurn)){
                 System.out.println("$ENDTURN(" +player.playerName+")");
                 Client.writeLine("$ENDTURN(" +player.playerName+")");
-               // player.endTurn();
             }
         }
 
@@ -258,7 +262,7 @@ player.totalCoin=5;
         }
 
         public void mouseReleased(MouseEvent e) {
-            if (isMyTurn) {
+            if (isMyTurn==playerStatus.MyTurn) {
                 if ((whereMyMouse == Compo.Board.toString()) && (cardMem!=null)) {
                     //put creature on board
                     System.out.println("$PLAYCARD(" + player.playerName + "," + num + ",-1,-1)");
@@ -349,7 +353,7 @@ player.totalCoin=5;
         battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - cardX - heroW - B0RDER_BETWEEN, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - heroH * 2);
         g.drawRect(battlegroundClick.getX(), battlegroundClick.getY(), battlegroundClick.getWidth(), battlegroundClick.getHeight());//TODO Image of battleground
         //End turn button
-        if (isMyTurn)
+        if (isMyTurn==playerStatus.MyTurn)//TODO Other status
         g.drawImage(endTurnImage, main.getWidth() - B0RDER_RIGHT - endTurnImage.getWidth(null), main.getHeight() / 2, null);
         else
             g.drawImage(notMyTurnImage, main.getWidth() - B0RDER_RIGHT - endTurnImage.getWidth(null), main.getHeight() / 2, null);
