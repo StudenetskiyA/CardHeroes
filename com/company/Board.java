@@ -44,5 +44,6 @@ public class Board {
 
     public static void removeCreatureFromPlayerBoard(Creature _creature){
         creature.get(_creature.owner.numberPlayer).remove(_creature);//TODO Check it
+        _creature=null;
     }
 }

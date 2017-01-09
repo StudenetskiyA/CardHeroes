@@ -47,6 +47,18 @@ public class Creature extends Card {
     return crt;
     }
 
+    public void fightCreature(Creature second){
+        //TODO First strike and other
+        Main.printToView(this.name+" сражается с "+second.name+".");
+        this.takeDamage(second.power);
+        second.takeDamage(this.power);
+    }
+    public void fightPlayer(Player second){
+        //TODO First strike and other
+        Main.printToView(this.name+" атакует "+second.name+".");
+        second.takeDamage(this.power);
+    }
+
     public void attackCreature(Creature target){
                 tapCreature();
                 //TODO Block Check
@@ -56,15 +68,14 @@ public class Creature extends Card {
             int nt = Board.creature.get(Board.opponent(owner).numberPlayer).indexOf(target);
             System.out.println("$CHOISEBLOCKER(" +Board.opponent(owner).playerName+","+nc+","+nt+")");
             Client.writeLine("$CHOISEBLOCKER(" +Board.opponent(owner).playerName+","+nc+","+nt+")");
+            Main.isMyTurn= Main.playerStatus.EnemyChoiseBlocker;
             for (Creature cr: blocker){
                 Main.printToView(cr.name+" can block!");
             }
         }
-
-                //TODO firststrike
-                target.takeDamage(power);
-                takeDamage(target.power);
-                Main.printToView(name+" атакует: "+target.name+".");
+        else {
+            fightCreature(target);
+        }
     }
 
     public void attackPlayer(Player target){
@@ -76,13 +87,15 @@ public class Creature extends Card {
             int nt = -1;
             System.out.println("$CHOISEBLOCKER(" +Board.opponent(owner).playerName+","+nc+","+nt+")");
             Client.writeLine("$CHOISEBLOCKER(" +Board.opponent(owner).playerName+","+nc+","+nt+")");
-
+            Main.isMyTurn= Main.playerStatus.EnemyChoiseBlocker;
             for (Creature cr: blocker){
                 Main.printToView(cr.name+" can block!");
             }
         }
-                target.takeDamage(power);
-                Main.printToView("Существо "+name+" атакует героя.");
+        else {
+            target.takeDamage(power);
+            Main.printToView("Существо " + name + " атакует героя.");
+        }
     }
 
     public void takeDamage(int dmg){
@@ -95,6 +108,10 @@ public class Creature extends Card {
     }
 
     public void die(){
+        //May be wannts to free exemplar of creature, if you do this, change 'fight' method
+        this.isTapped=false;
+        this.damage=0;
+        //And may be other
         Board.removeCreatureFromPlayerBoard(this);
         Board.putCardToGraveyard(this, this.owner);
     }
