@@ -139,6 +139,7 @@ public class Creature extends Card {
 //        this.isTapped=false;
 //        this.damage=0;
         //And may be other
+        // Or not?
         Board.removeCreatureFromPlayerBoard(this);
         Board.putCardToGraveyard(this, this.owner);
     }
