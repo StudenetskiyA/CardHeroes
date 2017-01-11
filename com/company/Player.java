@@ -16,7 +16,7 @@ public class Player extends Card{
     public ArrayList<Card> graveyard;
 
     public Player(Deck _deck, Board _board,String _playerName,int _n, int _hp){
-        super(0,"Тарна",1,0,"",0,_hp);
+        super(0,"Тарна",1,0,0,"",0,_hp);
         deck=_deck;
         playerName=_playerName;
         cardInHand = new ArrayList<Card>();
@@ -52,7 +52,7 @@ public class Player extends Card{
             creature.isTapped=false;
         }
         //Draw
-        drawCard();
+        if (Board.turnCount!=1) drawCard();//First player not draw card in first turn. It's rule.
     }
 
     void playCard(Card _card, Creature _targetCreature, Player _targetPlayer){
@@ -71,6 +71,11 @@ public class Player extends Card{
                 if (_targetCreature != null) {
                     _card.playOnCreature(_targetCreature);
                 }
+                if (_card.text.contains(("Излечить вашего героя на"))){
+                    int dmg = getNumericAfterText(_card.text,"Излечить вашего героя на");
+                    heal(dmg);
+                    Main.printToView(this.playerName+" излечил "+dmg+" урона.");
+                }
                 Board.putCardToGraveyard(_card,this);
             }
             else if (_card.type==2){
@@ -87,7 +92,6 @@ public class Player extends Card{
     void drawCard(){
         if (deck.haveTopDeck())
         cardInHand.add(deck.drawTopDeck());
-            //   Main.printToView("Игрок "+playerName+" берет карту.");
         else {
             Main.printToView("Deck of "+playerName+" is empty.");
         }
@@ -101,6 +105,10 @@ public class Player extends Card{
             System.out.println("Player lose game.");
             //TODO Lose play
         }
+    }
+    public void heal(int dmg){
+        damage-=dmg;
+        if (damage<0) damage=0;
     }
 
     public String handToString(){

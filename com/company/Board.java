@@ -1,6 +1,7 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,7 +44,11 @@ public class Board {
     }
 
     public static void removeCreatureFromPlayerBoard(Creature _creature){
-        creature.get(_creature.owner.numberPlayer).remove(_creature);//TODO Check it
+       // int n=creature.get(_creature.owner.numberPlayer).indexOf(_creature);
+        //move
+
+        creature.get(_creature.owner.numberPlayer).remove(_creature);//TODO May be BUG!
+
         _creature=null;
     }
 }

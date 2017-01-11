@@ -13,10 +13,24 @@ public class Card {
     public String image;
     public int color;
     public int type;//1 for spell, 2 for creature
+    public int targetType;//1 for creatures, 2 for heroes
     public int power;//only for creature, ignore for other
     public int hp;//only for creature and hero, its maximum health, not current
+    public String hash;
 
-    public Card(int _cost, String _name, int _color, int _type, String _text, int _power,int _hp){
+    public Card(Card _card){
+        name=_card.name;
+        text=_card.text;
+        cost=_card.cost;
+        image=_card.image;
+        color=_card.color;
+        type=_card.type;
+        power=_card.power;
+        hp=_card.hp;
+        targetType=_card.targetType;
+    }
+
+    public Card(int _cost, String _name, int _color, int _type, int _targetType, String _text, int _power,int _hp){
      //   board=_board;
         name=_name;
         text=_text;
@@ -26,6 +40,7 @@ public class Card {
         type=_type;
         power=_power;
         hp=_hp;
+        targetType=_targetType;
     }
 
 
@@ -53,9 +68,9 @@ public class Card {
 
     public int getNumericAfterText(String fromText, String afterText){
         int begin = fromText.indexOf(afterText);
-        int end1 = text.indexOf(" ",begin+afterText.length()+1);
+        int end1 = fromText.indexOf(" ",begin+afterText.length()+1);
         if (end1==-1) end1=1000;
-        int end2 = text.indexOf(".",begin+afterText.length()+1);
+        int end2 = fromText.indexOf(".",begin+afterText.length()+1);
         if (end2==-1) end2=1000;
         int end = Math.min(end1,end2);
         String dmg = fromText.substring(begin+afterText.length()+1,end);
@@ -76,11 +91,11 @@ public class Card {
         }
     }
 
-    public void playOnPlayer(Player player){
+    public void playOnPlayer(Player _player){
         if (text.contains("Ранить выбранного героя на")){
             int dmg = getNumericAfterText(text,"Ранить выбранного героя на");
-            player.takeDamage(dmg);
-            Main.printToView(player.playerName+" получил "+dmg+" урона.");
+            _player.takeDamage(dmg);
+            Main.printToView(_player.playerName+" получил "+dmg+" урона.");
         }
 
     }

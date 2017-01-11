@@ -13,9 +13,20 @@ public class Creature extends Card {
     public Player owner;
     int damage;
 
+    public Creature(Creature _card){
+        super(_card.cost,_card.name,_card.color,_card.type,_card.targetType,_card.text,_card.power,_card.hp);
+        power = _card.power;
+        tougness = _card.hp;
+        image = _card.image;
+        cost = _card.cost;
+        isTapped=false;
+        isSummonedJust=true;
+        name= _card.name;
+        owner=_card.owner;
+    }
 
     public Creature(Card _card, Player _owner){
-        super(_card.cost,_card.name,_card.color,_card.type,_card.text,_card.power,_card.hp);
+        super(_card.cost,_card.name,_card.color,_card.type,_card.targetType,_card.text,_card.power,_card.hp);
     power = _card.power;
     tougness = _card.hp;
     image = _card.image;
@@ -50,57 +61,73 @@ public class Creature extends Card {
     public void fightCreature(Creature second){
         //TODO First strike and other
         Main.printToView(this.name+" сражается с "+second.name+".");
-        this.takeDamage(second.power);
-        second.takeDamage(this.power);
+        if ((second.text.contains("Первый удар."))&&(!this.text.contains("Первый удар."))){
+            this.takeDamage(second.power);
+            if (this.damage<this.hp) second.takeDamage(this.power);
+        }
+        else if  ((this.text.contains("Первый удар."))&&(!second.text.contains("Первый удар."))){
+            second.takeDamage(this.power);
+            if (second.damage<second.hp) this.takeDamage(second.power);
+        }
+        else if  ((this.text.contains("Первый удар."))&&(second.text.contains("Первый удар."))) {
+            this.takeDamage(second.power);
+            second.takeDamage(this.power);
+        }
+        else {
+            this.takeDamage(second.power);
+            second.takeDamage(this.power);
+        }
     }
     public void fightPlayer(Player second){
-        //TODO First strike and other
         Main.printToView(this.name+" атакует "+second.name+".");
         second.takeDamage(this.power);
     }
 
     public void attackCreature(Creature target){
                 tapCreature();
-                //TODO Block Check
-        ArrayList<Creature> blocker = canAnyoneBlock(target);
-        if (blocker.size()!=0){
-            int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
-            int nt = Board.creature.get(Board.opponent(owner).numberPlayer).indexOf(target);
-            System.out.println("$CHOISEBLOCKER(" +Board.opponent(owner).playerName+","+nc+","+nt+")");
-            Client.writeLine("$CHOISEBLOCKER(" +Board.opponent(owner).playerName+","+nc+","+nt+")");
-            Main.isMyTurn= Main.playerStatus.EnemyChoiseBlocker;
-            for (Creature cr: blocker){
-                Main.printToView(cr.name+" can block!");
-            }
-        }
+
+        if (this.text.contains("Направленный удар.")){fightCreature(target);}
         else {
-            fightCreature(target);
+            ArrayList<Creature> blocker;
+            blocker = canAnyoneBlock(target);
+            if (blocker.size() != 0) {
+                int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
+                int nt = Board.creature.get(Board.opponent(owner).numberPlayer).indexOf(target);
+                System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
+                Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
+                Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
+                for (Creature cr : blocker) {
+                    Main.printToView(cr.name + " can block!");
+                }
+            } else {
+                fightCreature(target);
+            }
         }
     }
 
     public void attackPlayer(Player target){
                 tapCreature();
-                //TODO Block Check
-        ArrayList<Creature> blocker = canAnyoneBlock(null);
-        if (blocker.size()!=0){
-            int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
-            int nt = -1;
-            System.out.println("$CHOISEBLOCKER(" +Board.opponent(owner).playerName+","+nc+","+nt+")");
-            Client.writeLine("$CHOISEBLOCKER(" +Board.opponent(owner).playerName+","+nc+","+nt+")");
-            Main.isMyTurn= Main.playerStatus.EnemyChoiseBlocker;
-            for (Creature cr: blocker){
-                Main.printToView(cr.name+" can block!");
-            }
-        }
+        if (this.text.contains("Направленный удар.")){fightPlayer(target);}
         else {
-            target.takeDamage(power);
-            Main.printToView("Существо " + name + " атакует героя.");
+            ArrayList<Creature> blocker = canAnyoneBlock(null);
+            if (blocker.size() != 0) {
+                int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
+                int nt = -1;
+                System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
+                Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
+                Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
+                for (Creature cr : blocker) {
+                    Main.printToView(cr.name + " can block!");
+                }
+            } else {
+                fightPlayer(target);
+            }
         }
     }
 
     public void takeDamage(int dmg){
-        if (tougness>damage+dmg){
-            damage+=dmg;
+        damage+=dmg;
+        if (tougness>damage){
         }
         else {
            die();
@@ -109,8 +136,8 @@ public class Creature extends Card {
 
     public void die(){
         //May be wannts to free exemplar of creature, if you do this, change 'fight' method
-        this.isTapped=false;
-        this.damage=0;
+//        this.isTapped=false;
+//        this.damage=0;
         //And may be other
         Board.removeCreatureFromPlayerBoard(this);
         Board.putCardToGraveyard(this, this.owner);
