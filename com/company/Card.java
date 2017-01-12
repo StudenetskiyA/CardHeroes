@@ -73,7 +73,8 @@ public class Card {
         int end2 = fromText.indexOf(".",begin+afterText.length()+1);
         if (end2==-1) end2=1000;
         int end = Math.min(end1,end2);
-        String dmg = fromText.substring(begin+afterText.length()+1,end);
+        if (end==1000) end=fromText.length();
+        String dmg = fromText.substring(begin+afterText.length(),end);
         int numdmg=0;
         try{
             numdmg = Integer.parseInt(dmg);
@@ -84,16 +85,16 @@ public class Card {
     }
 
     public void playOnCreature(Creature creature){
-        if (text.contains("Ранить выбранное существо на")){
-            int dmg = getNumericAfterText(text,"Ранить выбранное существо на");
+        if (text.contains("Ранить выбранное существо на ")){
+            int dmg = getNumericAfterText(text,"Ранить выбранное существо на ");
             creature.takeDamage(dmg);
             Main.printToView(creature.name+" получил "+dmg+" урона.");
         }
     }
 
     public void playOnPlayer(Player _player){
-        if (text.contains("Ранить выбранного героя на")){
-            int dmg = getNumericAfterText(text,"Ранить выбранного героя на");
+        if (text.contains("Ранить выбранного героя на ")){
+            int dmg = getNumericAfterText(text,"Ранить выбранного героя на ");
             _player.takeDamage(dmg);
             Main.printToView(_player.playerName+" получил "+dmg+" урона.");
         }

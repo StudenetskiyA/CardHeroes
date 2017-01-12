@@ -134,6 +134,35 @@ public class Creature extends Card {
         }
     }
 
+    public void cry(Creature _cr, Player _pl){
+        String txt = this.text.substring(this.text.indexOf("Найм:") + "Найм:".length() + 1, this.text.indexOf(".", this.text.indexOf("Найм:") + 1));
+        System.out.println("Найм: " + txt);
+        if (txt.contains("Выстрел по существу на ")){
+            int dmg = getNumericAfterText(txt,"Выстрел по существу на ");
+            Main.printToView(this.name+ " стреляет на "+dmg + " по "+_cr.name);
+            if (!_cr.text.contains("Защита от выстрелов."))
+            _cr.takeDamage(dmg);
+            else{
+                Main.printToView("У "+_cr.name+ " защита от выстрелов.");
+            }
+        }
+        else if (txt.contains("Выстрел на ")){
+            int dmg = getNumericAfterText(txt,"Выстрел на ");
+            if (_cr!=null) {
+                Main.printToView(this.name + " стреляет на " + dmg + " по " + _cr.name);
+                if (!_cr.text.contains("Защита от выстрелов."))
+                    _cr.takeDamage(dmg);
+                else {
+                    Main.printToView("У " + _cr.name + " защита от выстрелов.");
+                }
+            }
+            else {
+                Main.printToView(this.name + " стреляет на " + dmg + " по " + _pl.name);
+                _pl.takeDamage(dmg);
+            }
+        }
+    }
+
     public void die(){
         //May be wannts to free exemplar of creature, if you do this, change 'fight' method
 //        this.isTapped=false;

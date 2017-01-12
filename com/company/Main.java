@@ -72,11 +72,10 @@ public class Main extends JFrame {
 
     private static Deck simpleDeck;
     private static Deck simpleEnemyDeck;
-//    private static ArrayList<Card> simpleDeckCards;
-//    private static ArrayList<Card> simpleDeckCards2;
 
     private static String whereMyMouse;
     private static int whereMyMouseNum;
+    private static int repainted;
 
     enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseTarget}
 
@@ -143,7 +142,6 @@ public class Main extends JFrame {
         printToView("Player=" + player.playerName + ",port=" + serverPort);
 
         cycleServerRead();
-
     }
 
     private static void cycleServerRead() throws IOException {
@@ -219,6 +217,39 @@ public class Main extends JFrame {
                     isMyTurn = playerStatus.IChoiseBlocker;
                     creatureWhoAttack = Integer.parseInt(parameter.get(1));
                     creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
+                }
+            } else if (fromServer.contains("$CRYTARGET(")) {
+                ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                if (player.playerName.equals(parameter.get(0))) {
+                    isMyTurn = playerStatus.MyTurn;
+                    if (parameter.get(2).equals("1")) {
+                        if (parameter.get(3).equals("-1")) {
+                            Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).cry(null, enemy);
+                        } else {
+                            Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(1).get(Integer.parseInt(parameter.get(3))), null);
+                        }
+                    } else {
+                        if (parameter.get(3).equals("-1")) {
+                            Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).cry(null, player);
+                        } else {
+                            Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(0).get(Integer.parseInt(parameter.get(3))), null);
+                        }
+                    }
+                } else {
+                    isMyTurn = playerStatus.EnemyTurn;
+                    if (parameter.get(2).equals("1")) {
+                        if (parameter.get(3).equals("-1")) {
+                            Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).cry(null, player);
+                        } else {
+                            Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(0).get(Integer.parseInt(parameter.get(3))), null);
+                        }
+                    } else {
+                        if (parameter.get(3).equals("-1")) {
+                            Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).cry(null, enemy);
+                        } else {
+                            Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(1).get(Integer.parseInt(parameter.get(3))), null);
+                        }
+                    }
                 }
             } else if (fromServer.contains("$BLOCKER(")) {
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
@@ -370,14 +401,24 @@ public class Main extends JFrame {
                 isMyTurn = playerStatus.waitingMulligan;
             } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == playerStatus.choiseTarget)) {
                 //Battlecry on enemy hero
-                int nc= Board.creature.get(0).indexOf(activatedAbilityCreature);
-                System.out.println("$CRYTARGET(" + player.playerName + "," + nc + "1,-1)");
-                Client.writeLine("$CRYTARGET(" + player.playerName + "," + nc + "1,-1)");
+                if ((activatedAbilityCreature.targetType == 2) || (activatedAbilityCreature.targetType == 3)) {
+                    int nc = Board.creature.get(0).indexOf(activatedAbilityCreature);
+                    System.out.println("$CRYTARGET(" + player.playerName + "," + nc + ",1,-1)");
+                    Client.writeLine("$CRYTARGET(" + player.playerName + "," + nc + ",1,-1)");
+                    isMyTurn = playerStatus.MyTurn;
+                } else {
+                    printToView("Выберите корректную цель.");
+                }
             } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget)) {
                 //Battlecry on enemy unit
-                int nc= Board.creature.get(0).indexOf(activatedAbilityCreature);
-                System.out.println("$CRYTARGET(" + player.playerName + "," + nc + "1,"+num+")");
-                Client.writeLine("$CRYTARGET(" + player.playerName + "," + nc + "1,"+num+")");
+                if ((activatedAbilityCreature.targetType == 1) || (activatedAbilityCreature.targetType == 3)){
+                    int nc = Board.creature.get(0).indexOf(activatedAbilityCreature);
+                    System.out.println("$CRYTARGET(" + player.playerName + "," + nc + ",1," + num + ")");
+                    Client.writeLine("$CRYTARGET(" + player.playerName + "," + nc + ",1," + num + ")");
+                    isMyTurn = playerStatus.MyTurn;
+                } else {
+                    printToView("Выберите корректную цель.");
+                }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.IChoiseBlocker)) {
                 System.out.println("$BLOCKER(" + player.playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
                 Client.writeLine("$BLOCKER(" + player.playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
@@ -419,7 +460,7 @@ public class Main extends JFrame {
             if (isMyTurn == playerStatus.MyTurn) {
                 if ((whereMyMouse == Compo.Board.toString()) && (cardMem != null)) {
                     //put creature on board
-                    if (cardMem.targetType == 0) {
+                    if ((cardMem.targetType == 0) || (cardMem.type == 2)) {
                         System.out.println("$PLAYCARD(" + player.playerName + "," + num + ",-1,-1)");
                         Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + ",-1,-1)");
                     } else {
@@ -459,22 +500,36 @@ public class Main extends JFrame {
                     }
                 } else if ((whereMyMouse == Compo.CreatureInMyPlay.toString()) && (cardMem != null)) {
                     //spell from hand to my creature in play
-                    if (cardMem.targetType == 1) {
-                        System.out.println("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + player.playerName + ")");
-                        Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + player.playerName + ")");
-                    } else {
-                        printToView("Некорректная цель для данного заклинания, выберите героя.");
+                    if (Board.creature.get(0).get(whereMyMouseNum).text.contains("Защита от заклинаний.")){
+                        printToView("У цели защита от заклинаний.");
+                    }
+                    else {
+                        if ((cardMem.targetType == 1) || (cardMem.targetType==3)) {
+                            System.out.println("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + player.playerName + ")");
+                            Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + player.playerName + ")");
+                        } else {
+                            printToView("Некорректная цель для данного заклинания, выберите героя.");
+                        }
                     }
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (cardMem != null)) {
                     //spell from hand to enemy creature in play
-                    System.out.println("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + enemy.playerName + ")");
-                    Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + enemy.playerName + ")");
+                    if (Board.creature.get(1).get(whereMyMouseNum).text.contains("Защита от заклинаний.")){
+                        printToView("У цели защита от заклинаний.");
+                    }
+                    else {
+                        if ((cardMem.targetType == 1) || (cardMem.targetType==3)){
+                        System.out.println("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + enemy.playerName + ")");
+                        Client.writeLine("$PLAYCARD(" + player.playerName + "," + num + "," + whereMyMouseNum + "," + enemy.playerName + ")");
+                        } else {
+                            printToView("Некорректная цель для данного заклинания, выберите героя.");
+                        }
+                    }
                 }
             } else {
-                if (isMyTurn != playerStatus.MuliganPhase) {
+                if (isMyTurn == playerStatus.EnemyTurn){
                     printToView("Сейчас идет не ваш ход.");
                 }
-                main.repaint();
+               // main.repaint();
             }
             cardMem = null;
             creatureMem = null;
@@ -502,7 +557,9 @@ public class Main extends JFrame {
     }
 
     private static void onRepaint(Graphics g) throws IOException {
-        //   System.out.println("onRepaint");
+        //TODO If changed size??
+        System.out.println("onRepaint " + repainted);
+        repainted++;
         int bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.5);
         int bigCardH = (bigCardW * 400 / 283);
         heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
@@ -515,14 +572,14 @@ public class Main extends JFrame {
         //Game log
         gameLog.setLocation(B0RDER_LEFT, B0RDER_TOP + smallCardH + B0RDER_BETWEEN);
         gameLog.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2);
-        gameLog.setAutoscrolls(true);
-        Border border = LineBorder.createGrayLineBorder();
-        gameLog.setBorder(border);
+//            gameLog.setAutoscrolls(true);
+//            Border border = LineBorder.createGrayLineBorder();
+//            gameLog.setBorder(border);
         //Background
         g.drawImage(background, 0, 0, main.getWidth(), main.getHeight(), null);
         //Battleground
-        battlegroundClick.setLocation(cardX, B0RDER_TOP + B0RDER_BETWEEN + heroH);
-        battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - cardX - heroW - B0RDER_BETWEEN, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - heroH * 2);
+        battlegroundClick.setLocation(cardX, B0RDER_TOP + B0RDER_BETWEEN + smallCardH);
+        battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - cardX - heroW - B0RDER_BETWEEN, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - heroH - smallCardH);
         g.drawRect(battlegroundClick.getX(), battlegroundClick.getY(), battlegroundClick.getWidth(), battlegroundClick.getHeight());//TODO Image of battleground
         //End turn button
         if (isMyTurn == playerStatus.MyTurn) {
@@ -554,12 +611,21 @@ public class Main extends JFrame {
         enemyHeroClick.setSize(heroW, heroH);
         playerHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM);
         playerHeroClick.setSize(heroW, heroH);
-        playerDamageLabel.setLocation(playerHeroClick.getX() + (int) (playerHeroClick.getWidth() * HERO_DAMAGE_WHERE_TO_SHOW_X), playerHeroClick.getY() + (int) (playerHeroClick.getHeight() * HERO_DAMAGE_WHERE_TO_SHOW_Y));
-        if (player.damage != 0) playerDamageLabel.setText(player.damage + "");
-        else playerDamageLabel.setText("");
-        enemyDamageLabel.setLocation(enemyHeroClick.getX() + (int) (enemyHeroClick.getWidth() * HERO_DAMAGE_WHERE_TO_SHOW_X), enemyHeroClick.getY() + (int) (enemyHeroClick.getHeight() * HERO_DAMAGE_WHERE_TO_SHOW_Y));
-        if (enemy.damage != 0) enemyDamageLabel.setText(enemy.damage + "");
-        else enemyDamageLabel.setText("");
+        // playerDamageLabel.setLocation(playerHeroClick.getX() + (int) (playerHeroClick.getWidth() * HERO_DAMAGE_WHERE_TO_SHOW_X), playerHeroClick.getY() + (int) (playerHeroClick.getHeight() * HERO_DAMAGE_WHERE_TO_SHOW_Y));
+        //TODO Draw, not set text, N
+        if (player.damage != 0) {
+            im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
+            g.drawImage(im, playerHeroClick.getX() + playerHeroClick.getWidth()/2-heroH/10, playerHeroClick.getY() +  (playerHeroClick.getHeight()/2-heroH/10), heroH / 5, heroH / 5, null);
+        }
+        //playerDamageLabel.setText(player.damage + "");
+        //else playerDamageLabel.setText("");
+        if (enemy.damage != 0) {
+            im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
+            g.drawImage(im, enemyHeroClick.getX() + enemyHeroClick.getWidth()/2-heroH/10, enemyHeroClick.getY() + (enemyHeroClick.getHeight() /2 - heroH/10), heroH / 5, heroH / 5, null);
+        }
+        // enemyDamageLabel.setLocation(enemyHeroClick.getX() + (int) (enemyHeroClick.getWidth() * HERO_DAMAGE_WHERE_TO_SHOW_X), enemyHeroClick.getY() + (int) (enemyHeroClick.getHeight() * HERO_DAMAGE_WHERE_TO_SHOW_Y));
+        // if (enemy.damage != 0) enemyDamageLabel.setText(enemy.damage + "");
+        // else enemyDamageLabel.setText("");
         //Decks
         g.drawImage(heroDeckImage, B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         deckClick.setLocation(B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM);
@@ -626,28 +692,22 @@ public class Main extends JFrame {
         im = ImageIO.read(Main.class.getResourceAsStream("icons/Deck.png"));//His card deck up
         if (!enemy.cardInHand.isEmpty()) {
             for (int i = 0; i < enemy.cardInHand.size(); i++) {
-                g.drawImage(im, cardX + (int) (i * heroW * 0.5), B0RDER_TOP, heroW, heroH, null);
+                g.drawImage(im, cardX + (int) (i * smallCardW * 0.5), B0RDER_TOP, smallCardW, smallCardH, null);
             }
         }
     }
 
-    private static void drawPlayerCreature(Graphics g, int np) {
+    private static void drawPlayerCreature(Graphics g, int np) throws IOException {
         int numUnit = 0;
         int h;
         BufferedImage im;
         if (np == 0) h = battlegroundClick.getY() + battlegroundClick.getHeight() - heroH;
         else h = battlegroundClick.getY();
 
-        for (int ii = 0; ii <= 1; ii++) {
-            for (int i = 0; i < playerUnitClick[ii].length; i++) {
-                playerUnitLabel[ii][i].setText("");
-                playerUnitLabel[ii][i].setVisible(false);
-            }
-        }
-
         if (!board.creature.get(np).isEmpty()) {
             for (Creature creature : board.creature.get(np)//Sometimes it make exception after any creature die(((
                     ) {
+                //  playerUnitClick[np][numUnit].setVisible(true);
                 if (creature.image != null) {
                     try {
                         im = ImageIO.read(Main.class.getResourceAsStream(creature.image));
@@ -655,16 +715,18 @@ public class Main extends JFrame {
                             g.drawImage(tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h, heroH, heroW, null);
                             playerUnitClick[np][numUnit].setSize(heroH, heroW);
                             playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);//May be write not center?
+                            //  playerUnitClick[np][numUnit].setIcon(new ImageIcon(tapImage(im)));
                         } else {
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW), h, heroW, heroH, null);
                             playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);
                             playerUnitClick[np][numUnit].setSize(heroW, heroH);
+//                            playerUnitClick[np][numUnit].setIcon(new ImageIcon(tapImage(im)));
                         }
                         if (creature.damage != 0) {
-                            playerUnitLabel[np][numUnit].setLocation(playerUnitClick[np][numUnit].getX() + (int) (playerUnitClick[np][numUnit].getWidth() * CREATURE_DAMAGE_WHERE_TO_SHOW_X), playerUnitClick[np][numUnit].getY() + (int) (playerUnitClick[np][numUnit].getHeight() * CREATURE_DAMAGE_WHERE_TO_SHOW_Y));
-                            playerUnitLabel[np][numUnit].setText(creature.damage + "");
-                            playerUnitLabel[np][numUnit].setVisible(true);
-
+                            //Text call neverending repaint!!!
+                            //TODO create image of damage!
+                            im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
+                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2- heroH/10, h + heroH / 2-heroH/10, heroH / 5, heroH / 5, null);
                         }
                         numUnit++;
                     } catch (IOException e) {
@@ -695,14 +757,17 @@ public class Main extends JFrame {
         simpleDeck = new Deck("DefaultDeck");
         simpleEnemyDeck = new Deck("DefaultDeck2");
 
-        Card raskatGroma = new Card(1, "Раскат грома", 1, 1, 1, "Ранить выбранное существо на 2.", 0, 0);
+        Card raskatGroma = new Card(1, "Раскат грома", 1, 1, 1, "Ранить выбранное существо на 3.", 0, 0);
         Card gjerhor = new Card(1, "Гьерхор", 1, 2, 0, "", 2, 2);
         Card naitin = new Card(2, "Найтин", 2, 2, 0, "Направленный удар. Рывок.", 2, 2);
         Card krigtorn = new Card(2, "Кригторн", 2, 2, 0, "Первый удар. Рывок.", 2, 1);
         Card gnom = new Card(2, "Гном", 1, 2, 0, "", 3, 3);
         Card pogloshenieDushi = new Card(3, "Поглощение душ", 1, 1, 2, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
         Card elfDozorniy = new Card(4, "Эльф-дозорный", 1, 2, 0, "Найм: Возьмите карту.", 2, 5);
-
+        Card poslushnik = new Card(5, "Послушник", 1, 2, 1, "Найм: Выстрел по существу на 4.", 2, 3);
+        Card gnomLuchnik = new Card(3, "Гном-лучник", 1, 2, 3, "Защита от выстрелов. Найм: Выстрел на 2.", 2, 3);
+        Card luchnikZahri = new Card(4, "Лучник Захры", 1, 2, 3, "Защита от заклинаний. Найм: Выстрел на 2.", 4, 2);
+        //_targetType 1 - creature, 2 - hero, 3 - creature or hero
         simpleDeck.cards.add(new Card(raskatGroma));
         simpleDeck.cards.add(new Card(raskatGroma));
         simpleDeck.cards.add(new Card(gjerhor));
@@ -710,14 +775,14 @@ public class Main extends JFrame {
         simpleDeck.cards.add(new Card(elfDozorniy));
         simpleDeck.cards.add(new Card(elfDozorniy));
         simpleDeck.cards.add(new Card(pogloshenieDushi));
-        simpleDeck.cards.add(new Card(pogloshenieDushi));
+        simpleDeck.cards.add(new Card(gnomLuchnik));
 
-        simpleEnemyDeck.cards.add(new Card(gnom));
-        simpleEnemyDeck.cards.add(new Card(gnom));
-        simpleEnemyDeck.cards.add(new Card(krigtorn));
-        simpleEnemyDeck.cards.add(new Card(krigtorn));
+        simpleEnemyDeck.cards.add(new Card(luchnikZahri));
+        simpleEnemyDeck.cards.add(new Card(poslushnik));
+        simpleEnemyDeck.cards.add(new Card(luchnikZahri));
+        simpleEnemyDeck.cards.add(new Card(gnomLuchnik));
         simpleEnemyDeck.cards.add(new Card(naitin));
-        simpleEnemyDeck.cards.add(new Card(naitin));
+        simpleEnemyDeck.cards.add(new Card(gnomLuchnik));
         simpleEnemyDeck.cards.add(new Card(gjerhor));
         simpleEnemyDeck.cards.add(new Card(gjerhor));
     }
@@ -726,7 +791,6 @@ public class Main extends JFrame {
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         playerCoinLabel.setForeground(Color.WHITE);
-
         enemyCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         enemyCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         enemyCoinLabel.setForeground(Color.WHITE);
@@ -777,10 +841,15 @@ public class Main extends JFrame {
                     playerUnitClick[ii][i].addMouseListener(new MyListener(MyListener.Compo.EnemyUnitInPlay, i));
                     playerUnitClick[ii][i].addMouseMotionListener(new MyListener(MyListener.Compo.EnemyUnitInPlay, i));
                 }
-                playerUnitLabel[ii][i].setHorizontalAlignment(SwingConstants.LEFT);
-                playerUnitLabel[ii][i].setVerticalAlignment(SwingConstants.TOP);
-                playerUnitLabel[ii][i].setForeground(Color.RED);
-                playerUnitLabel[ii][i].setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
+                //TODO NOW
+                playerUnitClick[ii][i].setHorizontalAlignment(SwingConstants.CENTER);
+                playerUnitClick[ii][i].setVerticalAlignment(SwingConstants.CENTER);
+                playerUnitClick[ii][i].setForeground(Color.RED);
+                playerUnitClick[ii][i].setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
+//                playerUnitLabel[ii][i].setHorizontalAlignment(SwingConstants.LEFT);
+//                playerUnitLabel[ii][i].setVerticalAlignment(SwingConstants.TOP);
+//                playerUnitLabel[ii][i].setForeground(Color.RED);
+//                playerUnitLabel[ii][i].setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
             }
         }
         //
@@ -799,6 +868,13 @@ public class Main extends JFrame {
         viewField.validate();
         main.add(viewField);
         viewField.repaint();
+
+        //
+        gameLog.setAutoscrolls(true);
+        Border border = LineBorder.createGrayLineBorder();
+        gameLog.setBorder(border);
+
+
         main.setVisible(true);
     }
 

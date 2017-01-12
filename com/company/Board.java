@@ -26,11 +26,12 @@ public class Board {
 
     public static void battlecry(Creature _creature) {
         String txt = _creature.text.substring(_creature.text.indexOf("Найм:") + "Найм:".length() + 1, _creature.text.indexOf(".", _creature.text.indexOf("Найм:") + 1));
-        System.out.println("Найм:" + txt);
+      //  System.out.println("Найм:" + txt);
 //I want to switch, but Java doesn't have it((
-        if (txt.equals("Возьмите карту")) {
+
+        if (txt.contains("Возьмите карту")) {
             _creature.owner.drawCard();
-        } else if (txt.equals("Выстрел на ")) {
+        } else if ((txt.contains("Выстрел по существу на ") ) || (txt.contains("Выстрел на "))) {//TODO if no target and many other
             Main.isMyTurn= Main.playerStatus.choiseTarget;
             Main.activatedAbilityCreature=_creature;
         }

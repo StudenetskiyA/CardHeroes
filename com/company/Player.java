@@ -71,8 +71,8 @@ public class Player extends Card{
                 if (_targetCreature != null) {
                     _card.playOnCreature(_targetCreature);
                 }
-                if (_card.text.contains(("Излечить вашего героя на"))){
-                    int dmg = getNumericAfterText(_card.text,"Излечить вашего героя на");
+                if (_card.text.contains(("Излечить вашего героя на "))){
+                    int dmg = getNumericAfterText(_card.text,"Излечить вашего героя на ");
                     heal(dmg);
                     Main.printToView(this.playerName+" излечил "+dmg+" урона.");
                 }
