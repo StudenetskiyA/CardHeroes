@@ -12,6 +12,8 @@ public class Creature extends Card {
     public boolean isSummonedJust;
     public int poison;
     public Player owner;
+    public int currentArmor=0;
+    public int maxArmor=0;
     int damage;
 
     public Creature(Creature _card) {
@@ -24,6 +26,11 @@ public class Creature extends Card {
         isSummonedJust = true;
         name = _card.name;
         owner = _card.owner;
+        
+        if (text.contains("Броня ")){
+            maxArmor = getNumericAfterText(text,"Броня ");
+            currentArmor=maxArmor;
+        }
     }
 
     public Creature(Card _card, Player _owner) {
@@ -36,6 +43,10 @@ public class Creature extends Card {
         isSummonedJust = true;
         name = _card.name;
         owner = _owner;
+        if (text.contains("Броня ")){
+            maxArmor = getNumericAfterText(text,"Броня ");
+            currentArmor=maxArmor;
+        }
     }
 
     void tapCreature() {
@@ -63,17 +74,17 @@ public class Creature extends Card {
         //TODO First strike and other
         Main.printToView(this.name + " сражается с " + second.name + ".");
         if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
-            this.takeDamage(second.power);
-            if (this.damage < this.hp) second.takeDamage(this.power);
+            this.takeDamage(second.power,DamageSource.fight);
+            if (this.damage < this.hp) second.takeDamage(this.power,DamageSource.fight);
         } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
-            second.takeDamage(this.power);
-            if (second.damage < second.hp) this.takeDamage(second.power);
+            second.takeDamage(this.power,DamageSource.fight);
+            if (second.damage < second.hp) this.takeDamage(second.power,DamageSource.fight);
         } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
-            this.takeDamage(second.power);
-            second.takeDamage(this.power);
+            this.takeDamage(second.power,DamageSource.fight);
+            second.takeDamage(this.power,DamageSource.fight);
         } else {
-            this.takeDamage(second.power);
-            second.takeDamage(this.power);
+            this.takeDamage(second.power,DamageSource.fight);
+            second.takeDamage(this.power,DamageSource.fight);
         }
     }
 
@@ -131,8 +142,17 @@ public class Creature extends Card {
         }
     }
 
-    public void takeDamage(int dmg) {
+    enum DamageSource{fight,spell,poison,ability,scoot}
+    
+    public void takeDamage(int dmg, DamageSource dmgsrc) {
         if (!this.text.contains("Не получает ран.")) {
+            if ((dmgsrc==DamageSource.scoot) || (dmgsrc==DamageSource.fight)){
+                int tmp=dmg;
+                dmg-=currentArmor;
+                currentArmor-=tmp;
+                if (dmg<0) dmg=0;
+                if(currentArmor<0) currentArmor=0;
+            }
             damage += dmg;
             if (tougness > damage) {
             } else {

@@ -43,10 +43,14 @@ public class Player extends Card{
         untappedCoin=totalCoin;
 
         for (int i=Board.creature.get(numberPlayer).size()-1;i>=0;i--){
+                //untap
                 Board.creature.get(numberPlayer).get(i).isSummonedJust=false;
                 Board.creature.get(numberPlayer).get(i).isTapped=false;
+                //poison
             if ((Board.creature.get(numberPlayer).get(i).poison!=0) && (!Board.creature.get(numberPlayer).get(i).text.contains("Защита от отравления.")))
-                Board.creature.get(numberPlayer).get(i).takeDamage( Board.creature.get(numberPlayer).get(i).poison);
+                Board.creature.get(numberPlayer).get(i).takeDamage( Board.creature.get(numberPlayer).get(i).poison, Creature.DamageSource.poison);
+            //armor
+            Board.creature.get(numberPlayer).get(i).currentArmor= Board.creature.get(numberPlayer).get(i).maxArmor;
         }
         //Draw
         if (Board.turnCount!=1) drawCard();//First player not draw card in first turn. It's rule.
@@ -69,6 +73,7 @@ public class Player extends Card{
                     _card.playOnCreature(this,_targetCreature);
                 }
                 //No target
+                if ((_targetCreature == null) && (_targetPlayer == null))
                 ability(_card,this,null,null,_card.text);
                 //and after play
                 Board.putCardToGraveyard(_card,this);

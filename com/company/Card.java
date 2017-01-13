@@ -140,6 +140,8 @@ public class Card {
             return new Card(1, "Скованный еретик", 1, 2, 0, 0, "Найм: Закрыться.", 3, 2);
         else if (name.equals("Вэлла"))
             return new Card(3, "Вэлла", 1, 2, 3, 0, "Наймт: Излечить выбранное существо или героя на 2.", 3, 4);
+        else if (name.equals("Рыцарь Туллена"))
+            return new Card(6, "Рыцарь Туллена", 1, 2, 0, 0, "Броня 3.", 6, 3);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;
@@ -166,7 +168,7 @@ public class Card {
             int dmg = getNumericAfterText(txt, "Ранить выбранное существо или героя на ");
             if (_cr != null) {
                 Main.printToView(_who.name + " ранит " + _cr.name+" на " + dmg + ".");
-                    _cr.takeDamage(dmg);
+                    _cr.takeDamage(dmg, Creature.DamageSource.ability);
             } else {
                 Main.printToView(_who.name + " ранит " + _pl.name+" на " + dmg + ".");
                 _pl.takeDamage(dmg);
@@ -179,7 +181,7 @@ public class Card {
         }
         if (txt.contains("Ранить выбранное существо на ")) {
             int dmg = getNumericAfterText(txt, "Ранить выбранное существо на ");
-            _cr.takeDamage(dmg);
+            _cr.takeDamage(dmg, Creature.DamageSource.ability);
             Main.printToView(_cr.name + " получил " + dmg + " урона.");
         }
         if (txt.contains("Отравить выбранное существо на ")) {
@@ -210,7 +212,7 @@ public class Card {
             int dmg = getNumericAfterText(txt, "Ранить каждое существо противника на ");
             int op = Board.opponentN(_whis);
             for (int i = Board.creature.get(op).size() - 1; i >= 0; i--) {
-                Board.creature.get(op).get(i).takeDamage(dmg);
+                Board.creature.get(op).get(i).takeDamage(dmg, Creature.DamageSource.ability);
             }
             Main.printToView(_who.name + " ранит всех существ противника на " + dmg + ".");
         }
@@ -218,10 +220,10 @@ public class Card {
             int dmg = getNumericAfterText(txt, "Ранить каждое существо на ");
             int op = Board.opponentN(_whis);
             for (int i = Board.creature.get(op).size() - 1; i >= 0; i--) {
-                Board.creature.get(op).get(i).takeDamage(dmg);
+                Board.creature.get(op).get(i).takeDamage(dmg, Creature.DamageSource.ability);
             }
             for (int i = Board.creature.get(_whis.numberPlayer).size() - 1; i >= 0; i--) {
-                Board.creature.get(_whis.numberPlayer).get(i).takeDamage(dmg);
+                Board.creature.get(_whis.numberPlayer).get(i).takeDamage(dmg, Creature.DamageSource.ability);
             }
             Main.printToView(_who.name + " ранит всех существ на " + dmg + ".");
         }
@@ -230,7 +232,7 @@ public class Card {
             int dmg = getNumericAfterText(txt, "Выстрел по существу на ");
             Main.printToView(_who.name + " стреляет на " + dmg + " по " + _cr.name);
             if (!_cr.text.contains("Защита от выстрелов."))
-                _cr.takeDamage(dmg);
+                _cr.takeDamage(dmg, Creature.DamageSource.scoot);
             else {
                 Main.printToView("У " + _cr.name + " защита от выстрелов.");
             }
@@ -240,7 +242,7 @@ public class Card {
             if (_cr != null) {
                 Main.printToView(_who.name + " стреляет на " + dmg + " по " + _cr.name);
                 if (!_cr.text.contains("Защита от выстрелов."))
-                    _cr.takeDamage(dmg);
+                    _cr.takeDamage(dmg, Creature.DamageSource.scoot);
                 else {
                     Main.printToView("У " + _cr.name + " защита от выстрелов.");
                 }
