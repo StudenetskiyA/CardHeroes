@@ -127,11 +127,13 @@ public class Creature extends Card {
     }
 
     public void takeDamage(int dmg){
+        if (!this.text.contains("Не получает ран.")){
         damage+=dmg;
         if (tougness>damage){
         }
         else {
            die();
+        }
         }
     }
 

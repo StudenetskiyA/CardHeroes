@@ -45,7 +45,8 @@ public class Player extends Card{
         for (int i=Board.creature.get(numberPlayer).size()-1;i>=0;i--){
                 Board.creature.get(numberPlayer).get(i).isSummonedJust=false;
                 Board.creature.get(numberPlayer).get(i).isTapped=false;
-            if ( Board.creature.get(numberPlayer).get(i).poison!=0)  Board.creature.get(numberPlayer).get(i).takeDamage( Board.creature.get(numberPlayer).get(i).poison);
+            if ((Board.creature.get(numberPlayer).get(i).poison!=0) && (!Board.creature.get(numberPlayer).get(i).text.contains("Защита от отравления.")))
+                Board.creature.get(numberPlayer).get(i).takeDamage( Board.creature.get(numberPlayer).get(i).poison);
         }
         //Draw
         if (Board.turnCount!=1) drawCard();//First player not draw card in first turn. It's rule.

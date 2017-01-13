@@ -140,6 +140,8 @@ public class Card {
             return new Card(0, "Выслеживание", 1, 1, 0, "Получите до конца хода * 2.", 0, 0);
         else if (name.equals("Фиал порчи"))
             return new Card(2, "Фиал порчи", 1, 1, 1, "Отравить выбранное существо на 2.", 0, 0);
+        else if (name.equals("Глашатай пустоты"))
+            return new Card(1, "Глашатай пустоты", 1, 2, 0, "Уникальность. Не получает ран.", 0, 1);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;

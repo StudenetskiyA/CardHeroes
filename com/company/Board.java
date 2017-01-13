@@ -13,12 +13,6 @@ public class Board {
     public static int turnCount = 0;
 
     public Board() {
-        // firstPlayer = _f;
-        // secondPlayer = _s;
-        //       creature = new ArrayList<ArrayList<Creature>>(2);
-        //       creature.add(new ArrayList<Creature>());
-        //       creature.add(new ArrayList<Creature>());
-        //       isActiveFirst = true;
     }
 
     public static int getPl(String _name) {
@@ -48,6 +42,13 @@ public class Board {
         Creature summonCreature = new Creature(_creature, _player);
         if (_creature.text.contains("Рывок.")) {
             summonCreature.isSummonedJust = false;
+        }
+        if (_creature.text.contains("Уникальность.")) {
+            for (int i = Board.creature.get(_player.numberPlayer).size() - 1; i >= 0; i--) {
+                if (Board.creature.get(_player.numberPlayer).get(i).name.equals(_creature.name)){
+                    Board.creature.get(_player.numberPlayer).get(i).die();
+                }
+            }
         }
         int np = _player.numberPlayer;
         creature.get(np).add(summonCreature);
