@@ -69,9 +69,9 @@ public class Main extends JFrame {
     private static Image heroGraveyardImage;
 
     //  private static Board board;
- //   private static Player player;
+    //   private static Player player;
     public static Player[] players = new Player[2];
-  //  private static Player enemy;
+    //  private static Player enemy;
 
     private static Card cardMem;
     private static Creature creatureMem;
@@ -100,9 +100,9 @@ public class Main extends JFrame {
         setInitialProperties();
 
         //  board = new Board();
-      //  Board.firstPlayer = players[0];
-      //  Board.secondPlayer = enemy;
-      //  Board.secondPlayer = players[1];
+        //  Board.firstPlayer = players[0];
+        //  Board.secondPlayer = enemy;
+        //  Board.secondPlayer = players[1];
 
         String par1 = "PlayerName";
         String par2 = "defaultDeck";
@@ -121,10 +121,10 @@ public class Main extends JFrame {
         //TODO Load hero?
         players[0] = new Player(simpleDeck, par1, 0, 30);
         //players[0] = new Player(simpleDeck, par1, 0, 30);
-     //   enemy = new Player(simpleEnemyDeck, "PlayerName", 1, 30);
+        //   enemy = new Player(simpleEnemyDeck, "PlayerName", 1, 30);
         players[1] = new Player(simpleDeck, par1, 0, 30);
-     //   Board.firstPlayer = players[0];
-     //   Board.secondPlayer = players[1];
+        //   Board.firstPlayer = players[0];
+        //   Board.secondPlayer = players[1];
 
         System.out.println("Game start.");
         main.setLocation(477, 0);
@@ -154,128 +154,103 @@ public class Main extends JFrame {
     private static void cycleServerRead() throws IOException {
         while (true) {
             String fromServer = Client.readLine();
-            if (fromServer != null)
+            if (fromServer != null) {
                 System.out.println("Server: " + fromServer);
-
-            if (fromServer.contains("$DISCONNECT")) {
-                System.out.println("Disconnect");
-                printToView("Разрыв соединения!");
-                System.exit(1);
-                break;
-            } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                players[1] = new Player(simpleEnemyDeck, parameter.get(0), 1, 30);
-               // enemy = new Player(simpleEnemyDeck, parameter.get(0), 1, 30);
-                loadDeck(simpleEnemyDeck, parameter.get(1));
-                simpleEnemyDeck.suffleDeck(19);
-                players[0].untappedCoin = coinStart;
-                players[0].totalCoin = coinStart;
-                players[1].untappedCoin = coinStart;
-                players[1].totalCoin = coinStart;
-                if (isMyTurn == playerStatus.waitOtherPlayer) {
-                    for (int i = 0; i <= 3; i++) {
-                        players[0].drawCard();
-                        players[1].drawCard();
-                    }
-                    isMyTurn = playerStatus.MuliganPhase;
-                    main.repaint();
-                }
-            } else if (fromServer.contains("$MULLIGANEND(")) {
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                if (players[0].playerName.equals(parameter.get(0))) {
-                    for (int i = 0; i <= 3; i++) {
-                        if (Integer.parseInt(parameter.get(i + 1)) == 1) {
-                            players[0].deck.putOnBottomDeck(players[0].cardInHand.get(i));
-                            players[0].cardInHand.remove(i);
+                if (fromServer.contains("$DISCONNECT")) {
+                    System.out.println("Disconnect");
+                    printToView("Разрыв соединения!");
+                    System.exit(1);
+                    break;
+                } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    players[1] = new Player(simpleEnemyDeck, parameter.get(0), 1, 30);
+                    loadDeck(simpleEnemyDeck, parameter.get(1));
+                    simpleEnemyDeck.suffleDeck(19);
+                    players[0].untappedCoin = coinStart;
+                    players[0].totalCoin = coinStart;
+                    players[1].untappedCoin = coinStart;
+                    players[1].totalCoin = coinStart;
+                    if (isMyTurn == playerStatus.waitOtherPlayer) {
+                        for (int i = 0; i <= 3; i++) {
                             players[0].drawCard();
-                        }
-                    }
-                } else if (players[1].playerName.equals(parameter.get(0))) {
-                    for (int i = 0; i <= 3; i++) {
-                        if (Integer.parseInt(parameter.get(i + 1)) == 1) {
-                            players[1].deck.putOnBottomDeck(players[1].cardInHand.get(i));
-                            players[1].cardInHand.remove(i);
                             players[1].drawCard();
                         }
+                        isMyTurn = playerStatus.MuliganPhase;
+                        main.repaint();
                     }
-                }
-                main.repaint();
-            } else if (fromServer.contains("$DRAWCARD(")) {
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                int pl = Board.getPl(parameter.get(0));
-                //  System.out.println("Draw Card " + parameter.get(0));
-                players[pl].drawCard();
-            } else if (fromServer.contains("$ENDTURN(")) {
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                System.out.println("End turn " + parameter.get(0));
-                if (players[0].playerName.equals(parameter.get(0))) {
-                    isMyTurn = playerStatus.EnemyTurn;
-                    players[1].newTurn();
-                } else if (players[1].playerName.equals(parameter.get(0))) {
-                    isMyTurn = playerStatus.MyTurn;
-                    players[0].newTurn();
-                }
-            } else if (fromServer.contains("$NEWTURN(")) {
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                main.repaint();
-                if (players[0].playerName.equals(parameter.get(0))) {
-                    isMyTurn = playerStatus.MyTurn;
-                    players[0].newTurn();
-                } else if (players[1].playerName.equals(parameter.get(0))) {
-                    isMyTurn = playerStatus.EnemyTurn;
-                    players[1].newTurn();
-                }
-            } else if (fromServer.contains("$CHOISEBLOCKER(")) {
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                if (players[0].playerName.equals(parameter.get(0))) {
-                    isMyTurn = playerStatus.IChoiseBlocker;
-                    creatureWhoAttack = Integer.parseInt(parameter.get(1));
-                    creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
-                }
-            } else if (fromServer.contains("$CRYTARGET(")) {
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                if (players[0].playerName.equals(parameter.get(0))) {
+                } else if (fromServer.contains("$MULLIGANEND(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    for (int i = 0; i <= 3; i++) {
+                        if (Integer.parseInt(parameter.get(i + 1)) == 1) {
+                            players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
+                            players[pl].cardInHand.remove(i);
+                            players[pl].drawCard();
+                        }
+                    }
+                    main.repaint();
+                } else if (fromServer.contains("$DRAWCARD(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    //  System.out.println("Draw Card " + parameter.get(0));
+                    players[pl].drawCard();
+                } else if (fromServer.contains("$ENDTURN(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    System.out.println("End turn " + parameter.get(0));
+                    if (players[0].playerName.equals(parameter.get(0))) {
+                        isMyTurn = playerStatus.EnemyTurn;
+                        players[1].newTurn();
+                    } else if (players[1].playerName.equals(parameter.get(0))) {
+                        isMyTurn = playerStatus.MyTurn;
+                        players[0].newTurn();
+                    }
+                } else if (fromServer.contains("$NEWTURN(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    main.repaint();
+                    if (players[0].playerName.equals(parameter.get(0))) {
+                        isMyTurn = playerStatus.MyTurn;
+                        players[0].newTurn();
+                    } else if (players[1].playerName.equals(parameter.get(0))) {
+                        isMyTurn = playerStatus.EnemyTurn;
+                        players[1].newTurn();
+                    }
+                } else if (fromServer.contains("$CHOISEBLOCKER(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    if (players[0].playerName.equals(parameter.get(0))) {
+                        isMyTurn = playerStatus.IChoiseBlocker;
+                        creatureWhoAttack = Integer.parseInt(parameter.get(1));
+                        creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
+                    }
+                } else if (fromServer.contains("$CRYTARGET(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    int apl = (pl == 0) ? 1 : 0;
                     isMyTurn = playerStatus.MyTurn;
                     if (parameter.get(2).equals("1")) {
                         if (parameter.get(3).equals("-1")) {
-                            Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).cry(null, players[1]);
+                            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(null, players[apl]);
                         } else {
-                            Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(1).get(Integer.parseInt(parameter.get(3))), null);
+                            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                         }
                     } else {
                         if (parameter.get(3).equals("-1")) {
-                            Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).cry(null, players[0]);
+                            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(null, players[pl]);
                         } else {
-                            Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(0).get(Integer.parseInt(parameter.get(3))), null);
+                            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                         }
                     }
-                } else {
+                } else if (fromServer.contains("$BLOCKER(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    int apl = (pl == 0) ? 1 : 0;
                     isMyTurn = playerStatus.EnemyTurn;
-                    if (parameter.get(2).equals("1")) {
-                        if (parameter.get(3).equals("-1")) {
-                            Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).cry(null, players[0]);
-                        } else {
-                            Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(0).get(Integer.parseInt(parameter.get(3))), null);
-                        }
-                    } else {
-                        if (parameter.get(3).equals("-1")) {
-                            Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).cry(null, players[1]);
-                        } else {
-                            Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(1).get(Integer.parseInt(parameter.get(3))), null);
-                        }
-                    }
-                }
-            } else if (fromServer.contains("$BLOCKER(")) {
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                if (players[0].playerName.equals(parameter.get(0))) {
-                    isMyTurn = playerStatus.EnemyTurn;
-                    Creature cr = Board.creature.get(1).get(Integer.parseInt(parameter.get(1)));
+                    Creature cr = Board.creature.get(apl).get(Integer.parseInt(parameter.get(1)));
                     if (Integer.parseInt(parameter.get(2)) == -1) {
                         if (Integer.parseInt(parameter.get(3)) == -1) {
                             //Fight with hero
-                            cr.fightPlayer(players[0]);
+                            cr.fightPlayer(players[pl]);
                         } else {
-                            Creature block = Board.creature.get(0).get(Integer.parseInt(parameter.get(3)));
+                            Creature block = Board.creature.get(pl).get(Integer.parseInt(parameter.get(3)));
                             //Fight with bocker
                             cr.fightCreature(block);
                             if (Integer.parseInt(parameter.get(4)) == 1) {
@@ -285,10 +260,10 @@ public class Main extends JFrame {
                     } else {
                         if (Integer.parseInt(parameter.get(3)) == -1) {
                             //Fight with first target
-                            Creature block = Board.creature.get(0).get(Integer.parseInt(parameter.get(2)));
+                            Creature block = Board.creature.get(pl).get(Integer.parseInt(parameter.get(2)));
                             cr.fightCreature(block);
                         } else {
-                            Creature block = Board.creature.get(0).get(Integer.parseInt(parameter.get(3)));
+                            Creature block = Board.creature.get(pl).get(Integer.parseInt(parameter.get(3)));
                             //Fight with blocker
                             cr.fightCreature(block);
                             if (Integer.parseInt(parameter.get(4)) == 1) {
@@ -296,44 +271,14 @@ public class Main extends JFrame {
                             }
                         }
                     }
-                } else if (players[1].playerName.equals(parameter.get(0))) {
-                    isMyTurn = playerStatus.MyTurn;
-                    Creature cr = Board.creature.get(0).get(Integer.parseInt(parameter.get(1)));
-                    if (Integer.parseInt(parameter.get(2)) == -1) {
-                        if (Integer.parseInt(parameter.get(3)) == -1) {
-                            //Fight with hero
-                            cr.fightPlayer(players[1]);
-                        } else {
-                            Creature block = Board.creature.get(1).get(Integer.parseInt(parameter.get(3)));
-                            //Fight with bocker
-                            cr.fightCreature(block);
-                            if (Integer.parseInt(parameter.get(4)) == 1) {
-                                block.tapCreature();
-                            }
-                        }
-                    } else {
-                        if (Integer.parseInt(parameter.get(3)) == -1) {
-                            //Fight with first target
-                            Creature block = Board.creature.get(1).get(Integer.parseInt(parameter.get(2)));
-                            cr.fightCreature(block);
-                        } else {
-                            Creature block = Board.creature.get(1).get(Integer.parseInt(parameter.get(3)));
-                            //Fight with blocker
-                            cr.fightCreature(block);
-                            if (Integer.parseInt(parameter.get(4)) == 1) {
-                                block.tapCreature();
-                            }
-                        }
-                    }
-                }
-            } else if (fromServer.contains("$PLAYCARD(")) {
-                //$PLAYCARD(player, numInHand, targetCreature, targetPlayer[1,2])
-                //$PLAYCARD(Jeremy,0,-1,Bob) - play 0 card to enemy.
-                //$PLAYCARD(Jeremy,2,-1,-1) - play 2th card to board.
-                //$PLAYCARD(Bob,1,1,Jeremy) - play 1th card to 1th creature of Jeremy
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                int pl = Board.getPl(parameter.get(0));
-                int apl = (pl==0)? 1:0;
+                } else if (fromServer.contains("$PLAYCARD(")) {
+                    //$PLAYCARD(player, numInHand, targetCreature, targetPlayer[1,2])
+                    //$PLAYCARD(Jeremy,0,-1,Bob) - play 0 card to enemy.
+                    //$PLAYCARD(Jeremy,2,-1,-1) - play 2th card to board.
+                    //$PLAYCARD(Bob,1,1,Jeremy) - play 1th card to 1th creature of Jeremy
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    int apl = (pl == 0) ? 1 : 0;
                     if (!parameter.get(2).equals("-1")) {//if card targets creature
                         if ((parameter.get(3).equals(players[apl].playerName)))
                             players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))), null);
@@ -344,23 +289,19 @@ public class Main extends JFrame {
                             players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[apl]);
                         else if (parameter.get(3).equals(players[pl].playerName))//target - self player
                             players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[pl]);
-                        else players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
-                }
-            } else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                if (players[0].playerName.equals(parameter.get(0))) {
-                    Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackPlayer(players[1]);
-                }
-                if (players[1].playerName.equals(parameter.get(0))) {
-                    Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackPlayer(players[0]);
-                }
-            } else if (fromServer.contains("$ATTACKCREATURE(")) {//$ATTACKREATURE(Player, Creature, TargetCreature)
-                ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                if (players[0].playerName.equals(parameter.get(0))) {
-                    Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(1).get(Integer.parseInt(parameter.get(2))));
-                }
-                if (players[1].playerName.equals(parameter.get(0))) {
-                    Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(0).get(Integer.parseInt(parameter.get(2))));
+                        else
+                            players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
+                    }
+                } else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    int apl = (pl == 0) ? 1 : 0;
+                    Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackPlayer(players[apl]);
+                } else if (fromServer.contains("$ATTACKCREATURE(")) {//$ATTACKREATURE(Player, Creature, TargetCreature)
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    int apl = (pl == 0) ? 1 : 0;
+                    Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
                 }
             }
         }
