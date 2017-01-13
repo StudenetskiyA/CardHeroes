@@ -15,7 +15,7 @@ public class Player extends Card{
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
 
-    public Player(Deck _deck, Board _board,String _playerName,int _n, int _hp){
+    public Player(Deck _deck,String _playerName,int _n, int _hp){
         super(0,"Тарна",1,0,0,"",0,_hp);
         deck=_deck;
         playerName=_playerName;
@@ -75,6 +75,15 @@ public class Player extends Card{
                     int dmg = getNumericAfterText(_card.text,"Излечить вашего героя на ");
                     heal(dmg);
                     Main.printToView(this.playerName+" излечил "+dmg+" урона.");
+                }
+                if (_card.text.contains(("Ранить каждое существо противника на "))){
+                    int dmg = getNumericAfterText(_card.text,"Ранить каждое существо противника на ");
+                    int op= Board.opponentN(this);
+                    //TODO Now
+                    for (int i=Board.creature.get(op).size()-1;i>=0;i--){
+                        Board.creature.get(op).get(i).takeDamage(dmg);
+                    }
+                    Main.printToView(_card.name+" ранит всех существ противника на "+dmg+".");
                 }
                 Board.putCardToGraveyard(_card,this);
             }

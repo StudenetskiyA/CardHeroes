@@ -12,7 +12,11 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,17 +36,17 @@ public class Main extends JFrame {
     private static final double CREATURE_DAMAGE_WHERE_TO_SHOW_Y = 0.3;
     private static final double CARD_SIZE_FROM_SCREEN = 0.09;
     private static Main main = new Main();
-    private static int heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
-    private static int heroH = (heroW * 400 / 283);
-    private static int smallCardW = (int) (heroW * 0.7);
-    private static int smallCardH = (int) (heroH * 0.7);
-    private static int cardX = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
+    private static int heroW;// = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
+    private static int heroH;// = (heroW * 400 / 283);
+    private static int smallCardW;// = (int) (heroW * 0.7);
+    private static int smallCardH;// = (int) (heroH * 0.7);
+    private static int cardX;// = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
 
     private static ViewField viewField = new ViewField();
     private static JLabel deckClick = new JLabel();
     private static JLabel cardClick[] = new JLabel[9];
     private static JLabel playerUnitClick[][] = new JLabel[2][9];
-    private static JLabel playerUnitLabel[][] = new JLabel[2][9];
+    //   private static JLabel playerUnitLabel[][] = new JLabel[2][9];
     private static JLabel battlegroundClick = new JLabel();
     private static JLabel enemyHeroClick = new JLabel();
     private static JLabel playerHeroClick = new JLabel();
@@ -50,8 +54,8 @@ public class Main extends JFrame {
     private static JLabel enemyCoinLabel = new JLabel();
     private static JLabel playerGraveyardClick = new JLabel();
     private static JLabel enemyGraveyardClick = new JLabel();
-    private static JLabel playerDamageLabel = new JLabel();
-    private static JLabel enemyDamageLabel = new JLabel();
+    //   private static JLabel playerDamageLabel = new JLabel();
+//    private static JLabel enemyDamageLabel = new JLabel();
     private static JLabel gameLog = new JLabel();
     private static JLabel endTurnClick = new JLabel();
 
@@ -60,12 +64,11 @@ public class Main extends JFrame {
     private static Image enemyImage;
     private static Image heroCoinImage;
     private static Image heroDeckImage;
-
     private static Image endTurnImage;
     private static Image redcrossImage;
     private static Image heroGraveyardImage;
 
-    private static Board board;
+    //  private static Board board;
     private static Player player;
     private static Player enemy;
 
@@ -78,7 +81,8 @@ public class Main extends JFrame {
     private static String whereMyMouse;
     private static int whereMyMouseNum;
     private static int repainted;
-    private static boolean isResized = true;
+    private static int coinStart = 0;
+    //private static boolean isResized = true;
 
     enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseTarget}
 
@@ -93,37 +97,30 @@ public class Main extends JFrame {
         loadImage();
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setInitialProperties();
-        loadCardDeck();
 
-        board = new Board();
-
-        String par1 = "";
-        String par2 = "";
-
-        for (int i = 0; i < args.length; i++) {
-            System.out.println(args[i]);
-            if (i == 1) par1 = args[i];
-            if (i == 2) par2 = args[i];
-            if (i == 0) serverPort = Integer.parseInt(args[i]);
-        }
-
-        simpleDeck.suffleDeck(19);
-        simpleEnemyDeck.suffleDeck(19);
-
-        if (par1.equals("Jeremy")) player = new Player(simpleDeck, board, par1, 0, 30);
-        ;
-        if (par1.equals("Bob")) player = new Player(simpleEnemyDeck, board, par1, 0, 30);
-        ;
-        if (par2.equals("Jeremy")) enemy = new Player(simpleDeck, board, par2, 1, 30);
-        if (par2.equals("Bob")) enemy = new Player(simpleEnemyDeck, board, par2, 1, 30);
-
+        //  board = new Board();
         Board.firstPlayer = player;
         Board.secondPlayer = enemy;
 
-        player.untappedCoin = 5;
-        player.totalCoin = 5;
-        enemy.untappedCoin = 5;
-        enemy.totalCoin = 5;
+        String par1 = "PlayerName";
+        String par2 = "defaultDeck";
+
+        for (int i = 0; i < args.length; i++) {
+            if (i == 1) par1 = args[i];
+            if (i == 2) par2 = args[i];
+            if (i == 0) serverPort = Integer.parseInt(args[i]);
+            if (i == 3) coinStart = Integer.parseInt(args[i]);
+        }
+
+        simpleDeck = new Deck(par2);
+        simpleEnemyDeck = new Deck("defaultDeck");
+        loadDeck(simpleDeck, par2);
+        simpleDeck.suffleDeck(19);
+        //TODO Load hero?
+        player = new Player(simpleDeck, par1, 0, 30);
+        enemy = new Player(simpleEnemyDeck, "PlayerName", 1, 30);
+        Board.firstPlayer = player;
+        Board.secondPlayer = enemy;
 
         System.out.println("Game start.");
         main.setLocation(477, 0);
@@ -144,13 +141,10 @@ public class Main extends JFrame {
         Main.gameLog.setText("<html>");
         printToView("Player=" + player.playerName + ",port=" + serverPort);
 
-        long millis = System.currentTimeMillis();
+        System.out.println("$IAM(" + player.playerName + "," + player.deck.name + ")");
+        Client.writeLine("$IAM(" + player.playerName + "," + player.deck.name + ")");
 
-        for (int i=0;i<100;i++){
-            printToView("more");
-        }
-        System.out.println("Time delta = " +(System.currentTimeMillis() -millis));
-       /// cycleServerRead();
+        cycleServerRead();
     }
 
     private static void cycleServerRead() throws IOException {
@@ -164,9 +158,15 @@ public class Main extends JFrame {
                 printToView("Разрыв соединения!");
                 System.exit(1);
                 break;
-            } else if (fromServer.contains("$ALLCONNECTED")) {//All player connected
-                System.out.println("$IAM(" + player.playerName + "," + player.deck.name + ")");
-                Client.writeLine("$IAM(" + player.playerName + "," + player.deck.name + ")");
+            } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
+                ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                enemy = new Player(simpleEnemyDeck, parameter.get(0), 1, 30);
+                loadDeck(simpleEnemyDeck, parameter.get(1));
+                simpleEnemyDeck.suffleDeck(19);
+                player.untappedCoin = coinStart;
+                player.totalCoin = coinStart;
+                enemy.untappedCoin = coinStart;
+                enemy.totalCoin = coinStart;
                 if (isMyTurn == playerStatus.waitOtherPlayer) {
                     for (int i = 0; i <= 3; i++) {
                         player.drawCard();
@@ -330,9 +330,9 @@ public class Main extends JFrame {
                 if (player.playerName.equals(parameter.get(0))) {
                     if (!parameter.get(2).equals("-1")) {//if card targets creature
                         if ((parameter.get(3).equals(enemy.playerName)))
-                            player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
+                            player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
                         else //to self creature
-                            player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
+                            player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
                     } else {
                         if (parameter.get(3).equals(enemy.playerName))//enemy
                             player.playCard(player.cardInHand.get(Integer.parseInt(parameter.get(1))), null, enemy);
@@ -343,9 +343,9 @@ public class Main extends JFrame {
                 } else if (enemy.playerName.equals(parameter.get(0))) {
                     if (!parameter.get(2).equals("-1")) {
                         if ((parameter.get(3).equals(enemy.playerName)))
-                            enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
+                            enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
                         else
-                            enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
+                            enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
                     } else {
                         if (parameter.get(3).equals(enemy.playerName))//enemy
                             enemy.playCard(enemy.cardInHand.get(Integer.parseInt(parameter.get(1))), null, enemy);
@@ -357,18 +357,18 @@ public class Main extends JFrame {
             } else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
                 if (player.playerName.equals(parameter.get(0))) {
-                    board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackPlayer(enemy);
+                    Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackPlayer(enemy);
                 }
                 if (enemy.playerName.equals(parameter.get(0))) {
-                    board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackPlayer(player);
+                    Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackPlayer(player);
                 }
             } else if (fromServer.contains("$ATTACKCREATURE(")) {//$ATTACKREATURE(Player, Creature, TargetCreature)
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
                 if (player.playerName.equals(parameter.get(0))) {
-                    board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackCreature(board.creature.get(1).get(Integer.parseInt(parameter.get(2))));
+                    Board.creature.get(0).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(1).get(Integer.parseInt(parameter.get(2))));
                 }
                 if (enemy.playerName.equals(parameter.get(0))) {
-                    board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackCreature(board.creature.get(0).get(Integer.parseInt(parameter.get(2))));
+                    Board.creature.get(1).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(0).get(Integer.parseInt(parameter.get(2))));
                 }
             }
         }
@@ -379,8 +379,8 @@ public class Main extends JFrame {
         if (gameLog.getText().length() > 600)
             Main.gameLog.setText("<html>" + gameLog.getText().substring(gameLog.getText().length() - 600, gameLog.getText().length()));
 
-       // playerCoinLabel.setText(player.untappedCoin + "/" + player.totalCoin);
-       // enemyCoinLabel.setText(enemy.untappedCoin + "/" + enemy.totalCoin);
+        // playerCoinLabel.setText(player.untappedCoin + "/" + player.totalCoin);
+        // enemyCoinLabel.setText(enemy.untappedCoin + "/" + enemy.totalCoin);
     }
 
     private static class MyListener extends MouseInputAdapter {
@@ -436,7 +436,7 @@ public class Main extends JFrame {
                 Client.writeLine("$BLOCKER(" + player.playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.IChoiseBlocker)) {
                 //TODO can't block
-                if (board.creature.get(0).get(num).isTapped) {
+                if (Board.creature.get(0).get(num).isTapped) {
                     printToView("Повернутые существа не могут блокировать.");
                 } else if (creatureWhoAttackTarget == num) {
                     System.out.println("$BLOCKER(" + player.playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
@@ -539,7 +539,7 @@ public class Main extends JFrame {
                 if (isMyTurn == playerStatus.EnemyTurn) {
                     printToView("Сейчас идет не ваш ход.");
                 }
-                // main.repaint();
+                main.repaint();
             }
             cardMem = null;
             creatureMem = null;
@@ -549,27 +549,16 @@ public class Main extends JFrame {
             if (onWhat == Compo.CardInHand) {//Creature in hand
                 cardMem = player.cardInHand.get(num);
             } else if (onWhat == Compo.CreatureInMyPlay) {//Creature in play
-                creatureMem = board.creature.get(0).get(num);
+                creatureMem = Board.creature.get(0).get(num);
             }
 
 
         }
     }
 
-    private static BufferedImage tapImage(BufferedImage src) {
-        double rotationRequired = Math.toRadians(90);
-        AffineTransform tx = new AffineTransform();
-        tx.translate(0.5 * src.getHeight(), 0.5 * src.getWidth());
-        tx.rotate(rotationRequired);
-        tx.translate(-0.5 * src.getWidth(), -0.5 * src.getHeight());
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-        return op.filter(src, null);
-    }
-
     private static void onRepaint(Graphics g) throws IOException {
         //setLocation and setSize to other block?
-
-        System.out.println("onRepaint " + repainted);
+        //  System.out.println("onRepaint " + repainted);
         repainted++;
         int bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.5);
         int bigCardH = (bigCardW * 400 / 283);
@@ -712,15 +701,15 @@ public class Main extends JFrame {
         if (np == 0) h = battlegroundClick.getY() + battlegroundClick.getHeight() - heroH;
         else h = battlegroundClick.getY();
 
-        if (!board.creature.get(np).isEmpty()) {
-            for (Creature creature : board.creature.get(np)//Sometimes it make exception after any creature die(((
-                    ) {
-                //  playerUnitClick[np][numUnit].setVisible(true);
-                if (creature.image != null) {
+        if (!Board.creature.get(np).isEmpty()) {
+            // for (Creature creature : Board.creature.get(np))//Sometimes it make exception after any creature die(((
+            for (int i = 0; i < Board.creature.get(np).size(); i++)//{
+            {
+                if (Board.creature.get(np).get(i).image != null) {
                     try {
-                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + creature.image));
-                        if (creature.isTapped) {
-                            g.drawImage(tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h, heroH, heroW, null);
+                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+                        if (Board.creature.get(np).get(i).isTapped) {
+                            g.drawImage(Card.tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h, heroH, heroW, null);
                             playerUnitClick[np][numUnit].setSize(heroH, heroW);
                             playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);//May be write not center?
                             //  playerUnitClick[np][numUnit].setIcon(new ImageIcon(tapImage(im)));
@@ -730,7 +719,7 @@ public class Main extends JFrame {
                             playerUnitClick[np][numUnit].setSize(heroW, heroH);
 //                            playerUnitClick[np][numUnit].setIcon(new ImageIcon(tapImage(im)));
                         }
-                        if (creature.damage != 0) {
+                        if (Board.creature.get(np).get(i).damage != 0) {
                             //Text call neverending repaint!!!
                             //TODO create image of damage!
                             im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
@@ -761,41 +750,32 @@ public class Main extends JFrame {
         }
     }
 
-    private static void loadCardDeck() {
-        simpleDeck = new Deck("DefaultDeck");
-        simpleEnemyDeck = new Deck("DefaultDeck2");
-
-        Card raskatGroma = new Card(1, "Раскат грома", 1, 1, 1, "Ранить выбранное существо на 3.", 0, 0);
-        Card gjerhor = new Card(1, "Гьерхор", 1, 2, 0, "", 2, 2);
-        Card naitin = new Card(2, "Найтин", 2, 2, 0, "Направленный удар. Рывок.", 2, 2);
-        Card krigtorn = new Card(2, "Кригторн", 2, 2, 0, "Первый удар. Рывок.", 2, 1);
-        Card gnom = new Card(2, "Гном", 1, 2, 0, "", 3, 3);
-        Card pogloshenieDushi = new Card(3, "Поглощение душ", 1, 1, 2, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
-        Card elfDozorniy = new Card(4, "Эльф-дозорный", 1, 2, 0, "Найм: Возьмите карту.", 2, 5);
-        Card poslushnik = new Card(5, "Послушник", 1, 2, 1, "Найм: Выстрел по существу на 4.", 2, 3);
-        Card gnomLuchnik = new Card(3, "Гном-лучник", 1, 2, 3, "Защита от выстрелов. Найм: Выстрел на 2.", 2, 3);
-        Card luchnikZahri = new Card(4, "Лучник Захры", 1, 2, 3, "Защита от заклинаний. Найм: Выстрел на 2.", 4, 2);
-        //_targetType 1 - creature, 2 - hero, 3 - creature or hero
-        simpleDeck.cards.add(new Card(raskatGroma));
-        simpleDeck.cards.add(new Card(raskatGroma));
-        simpleDeck.cards.add(new Card(gjerhor));
-        simpleDeck.cards.add(new Card(gjerhor));
-        simpleDeck.cards.add(new Card(elfDozorniy));
-        simpleDeck.cards.add(new Card(elfDozorniy));
-        simpleDeck.cards.add(new Card(pogloshenieDushi));
-        simpleDeck.cards.add(new Card(gnomLuchnik));
-
-        simpleEnemyDeck.cards.add(new Card(luchnikZahri));
-        simpleEnemyDeck.cards.add(new Card(poslushnik));
-        simpleEnemyDeck.cards.add(new Card(luchnikZahri));
-        simpleEnemyDeck.cards.add(new Card(gnomLuchnik));
-        simpleEnemyDeck.cards.add(new Card(naitin));
-        simpleEnemyDeck.cards.add(new Card(gnomLuchnik));
-        simpleEnemyDeck.cards.add(new Card(gjerhor));
-        simpleEnemyDeck.cards.add(new Card(gjerhor));
+    private static void loadDeck(Deck deck, String deckName) throws IOException {
+        URL path = Main.class.getResource(deckName + ".txt");
+        File f = new File(path.getFile());
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+                new FileInputStream(f), "windows-1251"));
+        try {
+            String line = "";
+            while (line != null) {
+                line = br.readLine();
+                if (line != null) {
+                    //    System.out.println("Load card = " + line);
+                    deck.cards.add(new Card(Card.getCardByName(line)));
+                }
+            }
+        } finally {
+            br.close();
+        }
     }
 
     private static void setInitialProperties() {
+
+        Board.creature = new ArrayList<ArrayList<Creature>>(2);
+        Board.creature.add(new ArrayList<Creature>());
+        Board.creature.add(new ArrayList<Creature>());
+        Board.isActiveFirst = true;
+
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         playerCoinLabel.setForeground(Color.WHITE);
@@ -803,14 +783,14 @@ public class Main extends JFrame {
         enemyCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         enemyCoinLabel.setForeground(Color.WHITE);
 
-        enemyDamageLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        enemyDamageLabel.setVerticalAlignment(SwingConstants.TOP);
-        enemyDamageLabel.setForeground(Color.RED);
-        enemyDamageLabel.setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
-        playerDamageLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        playerDamageLabel.setVerticalAlignment(SwingConstants.TOP);
-        playerDamageLabel.setForeground(Color.RED);
-        playerDamageLabel.setFont(new Font(playerDamageLabel.getFont().getName(), Font.PLAIN, 20));
+//        enemyDamageLabel.setHorizontalAlignment(SwingConstants.LEFT);
+//        enemyDamageLabel.setVerticalAlignment(SwingConstants.TOP);
+//        enemyDamageLabel.setForeground(Color.RED);
+//        enemyDamageLabel.setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
+//        playerDamageLabel.setHorizontalAlignment(SwingConstants.LEFT);
+//        playerDamageLabel.setVerticalAlignment(SwingConstants.TOP);
+//        playerDamageLabel.setForeground(Color.RED);
+//        playerDamageLabel.setFont(new Font(playerDamageLabel.getFont().getName(), Font.PLAIN, 20));
 
         gameLog.setLocation(0, 0);
         gameLog.setSize(1, 1);
@@ -839,9 +819,9 @@ public class Main extends JFrame {
         for (int ii = 0; ii <= 1; ii++) {
             for (int i = 0; i < playerUnitClick[ii].length; i++) {
                 playerUnitClick[ii][i] = new JLabel();
-                playerUnitLabel[ii][i] = new JLabel();
+                //playerUnitLabel[ii][i] = new JLabel();
                 viewField.add(playerUnitClick[ii][i]);
-                viewField.add(playerUnitLabel[ii][i]);
+                //  viewField.add(playerUnitLabel[ii][i]);
                 if (ii == 0) {
                     playerUnitClick[ii][i].addMouseListener(new MyListener(MyListener.Compo.CreatureInMyPlay, i));
                     playerUnitClick[ii][i].addMouseMotionListener(new MyListener(MyListener.Compo.CreatureInMyPlay, i));
@@ -849,11 +829,10 @@ public class Main extends JFrame {
                     playerUnitClick[ii][i].addMouseListener(new MyListener(MyListener.Compo.EnemyUnitInPlay, i));
                     playerUnitClick[ii][i].addMouseMotionListener(new MyListener(MyListener.Compo.EnemyUnitInPlay, i));
                 }
-                //TODO NOW
                 playerUnitClick[ii][i].setHorizontalAlignment(SwingConstants.CENTER);
                 playerUnitClick[ii][i].setVerticalAlignment(SwingConstants.CENTER);
                 playerUnitClick[ii][i].setForeground(Color.RED);
-                playerUnitClick[ii][i].setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
+                // playerUnitClick[ii][i].setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
 //                playerUnitLabel[ii][i].setHorizontalAlignment(SwingConstants.LEFT);
 //                playerUnitLabel[ii][i].setVerticalAlignment(SwingConstants.TOP);
 //                playerUnitLabel[ii][i].setForeground(Color.RED);
@@ -870,8 +849,8 @@ public class Main extends JFrame {
         viewField.add(playerHeroClick);
         viewField.add(playerCoinLabel);
         viewField.add(enemyCoinLabel);
-        viewField.add(playerDamageLabel);
-        viewField.add(enemyDamageLabel);
+        // viewField.add(playerDamageLabel);
+        // viewField.add(enemyDamageLabel);
         viewField.add(gameLog);
         viewField.validate();
         main.add(viewField);
@@ -884,13 +863,6 @@ public class Main extends JFrame {
 
 
         main.setVisible(true);
-        main.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                super.componentResized(e);
-                System.out.println("resized");
-            }
-        });
     }
 
     private static class ViewField extends JPanel {

@@ -51,6 +51,11 @@ public class Board {
         }
     }
 
+    public static int opponentN(Player pl){
+        if (pl.numberPlayer==0) return 1;
+        else return 0;
+    }
+
     public static Player opponent(Player pl) {
         if (pl == firstPlayer) return secondPlayer;
         else return firstPlayer;
