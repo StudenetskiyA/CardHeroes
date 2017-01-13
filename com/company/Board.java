@@ -9,8 +9,8 @@ import java.util.List;
  */
 public class Board {
     public static List<ArrayList<Creature>> creature;
-    public static Player firstPlayer;
-    public static Player secondPlayer;
+ //   public static Player firstPlayer;
+ //   public static Player secondPlayer;
     public static boolean isActiveFirst;
 
     public static int turnCount = 0;
@@ -22,6 +22,12 @@ public class Board {
         creature.add(new ArrayList<Creature>());
         creature.add(new ArrayList<Creature>());
         isActiveFirst = true;
+    }
+
+    public static int getPl(String _name){
+        if (_name.equals(Main.players[0].playerName)) return 0;
+        else if (_name.equals(Main.players[1].playerName)) return 1;
+        else {System.out.println("Error - Unknow player."); return -1;}
     }
 
     public static void battlecry(Creature _creature) {
@@ -57,8 +63,8 @@ public class Board {
     }
 
     public static Player opponent(Player pl) {
-        if (pl == firstPlayer) return secondPlayer;
-        else return firstPlayer;
+        if (pl.numberPlayer == 0) return Main.players[1];
+        else return Main.players[0];
     }
 
     public static void putCardToGraveyard(Card _card, Player _owner) {

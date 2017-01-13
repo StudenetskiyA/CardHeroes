@@ -24,16 +24,18 @@ public class Player extends Card{
         numberPlayer=_n;
     }
 
+
+
     public void endTurn(){
     if (Board.isActiveFirst){
         Board.isActiveFirst=false;
-        System.out.println("$NEWTURN(" +Board.secondPlayer.playerName+")");
-        Client.writeLine("$NEWTURN(" +Board.secondPlayer.playerName+")");
+        System.out.println("$NEWTURN(" +Main.players[1].playerName+")");
+        Client.writeLine("$NEWTURN(" +Main.players[1].playerName+")");
     }
     else{
         Board.isActiveFirst=true;
-        System.out.println("$NEWTURN(" +Board.firstPlayer.playerName+")");
-        Client.writeLine("$NEWTURN(" +Board.firstPlayer.playerName+")");
+        System.out.println("$NEWTURN(" +Main.players[0].playerName+")");
+        Client.writeLine("$NEWTURN(" +Main.players[0].playerName+")");
     }
     }
 
