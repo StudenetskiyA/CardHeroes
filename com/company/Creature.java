@@ -92,7 +92,7 @@ public class Creature extends Card {
             blocker = canAnyoneBlock(target);
             if (blocker.size() != 0) {
                 int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
-                int nt = Board.creature.get(Board.opponent(owner).numberPlayer).indexOf(target);
+                int nt = Board.creature.get(Board.opponentN(owner)).indexOf(target);
                 System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
                 Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
                 Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;

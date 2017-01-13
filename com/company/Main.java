@@ -70,7 +70,7 @@ public class Main extends JFrame {
 
     //  private static Board board;
  //   private static Player player;
-    private static Player[] players = new Player[2];
+    public static Player[] players = new Player[2];
   //  private static Player enemy;
 
     private static Card cardMem;
@@ -100,9 +100,9 @@ public class Main extends JFrame {
         setInitialProperties();
 
         //  board = new Board();
-        Board.firstPlayer = players[0];
+      //  Board.firstPlayer = players[0];
       //  Board.secondPlayer = enemy;
-        Board.secondPlayer = players[1];
+      //  Board.secondPlayer = players[1];
 
         String par1 = "PlayerName";
         String par2 = "defaultDeck";
@@ -123,8 +123,8 @@ public class Main extends JFrame {
         //players[0] = new Player(simpleDeck, par1, 0, 30);
      //   enemy = new Player(simpleEnemyDeck, "PlayerName", 1, 30);
         players[1] = new Player(simpleDeck, par1, 0, 30);
-        Board.firstPlayer = players[0];
-        Board.secondPlayer = players[1];
+     //   Board.firstPlayer = players[0];
+     //   Board.secondPlayer = players[1];
 
         System.out.println("Game start.");
         main.setLocation(477, 0);
@@ -202,9 +202,9 @@ public class Main extends JFrame {
                 main.repaint();
             } else if (fromServer.contains("$DRAWCARD(")) {
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                int pl = Board.getPl(parameter.get(0));
                 //  System.out.println("Draw Card " + parameter.get(0));
-                if (players[0].playerName.equals(parameter.get(0))) players[0].drawCard();
-                else if (players[1].playerName.equals(parameter.get(0))) players[1].drawCard();
+                players[pl].drawCard();
             } else if (fromServer.contains("$ENDTURN(")) {
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
                 System.out.println("End turn " + parameter.get(0));
@@ -332,32 +332,19 @@ public class Main extends JFrame {
                 //$PLAYCARD(Jeremy,2,-1,-1) - play 2th card to board.
                 //$PLAYCARD(Bob,1,1,Jeremy) - play 1th card to 1th creature of Jeremy
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                if (players[0].playerName.equals(parameter.get(0))) {
+                int pl = Board.getPl(parameter.get(0));
+                int apl = (pl==0)? 1:0;
                     if (!parameter.get(2).equals("-1")) {//if card targets creature
-                        if ((parameter.get(3).equals(players[1].playerName)))
-                            players[0].playCard(players[0].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
+                        if ((parameter.get(3).equals(players[apl].playerName)))
+                            players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))), null);
                         else //to self creature
-                            players[0].playCard(players[0].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
+                            players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(pl).get(Integer.parseInt(parameter.get(2))), null);
                     } else {
-                        if (parameter.get(3).equals(players[1].playerName))//enemy
-                            players[0].playCard(players[0].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[1]);
-                        else if (parameter.get(3).equals(players[0].playerName))//target - self player
-                            players[0].playCard(players[0].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[0]);
-                        else players[0].playCard(players[0].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
-                    }
-                } else if (players[1].playerName.equals(parameter.get(0))) {
-                    if (!parameter.get(2).equals("-1")) {
-                        if ((parameter.get(3).equals(players[1].playerName)))
-                            players[1].playCard(players[1].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(1).get(Integer.parseInt(parameter.get(2))), null);
-                        else
-                            players[1].playCard(players[1].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(0).get(Integer.parseInt(parameter.get(2))), null);
-                    } else {
-                        if (parameter.get(3).equals(players[1].playerName))//enemy
-                            players[1].playCard(players[1].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[1]);
-                        else if (parameter.get(3).equals(players[0].playerName))//target - self player
-                            players[1].playCard(players[1].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[0]);
-                        else players[1].playCard(players[1].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
-                    }
+                        if (parameter.get(3).equals(players[apl].playerName))//enemy
+                            players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[apl]);
+                        else if (parameter.get(3).equals(players[pl].playerName))//target - self player
+                            players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[pl]);
+                        else players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
                 }
             } else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
                 ArrayList<String> parameter = Card.getTextBetween(fromServer);
