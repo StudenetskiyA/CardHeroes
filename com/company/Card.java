@@ -91,6 +91,12 @@ public class Card {
             creature.takeDamage(dmg);
             Main.printToView(creature.name + " получил " + dmg + " урона.");
         }
+        if (text.contains("Отравить выбранное существо на ")) {
+            int dmg = getNumericAfterText(text, "Отравить выбранное существо на ");
+            if (creature.poison<=dmg)
+            creature.poison=dmg;
+            Main.printToView(creature.name + " получил отравление на " + dmg + ".");
+        }
     }
 
     public void playOnPlayer(Player _player) {
@@ -103,6 +109,7 @@ public class Card {
     }
 
     public static Card getCardByName(String name) {
+        //Here all cards!
         if (name.equals("Раскат грома"))
             return new Card(1, "Раскат грома", 1, 1, 1, "Ранить выбранное существо на 3.", 0, 0);
         else if (name.equals("Гьерхор"))
@@ -131,6 +138,8 @@ public class Card {
             return new Card(2, "Чешуя дракона", 1, 1, 0, "Получите * 1.", 0, 0);
         else if (name.equals("Выслеживание"))
             return new Card(0, "Выслеживание", 1, 1, 0, "Получите до конца хода * 2.", 0, 0);
+        else if (name.equals("Фиал порчи"))
+            return new Card(2, "Фиал порчи", 1, 1, 1, "Отравить выбранное существо на 2.", 0, 0);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;

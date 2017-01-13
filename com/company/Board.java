@@ -9,9 +9,6 @@ import java.util.List;
  */
 public class Board {
     public static List<ArrayList<Creature>> creature;
-    //   public static Player firstPlayer;
-    //   public static Player secondPlayer;
-//    public static boolean isActiveFirst;
 
     public static int turnCount = 0;
 

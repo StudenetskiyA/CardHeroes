@@ -658,6 +658,10 @@ public class Main extends JFrame {
                             im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10, h + heroH / 2 - heroH / 10, heroH / 5, heroH / 5, null);
                         }
+                        if (Board.creature.get(np).get(i).poison != 0) {
+                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison"+Board.creature.get(np).get(i).poison+".png"));
+                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10-heroH/5, h + heroH / 2 - heroH / 10-heroH/5, heroH / 5, heroH / 5, null);
+                        }
                         numUnit++;
                     } catch (IOException e) {
                         System.out.println("Can't load image.");

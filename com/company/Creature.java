@@ -10,6 +10,7 @@ public class Creature extends Card {
     public int tougness;
     public boolean isTapped;
     public boolean isSummonedJust;
+    public int poison;
     public Player owner;
     int damage;
 
