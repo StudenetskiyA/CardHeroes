@@ -199,10 +199,10 @@ public class Main extends JFrame {
                     System.out.println("End turn " + parameter.get(0));
                     if (players[0].playerName.equals(parameter.get(0))) {
                         isMyTurn = playerStatus.EnemyTurn;
-                        players[1].newTurn();
+                        players[0].endTurn();
                     } else if (players[1].playerName.equals(parameter.get(0))) {
                         isMyTurn = playerStatus.MyTurn;
-                        players[0].newTurn();
+                        players[1].endTurn();
                     }
                 } else if (fromServer.contains("$NEWTURN(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
@@ -707,7 +707,7 @@ public class Main extends JFrame {
         Board.creature = new ArrayList<ArrayList<Creature>>(2);
         Board.creature.add(new ArrayList<Creature>());
         Board.creature.add(new ArrayList<Creature>());
-        Board.isActiveFirst = true;
+   //     Board.isActiveFirst = true;
 
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);

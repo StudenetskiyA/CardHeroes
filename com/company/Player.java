@@ -11,6 +11,7 @@ public class Player extends Card{
     String playerName;
     public int totalCoin;
     public int untappedCoin;
+    public int temporaryCoin=0;
     public Deck deck;
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
@@ -24,19 +25,12 @@ public class Player extends Card{
         numberPlayer=_n;
     }
 
-
-
     public void endTurn(){
-    if (Board.isActiveFirst){
-        Board.isActiveFirst=false;
-        System.out.println("$NEWTURN(" +Main.players[1].playerName+")");
-        Client.writeLine("$NEWTURN(" +Main.players[1].playerName+")");
-    }
-    else{
-        Board.isActiveFirst=true;
-        System.out.println("$NEWTURN(" +Main.players[0].playerName+")");
-        Client.writeLine("$NEWTURN(" +Main.players[0].playerName+")");
-    }
+        totalCoin-=temporaryCoin;
+        if (untappedCoin>totalCoin) untappedCoin=totalCoin;
+        temporaryCoin=0;
+
+        Board.opponent(this).newTurn();
     }
 
     public void newTurn(){
@@ -78,15 +72,39 @@ public class Player extends Card{
                     heal(dmg);
                     Main.printToView(this.playerName+" излечил "+dmg+" урона.");
                 }
+                if (_card.text.contains(("Получите * "))){
+                    int dmg = getNumericAfterText(_card.text,"Получите * ");
+                    untappedCoin+=dmg;
+                    totalCoin+=dmg;
+                    Main.printToView(this.playerName+" получил "+dmg+" монет.");
+                }
+                if (_card.text.contains(("Получите до конца хода * "))){
+                    int dmg = getNumericAfterText(_card.text,"Получите до конца хода * ");
+                    untappedCoin+=dmg;
+                    totalCoin+=dmg;
+                    temporaryCoin+=dmg;
+                    Main.printToView(this.playerName+" получил "+dmg+" монет до конца хода.");
+                }
                 if (_card.text.contains(("Ранить каждое существо противника на "))){
                     int dmg = getNumericAfterText(_card.text,"Ранить каждое существо противника на ");
                     int op= Board.opponentN(this);
-                    //TODO Now
                     for (int i=Board.creature.get(op).size()-1;i>=0;i--){
                         Board.creature.get(op).get(i).takeDamage(dmg);
                     }
                     Main.printToView(_card.name+" ранит всех существ противника на "+dmg+".");
                 }
+                if (_card.text.contains(("Ранить каждое существо на "))){
+                    int dmg = getNumericAfterText(_card.text,"Ранить каждое существо на ");
+                    int op= Board.opponentN(this);
+                    for (int i=Board.creature.get(op).size()-1;i>=0;i--){
+                        Board.creature.get(op).get(i).takeDamage(dmg);
+                    }
+                    for (int i=Board.creature.get(this.numberPlayer).size()-1;i>=0;i--){
+                        Board.creature.get(this.numberPlayer).get(i).takeDamage(dmg);
+                    }
+                    Main.printToView(_card.name+" ранит всех существ на "+dmg+".");
+                }
+                //and after play
                 Board.putCardToGraveyard(_card,this);
             }
             else if (_card.type==2){

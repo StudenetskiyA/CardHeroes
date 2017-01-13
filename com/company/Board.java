@@ -9,37 +9,40 @@ import java.util.List;
  */
 public class Board {
     public static List<ArrayList<Creature>> creature;
- //   public static Player firstPlayer;
- //   public static Player secondPlayer;
-    public static boolean isActiveFirst;
+    //   public static Player firstPlayer;
+    //   public static Player secondPlayer;
+//    public static boolean isActiveFirst;
 
     public static int turnCount = 0;
 
     public Board() {
         // firstPlayer = _f;
         // secondPlayer = _s;
-        creature = new ArrayList<ArrayList<Creature>>(2);
-        creature.add(new ArrayList<Creature>());
-        creature.add(new ArrayList<Creature>());
-        isActiveFirst = true;
+        //       creature = new ArrayList<ArrayList<Creature>>(2);
+        //       creature.add(new ArrayList<Creature>());
+        //       creature.add(new ArrayList<Creature>());
+        //       isActiveFirst = true;
     }
 
-    public static int getPl(String _name){
+    public static int getPl(String _name) {
         if (_name.equals(Main.players[0].playerName)) return 0;
         else if (_name.equals(Main.players[1].playerName)) return 1;
-        else {System.out.println("Error - Unknow player."); return -1;}
+        else {
+            System.out.println("Error - Unknow player.");
+            return -1;
+        }
     }
 
     public static void battlecry(Creature _creature) {
         String txt = _creature.text.substring(_creature.text.indexOf("Найм:") + "Найм:".length() + 1, _creature.text.indexOf(".", _creature.text.indexOf("Найм:") + 1));
-      //  System.out.println("Найм:" + txt);
+        //  System.out.println("Найм:" + txt);
 //I want to switch, but Java doesn't have it((
 
         if (txt.contains("Возьмите карту")) {
             _creature.owner.drawCard();
-        } else if ((txt.contains("Выстрел по существу на ") ) || (txt.contains("Выстрел на "))) {//TODO if no target and many other
-            Main.isMyTurn= Main.playerStatus.choiseTarget;
-            Main.activatedAbilityCreature=_creature;
+        } else if ((txt.contains("Выстрел по существу на ")) || (txt.contains("Выстрел на "))) {//TODO if no target and many other
+            Main.isMyTurn = Main.playerStatus.choiseTarget;
+            Main.activatedAbilityCreature = _creature;
         }
     }
 
@@ -57,8 +60,8 @@ public class Board {
         }
     }
 
-    public static int opponentN(Player pl){
-        if (pl.numberPlayer==0) return 1;
+    public static int opponentN(Player pl) {
+        if (pl.numberPlayer == 0) return 1;
         else return 0;
     }
 
