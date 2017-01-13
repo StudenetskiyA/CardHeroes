@@ -63,13 +63,13 @@ public class Player extends Card{
                 //release text on spell
                 //check target
                 if (_targetPlayer != null) {
-                    _card.playOnPlayer(_targetPlayer);
+                    _card.playOnPlayer(this,_targetPlayer);
                 }
                 if (_targetCreature != null) {
-                    _card.playOnCreature(_targetCreature);
+                    _card.playOnCreature(this,_targetCreature);
                 }
                 //No target
-                ability(_card,null,null,_card.text);
+                ability(_card,this,null,null,_card.text);
                 //and after play
                 Board.putCardToGraveyard(_card,this);
             }
@@ -106,69 +106,6 @@ public class Player extends Card{
         if (damage<0) damage=0;
     }
 
-    public void ability(Card _who,Creature _cr, Player _pl, String txt) {
-
-        if (txt.contains(("Излечить вашего героя на "))){
-            int dmg = getNumericAfterText(txt,"Излечить вашего героя на ");
-            heal(dmg);
-            Main.printToView(this.playerName+" излечил "+dmg+" урона.");
-        }
-        if (txt.contains(("Получите * "))){
-            int dmg = getNumericAfterText(txt,"Получите * ");
-            untappedCoin+=dmg;
-            totalCoin+=dmg;
-            Main.printToView(this.playerName+" получил "+dmg+" монет.");
-        }
-        if (txt.contains(("Получите до конца хода * "))){
-            int dmg = getNumericAfterText(txt,"Получите до конца хода * ");
-            untappedCoin+=dmg;
-            totalCoin+=dmg;
-            temporaryCoin+=dmg;
-            Main.printToView(this.playerName+" получил "+dmg+" монет до конца хода.");
-        }
-        if (txt.contains(("Ранить каждое существо противника на "))){
-            int dmg = getNumericAfterText(txt,"Ранить каждое существо противника на ");
-            int op= Board.opponentN(this);
-            for (int i=Board.creature.get(op).size()-1;i>=0;i--){
-                Board.creature.get(op).get(i).takeDamage(dmg);
-            }
-            Main.printToView(_who.name+" ранит всех существ противника на "+dmg+".");
-        }
-        if (txt.contains(("Ранить каждое существо на "))){
-            int dmg = getNumericAfterText(txt,"Ранить каждое существо на ");
-            int op= Board.opponentN(this);
-            for (int i=Board.creature.get(op).size()-1;i>=0;i--){
-                Board.creature.get(op).get(i).takeDamage(dmg);
-            }
-            for (int i=Board.creature.get(this.numberPlayer).size()-1;i>=0;i--){
-                Board.creature.get(this.numberPlayer).get(i).takeDamage(dmg);
-            }
-            Main.printToView(_who.name+" ранит всех существ на "+dmg+".");
-        }
-        //target
-        if (txt.contains("Выстрел по существу на ")) {
-            int dmg = getNumericAfterText(txt, "Выстрел по существу на ");
-            Main.printToView(_who.name + " стреляет на " + dmg + " по " + _cr.name);
-            if (!_cr.text.contains("Защита от выстрелов."))
-                _cr.takeDamage(dmg);
-            else {
-                Main.printToView("У " + _cr.name + " защита от выстрелов.");
-            }
-        } else if (txt.contains("Выстрел на ")) {
-            int dmg = getNumericAfterText(txt, "Выстрел на ");
-            if (_cr != null) {
-                Main.printToView(_who.name + " стреляет на " + dmg + " по " + _cr.name);
-                if (!_cr.text.contains("Защита от выстрелов."))
-                    _cr.takeDamage(dmg);
-                else {
-                    Main.printToView("У " + _cr.name + " защита от выстрелов.");
-                }
-            } else {
-                Main.printToView(_who.name + " стреляет на " + dmg + " по " + _pl.name);
-                _pl.takeDamage(dmg);
-            }
-        }
-    }
 
 
     public String handToString(){

@@ -24,17 +24,14 @@ public class Board {
         }
     }
 
-    public static void battlecry(Creature _creature) {
-        String txt = _creature.text.substring(_creature.text.indexOf("Найм:") + "Найм:".length() + 1, _creature.text.indexOf(".", _creature.text.indexOf("Найм:") + 1));
-        //  System.out.println("Найм:" + txt);
-//I want to switch, but Java doesn't have it((
+    public static void battlecryNoTarget(Creature _card,Player _owner){
+        String txt = _card.text.substring(_card.text.indexOf("Найм:") + "Найм:".length() + 1, _card.text.indexOf(".", _card.text.indexOf("Найм:") + 1)+1);
+        Card.ability(_card,_owner,_card,null,txt);//Only here 3th parametr=1th
+    }
 
-        if (txt.contains("Возьмите карту")) {
-            _creature.owner.drawCard();
-        } else if ((txt.contains("Выстрел по существу на ")) || (txt.contains("Выстрел на "))) {//TODO if no target and many other
-            Main.isMyTurn = Main.playerStatus.choiseTarget;
-            Main.activatedAbilityCreature = _creature;
-        }
+    public static void battlecryTarget(Creature _creature) {
+        Main.isMyTurn = Main.playerStatus.choiseTarget;
+        Main.activatedAbilityCreature = _creature;
     }
 
 
@@ -53,8 +50,11 @@ public class Board {
         int np = _player.numberPlayer;
         creature.get(np).add(summonCreature);
         Main.printToView("Вызов существа " + summonCreature.name);
+        if (_creature.text.contains("Наймт:")) {
+            battlecryTarget(summonCreature);
+        }
         if (_creature.text.contains("Найм:")) {
-            battlecry(summonCreature);
+            battlecryNoTarget(summonCreature,_player);
         }
     }
 

@@ -77,6 +77,11 @@ public class Creature extends Card {
         }
     }
 
+    public void heal(int dmg){
+        damage-=dmg;
+        if (damage<0) damage=0;
+    }
+
     public void fightPlayer(Player second) {
         Main.printToView(this.name + " атакует " + second.name + ".");
         second.takeDamage(this.power);
@@ -141,20 +146,20 @@ public class Creature extends Card {
         String txt = this.text.substring(this.text.indexOf("ТАП:") + "ТАП:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАП:") + 1));
         System.out.println("ТАПТ: " + txt);
         tapCreature();
-        owner.ability(this,null, null, txt);
+        Card.ability(this, owner,null, null, txt);
     }
 
     public void tapTargetAbility(Creature _cr, Player _pl) {
         String txt = this.text.substring(this.text.indexOf("ТАПТ:") + "ТАПТ:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАПТ:") + 1));
         System.out.println("ТАПТ: " + txt);
         tapCreature();
-        owner.ability(this,_cr, _pl, txt);
+        Card.ability(this,owner,_cr, _pl, txt);
     }
 
     public void cry(Creature _cr, Player _pl) {
         String txt = this.text.substring(this.text.indexOf("Найм:") + "Найм:".length() + 1, this.text.indexOf(".", this.text.indexOf("Найм:") + 1));
         System.out.println("Найм: " + txt);
-        owner.ability(this,_cr, _pl, txt);
+        Card.ability(this,owner,_cr, _pl, txt);
     }
 
     public void die() {
