@@ -51,6 +51,8 @@ public class Player extends Card{
                 Board.creature.get(numberPlayer).get(i).takeDamage( Board.creature.get(numberPlayer).get(i).poison, Creature.DamageSource.poison);
             //armor
             Board.creature.get(numberPlayer).get(i).currentArmor= Board.creature.get(numberPlayer).get(i).maxArmor;
+            //for gnev
+            Board.creature.get(numberPlayer).get(i).takedDamageThisTurn=false;
         }
         //Draw
         if (Board.turnCount!=1) drawCard();//First player not draw card in first turn. It's rule.

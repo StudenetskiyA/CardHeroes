@@ -15,6 +15,7 @@ public class Creature extends Card {
     public int currentArmor=0;
     public int maxArmor=0;
     int damage;
+    public boolean takedDamageThisTurn=false;
 
     public Creature(Creature _card) {
         super(_card.cost, _card.name, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
@@ -70,21 +71,23 @@ public class Creature extends Card {
         return crt;
     }
 
+
+
     public void fightCreature(Creature second) {
         //TODO First strike and other
         Main.printToView(this.name + " сражается с " + second.name + ".");
         if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
-            this.takeDamage(second.power,DamageSource.fight);
-            if (this.damage < this.hp) second.takeDamage(this.power,DamageSource.fight);
+            this.takeDamage(second.power,DamageSource.fight,second.haveRage());
+            if (this.damage < this.hp) second.takeDamage(this.power,DamageSource.fight,second.haveRage());
         } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
-            second.takeDamage(this.power,DamageSource.fight);
-            if (second.damage < second.hp) this.takeDamage(second.power,DamageSource.fight);
+            second.takeDamage(this.power,DamageSource.fight,second.haveRage());
+            if (second.damage < second.hp) this.takeDamage(second.power,DamageSource.fight,second.haveRage());
         } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
-            this.takeDamage(second.power,DamageSource.fight);
-            second.takeDamage(this.power,DamageSource.fight);
+            this.takeDamage(second.power,DamageSource.fight,second.haveRage());
+            second.takeDamage(this.power,DamageSource.fight,second.haveRage());
         } else {
-            this.takeDamage(second.power,DamageSource.fight);
-            second.takeDamage(this.power,DamageSource.fight);
+            this.takeDamage(second.power,DamageSource.fight,second.haveRage());
+            second.takeDamage(this.power,DamageSource.fight,second.haveRage());
         }
     }
 
@@ -144,9 +147,13 @@ public class Creature extends Card {
 
     enum DamageSource{fight,spell,poison,ability,scoot}
     
-    public void takeDamage(int dmg, DamageSource dmgsrc) {
+    public void takeDamage(int dmg, DamageSource dmgsrc,Boolean...rage) {
         if (!this.text.contains("Не получает ран.")) {
             if ((dmgsrc==DamageSource.scoot) || (dmgsrc==DamageSource.fight)){
+                if ((takedDamageThisTurn)&&(rage[0])) {
+                    dmg++;
+                    System.out.println("RAGE!");
+                }
                 int tmp=dmg;
                 dmg-=currentArmor;
                 currentArmor-=tmp;
@@ -154,11 +161,13 @@ public class Creature extends Card {
                 if(currentArmor<0) currentArmor=0;
             }
             damage += dmg;
+            takedDamageThisTurn=true;
             if (tougness > damage) {
             } else {
                 die();
             }
         }
+
     }
 
 
@@ -177,8 +186,8 @@ public class Creature extends Card {
     }
 
     public void cry(Creature _cr, Player _pl) {
-        String txt = this.text.substring(this.text.indexOf("Найм:") + "Найм:".length() + 1, this.text.indexOf(".", this.text.indexOf("Найм:") + 1));
-        System.out.println("Найм: " + txt);
+        String txt = this.text.substring(this.text.indexOf("Наймт:") + "Наймт:".length() + 1, this.text.indexOf(".", this.text.indexOf("Наймт:") + 1));
+        System.out.println("Наймт: " + txt);
         Card.ability(this,owner,_cr, _pl, txt);
     }
 

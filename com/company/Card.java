@@ -142,6 +142,8 @@ public class Card {
             return new Card(3, "Вэлла", 1, 2, 3, 0, "Наймт: Излечить выбранное существо или героя на 2.", 3, 4);
         else if (name.equals("Рыцарь Туллена"))
             return new Card(6, "Рыцарь Туллена", 1, 2, 0, 0, "Броня 3.", 6, 3);
+        else if (name.equals("Орк-лучник"))
+            return new Card(1, "Орк-лучник", 1, 2, 3, 0, "Гнев. Наймт: Выстрел на 1.", 1, 1);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;
@@ -232,7 +234,7 @@ public class Card {
             int dmg = getNumericAfterText(txt, "Выстрел по существу на ");
             Main.printToView(_who.name + " стреляет на " + dmg + " по " + _cr.name);
             if (!_cr.text.contains("Защита от выстрелов."))
-                _cr.takeDamage(dmg, Creature.DamageSource.scoot);
+                _cr.takeDamage(dmg, Creature.DamageSource.scoot,_who.haveRage());
             else {
                 Main.printToView("У " + _cr.name + " защита от выстрелов.");
             }
@@ -242,7 +244,7 @@ public class Card {
             if (_cr != null) {
                 Main.printToView(_who.name + " стреляет на " + dmg + " по " + _cr.name);
                 if (!_cr.text.contains("Защита от выстрелов."))
-                    _cr.takeDamage(dmg, Creature.DamageSource.scoot);
+                    _cr.takeDamage(dmg, Creature.DamageSource.scoot,_who.haveRage());
                 else {
                     Main.printToView("У " + _cr.name + " защита от выстрелов.");
                 }
@@ -251,5 +253,9 @@ public class Card {
                 _pl.takeDamage(dmg);
             }
         }
+    }
+
+    public boolean haveRage(){
+        return (text.contains("Гнев.")) ?  true : false;
     }
 }
