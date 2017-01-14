@@ -60,18 +60,15 @@ public class Main extends JFrame {
     private static JLabel endTurnClick = new JLabel();
 
     private static Image background;
-    private static Image heroImage;
-    private static Image enemyImage;
+    private static BufferedImage heroImage;
+    private static BufferedImage enemyImage;
     private static Image heroCoinImage;
     private static Image heroDeckImage;
     private static Image endTurnImage;
     private static Image redcrossImage;
     private static Image heroGraveyardImage;
 
-    //  private static Board board;
-    //   private static Player player;
     public static Player[] players = new Player[2];
-    //  private static Player enemy;
 
     private static Card cardMem;
     private static Creature creatureMem;
@@ -346,6 +343,25 @@ public class Main extends JFrame {
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.MyTurn)) {
                 System.out.println("$ENDTURN(" + players[0].playerName + ")");
                 Client.writeLine("$ENDTURN(" + players[0].playerName + ")");
+            } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.MyTurn)) {
+                //My hero ability
+                if (players[0].name.equals("Тарна")){
+                    if  (!players[0].isTapped) {
+                        if (players[0].untappedCoin >= 4) {
+                            players[0].untappedCoin-=4;
+                            players[0].isTapped=true;
+                            printToView("Тарна берет карту.");
+                            System.out.println("$DRAWCARD(" + players[0].playerName + ")");
+                            Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
+                            main.repaint();
+                        } else {
+                            printToView("Недостаточно монет.");
+                        }
+                    }
+                    else {
+                        printToView("Повернутый герой не может действовать.");
+                    }
+                }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.MuliganPhase)) {
                 //TODO when remake server
                 //You know nothing, Server!!!
@@ -622,8 +638,12 @@ public class Main extends JFrame {
         endTurnClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283);
         endTurnClick.setSize(heroW, heroW * 149 / 283);
         //Heroes
-        g.drawImage(heroImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
-        g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
+        if (players[0].isTapped){g.drawImage(Card.tapImage(heroImage), main.getWidth() - heroH - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroH, heroW, null);
+        }
+        else g.drawImage(heroImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+        if (players[1].isTapped){g.drawImage(Card.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
+        }
+        else g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
         enemyHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP);
         enemyHeroClick.setSize(heroW, heroH);
         playerHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM);

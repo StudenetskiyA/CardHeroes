@@ -12,6 +12,7 @@ public class Player extends Card{
     public int totalCoin;
     public int untappedCoin;
     public int temporaryCoin=0;
+    public boolean isTapped=false;
     public Deck deck;
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
@@ -36,7 +37,7 @@ public class Player extends Card{
     public void newTurn(){
         Board.turnCount++;
         Main.printToView("Ход номер "+Board.turnCount+", игрок "+playerName);
-
+        isTapped=false;
         //Get coin
         if (totalCoin<10) totalCoin++;
         //Untap
