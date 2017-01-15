@@ -23,10 +23,12 @@ public class Creature extends Card {
 
     public class Effects{
         public int cantAttackOrBlock = 0;
-
+        public int turnToDie=999;
         public void EOT(){
             cantAttackOrBlock --;
+            turnToDie--;
             if (cantAttackOrBlock<0) cantAttackOrBlock=0;
+            if (turnToDie==0) die();
         }
     }
 

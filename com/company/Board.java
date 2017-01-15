@@ -25,7 +25,9 @@ public class Board {
     }
 
     public static void battlecryNoTarget(Creature _card,Player _owner){
-       }
+        String txt = _card.text.substring(_card.text.indexOf("Найм:") + "Найм:".length() + 1, _card.text.indexOf(".", _card.text.indexOf("Найм:"))+1);
+        Card.ability(_card,_owner,_card,null,txt);//Only here 3th parametr=1th
+    }
 
     public static void battlecryTarget(Creature _creature) {
         Main.isMyTurn = Main.playerStatus.choiseTarget;

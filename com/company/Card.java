@@ -180,6 +180,8 @@ public class Card {
             return new Card(2, name, 1, 1, 0, 0, "Взять карт 1. Если у соперника больше существ, чем у вас, взять еще карт 1.", 0, 0);
         else if (name.equals("Плащ Исхара"))
             return new Card(1, name, 1, 3, 0, 0, "", 0, 6);
+        else if (name.equals("Богарт"))
+            return new Card(4, name, 1, 2, 0, 0, "Уникальность. Найм: Каждое другое существо погибает в конце хода противника.", 2, 7);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;
@@ -281,6 +283,17 @@ public class Card {
                 Board.creature.get(op).get(i).takeDamage(dmg, Creature.DamageSource.ability);
             }
             Main.printToView(_who.name + " ранит всех существ противника на " + dmg + ".");
+        }
+        if (txt.contains(("Каждое другое существо погибает в конце хода противника."))) {
+            int op = Board.opponentN(_whis);
+            for (int i = Board.creature.get(op).size() - 1; i >= 0; i--) {
+                Board.creature.get(op).get(i).effects.turnToDie=2;
+            }
+            for (int i = Board.creature.get(_whis.numberPlayer).size() - 1; i >= 0; i--) {
+                if (!Board.creature.get(_whis.numberPlayer).get(i).name.equals("Богарт"))
+                Board.creature.get(_whis.numberPlayer).get(i).effects.turnToDie=2;
+            }
+            Main.printToView(_who.name + " чумит весь стол!");
         }
         if (txt.contains(("Ранить каждое существо на "))) {
             int dmg = getNumericAfterText(txt, "Ранить каждое существо на ");
