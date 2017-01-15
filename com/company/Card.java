@@ -109,7 +109,7 @@ public class Card {
     public static Card getCardByName(String name) {
         //Here all cards!
         if (name.equals("Тарна"))
-            return new Card(0, "Тарна", 1, 0, 0, 0, "ТАП: Возьмите карту.", 0, 28);
+            return new Card(0, "Тарна", 1, 0, 0, 0, "ТАП: Взять карт 1.", 0, 28);
         else if (name.equals("Тиша"))
             return new Card(0, "Тиша", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
         else if (name.equals("Раскат грома"))
@@ -125,7 +125,7 @@ public class Card {
         else if (name.equals("Поглощение души"))
             return new Card(3, "Поглощение душ", 1, 1, 2, 0, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
         else if (name.equals("Эльф-дозорный"))
-            return new Card(4, "Эльф-дозорный", 1, 2, 0, 0, "Найм: Возьмите карту.", 2, 5);
+            return new Card(4, "Эльф-дозорный", 1, 2, 0, 0, "Найм: Возьмите карт 1.", 2, 5);
         else if (name.equals("Послушник"))
             return new Card(5, "Послушник", 1, 2, 1, 0, "Наймт: Выстрел по существу на 4.", 2, 3);
         else if (name.equals("Гном-лучник"))
@@ -174,6 +174,12 @@ public class Card {
             return new Card(3, name, 1, 2, 0, 1, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 10);
         else if (name.equals("Рыцарь реки"))
             return new Card(5, name, 1, 2, 1, 0, "Наймт: Выбранное существо не может атаковать и выступать защитником до конца следующего хода.", 4, 6);
+        else if (name.equals("Поиск кладов"))
+            return new Card(6, name, 1, 1, 0, 0, "Взять карт 4.", 0, 0);
+        else if (name.equals("Прозрение"))
+            return new Card(2, name, 1, 1, 0, 0, "Взять карт 1. Если у соперника больше существ, чем у вас, взять еще карт 1.", 0, 0);
+        else if (name.equals("Плащ Исхара"))
+            return new Card(1, name, 1, 3, 0, 0, "", 0, 6);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;
@@ -286,6 +292,22 @@ public class Card {
                 Board.creature.get(_whis.numberPlayer).get(i).takeDamage(dmg, Creature.DamageSource.ability);
             }
             Main.printToView(_who.name + " ранит всех существ на " + dmg + ".");
+        }
+        if (txt.contains("Взять карт ")) {
+            int dmg = getNumericAfterText(txt, "Взять карт ");
+            Main.printToView(_who.name + " берет " + dmg + " карт.");
+            for (int i=0;i<dmg;i++)
+            _whis.drawCard();
+        }
+        if (txt.contains("Если у соперника больше существ, чем у вас, взять еще карт ")) {
+            int dmg = getNumericAfterText(txt, "Если у соперника больше существ, чем у вас, взять еще карт ");
+            int n1 = Board.creature.get(0).size();
+            int n2 = Board.creature.get(1).size();
+            if (n1<n2) {
+                Main.printToView(_who.name + " берет " + dmg + " карт.");
+                for (int i = 0; i < dmg; i++)
+                    _whis.drawCard();
+            }
         }
         //target
         if (txt.contains("Выстрел по существу на ")) {

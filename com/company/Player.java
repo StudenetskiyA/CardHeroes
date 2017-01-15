@@ -16,6 +16,7 @@ public class Player extends Card{
     public Deck deck;
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
+    public Card armor;
 
     public Player(Card _card,Deck _deck,String _playerName,int _n){
         super(0,_card.name,1,0,_card.targetType,0,_card.text,0,_card.hp);
@@ -103,6 +104,11 @@ public class Player extends Card{
                 //creature
                 Board.addCreatureToBoard(_card,this);
             }
+            else if (_card.type==3){
+                if (this.armor!=null) Board.putCardToGraveyard(this.armor,this);
+                this.armor=new Card(_card);
+                Main.printToView(name+ " экипировал "+ _card.name+".");
+            }
             //remove from hand
             cardInHand.remove(_card);
         }
@@ -110,6 +116,7 @@ public class Player extends Card{
             Main.printToView("Не хватает монет.");
         }
     }
+
     void drawCard(){
         if (deck.haveTopDeck())
         cardInHand.add(deck.drawTopDeck());
@@ -119,17 +126,39 @@ public class Player extends Card{
     }
 
     public void takeDamage(int dmg){
+        if (armor!=null) {
+            if (armor.name.equals("Плащ Исхара")) {
+                //Плащ исхара
+                int tmp = dmg;
+                dmg -= armor.hp;
+                armor.hp -= tmp;
+                if (dmg < 0) dmg = 0;
+                Main.printToView("Плащ Исхара предотвратил "+(tmp-dmg)+" урона.");
+                if (armor.hp <= 0) {
+                    Board.putCardToGraveyard(armor, this);
+                    armor=null;
+                }
+            }
+        }
         if (hp>damage+dmg){
             damage+=dmg;
         }
         else {
             System.out.println("Player lose game.");
+            Main.printToView(playerName + " проиграл игру.");
             //TODO Lose play
         }
     }
     public void heal(int dmg){
         damage-=dmg;
         if (damage<0) damage=0;
+    }
+
+    public void abilityNoTarget() {
+        String txt = this.text.substring(this.text.indexOf("ТАП:") + "ТАП:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАП:") + 1));
+        System.out.println("ТАПТ HERO: " + txt);
+        isTapped=true;
+        Card.ability(this,this,null, null, txt);
     }
 
     public void ability(Creature _cr, Player _pl) {

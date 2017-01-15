@@ -61,6 +61,7 @@ public class Main extends JFrame {
 
     private static Image background;
     private static BufferedImage heroImage;
+    private static BufferedImage heroNoArmorImage;
     private static BufferedImage enemyImage;
     private static Image heroCoinImage;
     private static Image heroDeckImage;
@@ -95,12 +96,6 @@ public class Main extends JFrame {
         loadImage();
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setInitialProperties();
-        String t2 = "Найм: Закрыться.";
-        String txt = t2.substring(t2.indexOf("Найм:") + "Найм:".length() + 1, t2.indexOf(".", t2.indexOf("Найм:")) + 1);
-        System.out.println(txt);
-        t2 = "Наймт: Верните выбранное существо в руку его владельца.";
-        txt = t2.substring(t2.indexOf("Наймт:") + "Наймт:".length() + 1, t2.indexOf(".", t2.indexOf("Наймт:")) + 1);
-        System.out.println(txt);
 
         String par1 = "PlayerName";
         String par2 = "defaultDeck";
@@ -361,8 +356,8 @@ public class Main extends JFrame {
 
         public void mouseClicked(MouseEvent e) {
             if (onWhat == Compo.Deck) {
-                System.out.println("$DRAWCARD(" + players[0].playerName + ")");
-                Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
+            //    System.out.println("$DRAWCARD(" + players[0].playerName + ")");
+            //    Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
             } else if ((onWhat == Compo.CardInHand) && (isMyTurn == playerStatus.MuliganPhase)) {
                 if (wantToMulligan[num]) wantToMulligan[num] = false;
                 else wantToMulligan[num] = true;
@@ -396,9 +391,9 @@ public class Main extends JFrame {
                         if (players[0].untappedCoin >= 4) {
                             players[0].untappedCoin -= 4;
                             players[0].isTapped = true;
-                            printToView("Тарна берет карту.");
-                            System.out.println("$DRAWCARD(" + players[0].playerName + ")");
-                            Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
+                           // printToView("Тарна берет карту.");
+                            players[0].abilityNoTarget();
+
                             main.repaint();
                         } else {
                             printToView("Недостаточно монет.");
@@ -712,12 +707,18 @@ public class Main extends JFrame {
         if (players[1].isTapped) {
             g.drawImage(Card.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroH, heroW, null);
         } else g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
-
         enemyHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP);
         enemyHeroClick.setSize(heroW, heroH);
         playerHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM);
         playerHeroClick.setSize(heroW, heroH);
-        // playerDamageLabel.setLocation(playerHeroClick.getX() + (int) (playerHeroClick.getWidth() * HERO_DAMAGE_WHERE_TO_SHOW_X), playerHeroClick.getY() + (int) (playerHeroClick.getHeight() * HERO_DAMAGE_WHERE_TO_SHOW_Y));
+        //Heroes equpiment
+        //TODO Enemy, durability
+        if (players[0].armor==null) {g.drawImage(heroNoArmorImage, main.getWidth() - heroW*2 - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+        }
+        else {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/"+players[0].armor.image));
+            g.drawImage(im, main.getWidth() - heroW*2 - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+        }
         //TODO Draw, not set text, N
         if (players[0].damage != 0) {
             im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
@@ -856,6 +857,7 @@ public class Main extends JFrame {
             endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Endturn.png"));
             heroGraveyardImage = ImageIO.read(Main.class.getResourceAsStream("icons/Graveyard.png"));
             redcrossImage = ImageIO.read(Main.class.getResourceAsStream("icons/Bigredcross.png"));
+            heroNoArmorImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noarmor.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
