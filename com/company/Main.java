@@ -373,18 +373,24 @@ public class Main extends JFrame {
                 //My hero ability
                 if (!players[0].isTapped) {
                     if (players[0].name.equals("Тиша")) {
-                        if (players[0].untappedCoin >= 2) {
-                            players[0].untappedCoin -= 2;
-                            //replace
-                            //players[0].isTapped = true;
-                            isMyTurn = playerStatus.choiseTarget;
-                            //change
-                            activatedAbility.targetType = players[0].targetType;
-                            activatedAbility.heroAbility = true;
-                            activatedAbility.creature = null;
-                        } else {
-                            printToView("Недостаточно монет.");
+                        if ((Board.creature.get(0).size()>0) || (Board.creature.get(1).size()>0)) {
+                            if (players[0].untappedCoin >= 2) {
+                                players[0].untappedCoin -= 2;
+                                //replace
+                                //players[0].isTapped = true;
+                                isMyTurn = playerStatus.choiseTarget;
+                                //change
+                                activatedAbility.targetType = players[0].targetType;
+                                activatedAbility.heroAbility = true;
+                                activatedAbility.creature = null;
+                                main.repaint();
+                            } else {
+                                printToView("Недостаточно монет.");
+                            }
                         }
+                        else {
+                                printToView("Нет подходящих целей.");
+                            }
                     }
                     if (players[0].name.equals("Тарна")) {
                         if (players[0].untappedCoin >= 4) {
@@ -487,6 +493,16 @@ public class Main extends JFrame {
                 } else {
                     printToView("Выберите корректную цель.");
                 }
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (activatedAbility.heroAbility)) {
+                //Hero ability on my unit
+                if ((players[0].targetType == 1) || (players[0].targetType == 3)) {
+                    System.out.println("$HEROTARGET(" + players[0].playerName + ",0," + num + ")");
+                    Client.writeLine("$HEROTARGET(" + players[0].playerName + ",0," + num + ")");
+                    isMyTurn = playerStatus.MyTurn;
+                    activatedAbility.heroAbility = false;
+                } else {
+                    printToView("Выберите корректную цель.");
+                }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАПТ:"))) {
                 //TAP with target ability - first step
                 if (!Board.creature.get(0).get(num).isSummonedJust) {
@@ -567,8 +583,8 @@ public class Main extends JFrame {
                     }
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (creatureMem != null)) {
                     //enemy hero attack by creature
-                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn)) {
-                        printToView("Повернутое/атаковавшее существо не может атаковать.");
+                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock>0)) {
+                        printToView("Повернутое/атаковавшее/т.д. существо не может атаковать.");
                     } else {
                         if (creatureMem.isSummonedJust) {
                             printToView("Это существо вошло в игру на этом ходу.");
@@ -579,8 +595,8 @@ public class Main extends JFrame {
                     }
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (creatureMem != null)) {
                     //enemy creature attack by player creature
-                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn)) {
-                        printToView("Повернутое/атаковавшее существо не может атаковать.");
+                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock>0)) {
+                        printToView("Повернутое/атаковавшее/т.д. существо не может атаковать.");
                     } else {
                         if (creatureMem.isSummonedJust) {
                             printToView("Это существо вошло в игру на этом ходу.");
@@ -694,8 +710,9 @@ public class Main extends JFrame {
         } else
             g.drawImage(heroImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
         if (players[1].isTapped) {
-            g.drawImage(Card.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
+            g.drawImage(Card.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroH, heroW, null);
         } else g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
+
         enemyHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP);
         enemyHeroClick.setSize(heroW, heroH);
         playerHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM);

@@ -39,6 +39,13 @@ public class Player extends Card{
         totalCoin-=temporaryCoin;
         if (untappedCoin>totalCoin) untappedCoin=totalCoin;
         temporaryCoin=0;
+        //Creature effects until eot
+        if (!Board.creature.get(0).isEmpty()) {
+        for (int i = Board.creature.get(0).size() - 1; i >= 0; i--)
+            Board.creature.get(0).get(i).effects.EOT();}
+       if (!Board.creature.get(1).isEmpty()) {
+           for (int i = Board.creature.get(1).size() - 1; i >= 0; i--)
+            Board.creature.get(1).get(i).effects.EOT();}
 
         Board.opponent(this).newTurn();
     }

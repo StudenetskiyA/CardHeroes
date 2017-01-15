@@ -22,12 +22,12 @@ public class Card {
     public int hp;//only for creature and hero, its maximum health, not current
     public String hash;
 
-    public static class ActivatedAbility{
+    public static class ActivatedAbility {
         public static int targetType;
         public static int tapTargetType;
         public static Creature creature;
         public static boolean creatureTap;
-        public static boolean heroAbility=false;
+        public static boolean heroAbility = false;
     }
 
     public Card(Card _card) {
@@ -96,10 +96,10 @@ public class Card {
     }
 
     public void playOnCreature(Player _pl, Creature creature) {
-        if (creature.text.contains("Если выбрана целью заклинание - погибает."))
-        {creature.die();}
-        else
-        ability(this, _pl, creature, null, text);
+        if (creature.text.contains("Если выбрана целью заклинание - погибает.")) {
+            creature.die();
+        } else
+            ability(this, _pl, creature, null, text);
     }
 
     public void playOnPlayer(Player _pl, Player _player) {
@@ -111,7 +111,7 @@ public class Card {
         if (name.equals("Тарна"))
             return new Card(0, "Тарна", 1, 0, 0, 0, "ТАП: Возьмите карту.", 0, 28);
         else if (name.equals("Тиша"))
-            return new Card(0, "Тиша", 1, 0, 1, 0, "ТАПТ: Отравить выбранное существо на 1.", 0, 26);
+            return new Card(0, "Тиша", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
         else if (name.equals("Раскат грома"))
             return new Card(1, "Раскат грома", 1, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
         else if (name.equals("Гьерхор"))
@@ -170,6 +170,10 @@ public class Card {
             return new Card(4, name, 1, 2, 1, 0, "Опыт в защите. Наймт: Уничтожьте отравленное существо.", 1, 4);
         else if (name.equals("Орк-мародер"))
             return new Card(5, name, 1, 2, 0, 0, "Опыт в атаке. Первый удар. Рывок.", 5, 2);
+        else if (name.equals("Менгир Каррефура"))
+            return new Card(3, name, 1, 2, 0, 1, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 10);
+        else if (name.equals("Рыцарь реки"))
+            return new Card(5, name, 1, 2, 1, 0, "Наймт: Выбранное существо не может атаковать и выступать защитником до конца следующего хода.", 4, 6);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;
@@ -185,20 +189,20 @@ public class Card {
         if (txt.contains("Излечить выбранное существо или героя на ")) {
             int dmg = getNumericAfterText(txt, "Излечить выбранное существо или героя на ");
             if (_cr != null) {
-                Main.printToView(_who.name + " излечивает " + _cr.name+" на " + dmg + ".");
+                Main.printToView(_who.name + " излечивает " + _cr.name + " на " + dmg + ".");
                 _cr.heal(dmg);
             } else {
-                Main.printToView(_who.name + " излечивает " + _pl.name+" на " + dmg + ".");
+                Main.printToView(_who.name + " излечивает " + _pl.name + " на " + dmg + ".");
                 _pl.heal(dmg);
             }
         }
         if (txt.contains("Ранить выбранное существо или героя на ")) {
             int dmg = getNumericAfterText(txt, "Ранить выбранное существо или героя на ");
             if (_cr != null) {
-                Main.printToView(_who.name + " ранит " + _cr.name+" на " + dmg + ".");
-                    _cr.takeDamage(dmg, Creature.DamageSource.ability);
+                Main.printToView(_who.name + " ранит " + _cr.name + " на " + dmg + ".");
+                _cr.takeDamage(dmg, Creature.DamageSource.ability);
             } else {
-                Main.printToView(_who.name + " ранит " + _pl.name+" на " + dmg + ".");
+                Main.printToView(_who.name + " ранит " + _pl.name + " на " + dmg + ".");
                 _pl.takeDamage(dmg);
             }
         }
@@ -208,13 +212,17 @@ public class Card {
             Main.printToView(_pl.playerName + " получил " + dmg + " урона.");
         }
         if (txt.contains("Уничтожьте отравленное существо.")) {
-            if (_cr.poison>0)
-            _cr.die();
+            if (_cr.poison > 0)
+                _cr.die();
         }
         if (txt.contains("Ранить выбранное существо на ")) {
             int dmg = getNumericAfterText(txt, "Ранить выбранное существо на ");
             _cr.takeDamage(dmg, Creature.DamageSource.ability);
             Main.printToView(_cr.name + " получил " + dmg + " урона.");
+        }
+        if (txt.contains("Выбранное существо не может атаковать и выступать защитником до конца следующего хода.")) {
+            _cr.effects.cantAttackOrBlock=2;
+            Main.printToView(_cr.name + " не может атаковать и выступать защитником до конца следующего хода.");
         }
         if (txt.contains("Нанести урон выбранному существу, равный его удару.")) {
             int dmg = _cr.power;
@@ -224,6 +232,17 @@ public class Card {
         if (txt.contains("Верните выбранное существо в руку его владельца.")) {
             _cr.returnToHand();
             Main.printToView(_cr.name + " возвращается в руку владельца.");
+        }
+        if (txt.contains("Отравить+ выбранное существо на ")) {
+            int dmg = getNumericAfterText(txt, "Отравить+ выбранное существо на ");
+            if (_cr.poison != 0) {
+                _cr.poison++;
+                Main.printToView(_cr.name + " усилил отравление на " + dmg + ".");
+            } else {
+                if (_cr.poison <= dmg)
+                    _cr.poison = dmg;
+                Main.printToView(_cr.name + " получил отравление на " + dmg + ".");
+            }
         }
         if (txt.contains("Отравить выбранное существо на ")) {
             int dmg = getNumericAfterText(txt, "Отравить выбранное существо на ");
@@ -273,7 +292,7 @@ public class Card {
             int dmg = getNumericAfterText(txt, "Выстрел по существу на ");
             Main.printToView(_who.name + " стреляет на " + dmg + " по " + _cr.name);
             if (!_cr.text.contains("Защита от выстрелов."))
-                _cr.takeDamage(dmg, Creature.DamageSource.scoot,_who.haveRage());
+                _cr.takeDamage(dmg, Creature.DamageSource.scoot, _who.haveRage());
             else {
                 Main.printToView("У " + _cr.name + " защита от выстрелов.");
             }
@@ -283,7 +302,7 @@ public class Card {
             if (_cr != null) {
                 Main.printToView(_who.name + " стреляет на " + dmg + " по " + _cr.name);
                 if (!_cr.text.contains("Защита от выстрелов."))
-                    _cr.takeDamage(dmg, Creature.DamageSource.scoot,_who.haveRage());
+                    _cr.takeDamage(dmg, Creature.DamageSource.scoot, _who.haveRage());
                 else {
                     Main.printToView("У " + _cr.name + " защита от выстрелов.");
                 }
@@ -294,7 +313,7 @@ public class Card {
         }
     }
 
-    public boolean haveRage(){
-        return (text.contains("Гнев.")) ?  true : false;
+    public boolean haveRage() {
+        return (text.contains("Гнев.")) ? true : false;
     }
 }

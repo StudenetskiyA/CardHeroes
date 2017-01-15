@@ -19,6 +19,17 @@ public class Creature extends Card {
     public boolean attackThisTurn = false;
     public boolean blockThisTurn = false;
 
+    public Effects effects = new Effects();
+
+    public class Effects{
+        public int cantAttackOrBlock = 0;
+
+        public void EOT(){
+            cantAttackOrBlock --;
+            if (cantAttackOrBlock<0) cantAttackOrBlock=0;
+        }
+    }
+
     public Creature(Creature _card) {
         super(_card.cost, _card.name, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
         power = _card.power;
@@ -64,13 +75,12 @@ public class Creature extends Card {
         //get list of opponent creature
         ArrayList<Creature> crt = new ArrayList<>(Board.creature.get(pl));
         //delete from it tapped
+        if (crt.contains(target)) crt.remove(target);
         for (int i = 0; i < crt.size(); i++) {
             //for (Creature cr:creature){
-            if (crt.get(i).isTapped) crt.remove(crt.get(i));
-            if (crt.get(i).blockThisTurn) crt.remove(crt.get(i));
+            if ((crt.get(i).blockThisTurn)||(crt.get(i).isTapped)||(crt.get(i).effects.cantAttackOrBlock>0)) crt.remove(crt.get(i));
         }
         //delete from it target
-        if (crt.contains(target)) crt.remove(target);
         return crt;
     }
 
