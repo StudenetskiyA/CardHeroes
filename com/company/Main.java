@@ -84,8 +84,7 @@ public class Main extends JFrame {
 
     enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseTarget}
 
-    public static Creature activatedAbilityCreature;
-    public static boolean activateAbilityCreatureTap;
+    public static Card.ActivatedAbility activatedAbility;
 
     public static playerStatus isMyTurn = playerStatus.waitingForConnection;
     public static boolean wantToMulligan[] = new boolean[4];
@@ -96,11 +95,12 @@ public class Main extends JFrame {
         loadImage();
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setInitialProperties();
-
-        //  board = new Board();
-        //  Board.firstPlayer = players[0];
-        //  Board.secondPlayer = enemy;
-        //  Board.secondPlayer = players[1];
+        String t2 = "Найм: Закрыться.";
+        String txt = t2.substring(t2.indexOf("Найм:") + "Найм:".length() + 1, t2.indexOf(".", t2.indexOf("Найм:")) + 1);
+        System.out.println(txt);
+        t2 = "Наймт: Верните выбранное существо в руку его владельца.";
+        txt = t2.substring(t2.indexOf("Наймт:") + "Наймт:".length() + 1, t2.indexOf(".", t2.indexOf("Наймт:")) + 1);
+        System.out.println(txt);
 
         String par1 = "PlayerName";
         String par2 = "defaultDeck";
@@ -115,14 +115,13 @@ public class Main extends JFrame {
         simpleDeck = new Deck(par2);
         simpleEnemyDeck = new Deck("defaultDeck");
         loadDeck(simpleDeck, par2);
+        Card c = new Card(simpleDeck.cards.get(0));
+        simpleDeck.cards.remove(0);
         simpleDeck.suffleDeck(19);
-        //TODO Load hero?
-        players[0] = new Player(simpleDeck, par1, 0, 30);
-        //players[0] = new Player(simpleDeck, par1, 0, 30);
-        //   enemy = new Player(simpleEnemyDeck, "PlayerName", 1, 30);
-        players[1] = new Player(simpleDeck, par1, 0, 30);
-        //   Board.firstPlayer = players[0];
-        //   Board.secondPlayer = players[1];
+        //TODO Load hero
+        heroImage = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
+        players[0] = new Player(c, simpleDeck, par1, 0);
+        players[1] = new Player(simpleDeck, "", par1, 0, 30);
 
         System.out.println("Game start.");
         main.setLocation(477, 0);
@@ -161,9 +160,14 @@ public class Main extends JFrame {
                     break;
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    players[1] = new Player(simpleEnemyDeck, parameter.get(0), 1, 30);
+
                     loadDeck(simpleEnemyDeck, parameter.get(1));
+                    Card c = new Card(simpleEnemyDeck.cards.get(0));
+                    enemyImage = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
+                    players[1] = new Player(c, simpleEnemyDeck, parameter.get(0), 1);
+                    simpleEnemyDeck.cards.remove(0);
                     simpleEnemyDeck.suffleDeck(19);
+
                     players[0].untappedCoin = coinStart;
                     players[0].totalCoin = coinStart;
                     players[1].untappedCoin = coinStart;
@@ -219,7 +223,7 @@ public class Main extends JFrame {
                         creatureWhoAttack = Integer.parseInt(parameter.get(1));
                         creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
                     }
-                } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))){
+                } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
@@ -227,29 +231,49 @@ public class Main extends JFrame {
                     if (parameter.get(2).equals("1")) {
                         if (parameter.get(3).equals("-1")) {
                             if (fromServer.contains("$CRYTARGET("))
-                            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(null, players[apl]);
-                            else Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(null, players[apl]);
+                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(null, players[apl]);
+                            else
+                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(null, players[apl]);
                         } else {
                             if (fromServer.contains("$CRYTARGET("))
-                            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
-                            else  Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                            else
+                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                         }
                     } else {
                         if (parameter.get(3).equals("-1")) {
                             if (fromServer.contains("$CRYTARGET("))
-                            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(null, players[pl]);
-                            else  Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(null, players[pl]);
+                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(null, players[pl]);
+                            else
+                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(null, players[pl]);
                         } else {
                             if (fromServer.contains("$CRYTARGET("))
-                            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
-                            else  Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                            else
+                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                         }
+                    }
+                } else if (fromServer.contains("$HEROTARGET(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    int apl = (pl == 0) ? 1 : 0;
+                    isMyTurn = playerStatus.MyTurn;
+                    if (parameter.get(1).equals("1")) {
+                        if (parameter.get(2).equals("-1")) players[pl].ability(null, players[1]);
+                        else players[pl].ability(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))), null);
+                    } else {
+                        if (parameter.get(2).equals("-1")) players[pl].ability(null, players[0]);
+                        else players[pl].ability(Board.creature.get(pl).get(Integer.parseInt(parameter.get(2))), null);
                     }
                 } else if (fromServer.contains("$BLOCKER(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
+                    if (pl==0)
                     isMyTurn = playerStatus.EnemyTurn;
+                    else
+                        isMyTurn = playerStatus.MyTurn;
+
                     Creature cr = Board.creature.get(apl).get(Integer.parseInt(parameter.get(1)));
                     if (Integer.parseInt(parameter.get(2)) == -1) {
                         if (Integer.parseInt(parameter.get(3)) == -1) {
@@ -258,8 +282,10 @@ public class Main extends JFrame {
                         } else {
                             Creature block = Board.creature.get(pl).get(Integer.parseInt(parameter.get(3)));
                             //Fight with bocker
+                            block.blockThisTurn=true;
                             cr.fightCreature(block);
                             if (Integer.parseInt(parameter.get(4)) == 1) {
+                                if (!block.text.contains("Опыт в защите."))
                                 block.tapCreature();
                             }
                         }
@@ -345,11 +371,25 @@ public class Main extends JFrame {
                 Client.writeLine("$ENDTURN(" + players[0].playerName + ")");
             } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.MyTurn)) {
                 //My hero ability
-                if (players[0].name.equals("Тарна")){
-                    if  (!players[0].isTapped) {
+                if (!players[0].isTapped) {
+                    if (players[0].name.equals("Тиша")) {
+                        if (players[0].untappedCoin >= 2) {
+                            players[0].untappedCoin -= 2;
+                            //replace
+                            //players[0].isTapped = true;
+                            isMyTurn = playerStatus.choiseTarget;
+                            //change
+                            activatedAbility.targetType = players[0].targetType;
+                            activatedAbility.heroAbility = true;
+                            activatedAbility.creature = null;
+                        } else {
+                            printToView("Недостаточно монет.");
+                        }
+                    }
+                    if (players[0].name.equals("Тарна")) {
                         if (players[0].untappedCoin >= 4) {
-                            players[0].untappedCoin-=4;
-                            players[0].isTapped=true;
+                            players[0].untappedCoin -= 4;
+                            players[0].isTapped = true;
                             printToView("Тарна берет карту.");
                             System.out.println("$DRAWCARD(" + players[0].playerName + ")");
                             Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
@@ -358,9 +398,8 @@ public class Main extends JFrame {
                             printToView("Недостаточно монет.");
                         }
                     }
-                    else {
-                        printToView("Повернутый герой не может действовать.");
-                    }
+                } else {
+                    printToView("Повернутый герой не может действовать.");
                 }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.MuliganPhase)) {
                 //TODO when remake server
@@ -369,111 +408,123 @@ public class Main extends JFrame {
                 System.out.println("$MULLIGANEND(" + players[0].playerName + "," + boolToInt(wantToMulligan[0]) + "," + boolToInt(wantToMulligan[1]) + "," + boolToInt(wantToMulligan[2]) + "," + boolToInt(wantToMulligan[3]) + ")");
                 Client.writeLine("$MULLIGANEND(" + players[0].playerName + "," + boolToInt(wantToMulligan[0]) + "," + boolToInt(wantToMulligan[1]) + "," + boolToInt(wantToMulligan[2]) + "," + boolToInt(wantToMulligan[3]) + ")");
                 isMyTurn = playerStatus.waitingMulligan;
-            } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.choiseTarget)) {
+            } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility)) {
                 //Battlecry or TAPT on my hero
-                //TODO NOW
-                if ((activatedAbilityCreature.tapTargetType == 3)||(activatedAbilityCreature.tapTargetType == 2)||(activatedAbilityCreature.targetType == 2) || (activatedAbilityCreature.targetType == 3)) {
-                    int nc = Board.creature.get(0).indexOf(activatedAbilityCreature);
-                    if (activateAbilityCreatureTap){
+                if ((activatedAbility.tapTargetType == 3) || (activatedAbility.tapTargetType == 2) || (activatedAbility.targetType == 2) || (activatedAbility.targetType == 3)) {
+                    int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
+                    if (activatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                         Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
-                    }
-                    else{
+                    } else {
                         System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
-                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");}
+                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
+                    }
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbilityCreature=null;//Not safety. Do check.
-                    activateAbilityCreatureTap=false;
+                    activatedAbility.creature = null;//Not safety. Do check.
+                    activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == playerStatus.choiseTarget)) {
+            } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy hero
-                if ((activatedAbilityCreature.tapTargetType == 3)||(activatedAbilityCreature.tapTargetType == 2)||(activatedAbilityCreature.targetType == 2) || (activatedAbilityCreature.targetType == 3)) {
-                    int nc = Board.creature.get(0).indexOf(activatedAbilityCreature);
-                    if (activateAbilityCreatureTap){
+                if ((activatedAbility.tapTargetType == 3) || (activatedAbility.tapTargetType == 2) || (activatedAbility.targetType == 2) || (activatedAbility.targetType == 3)) {
+                    int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
+                    if (activatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                         Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
+                    } else {
+                        System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
+                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                     }
-                    else{
-                    System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
-                    Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");}
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbilityCreature=null;//Not safety. Do check.
-                    activateAbilityCreatureTap=false;
+                    activatedAbility.creature = null;//Not safety. Do check.
+                    activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget)) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility)) {
                 //Battlecry or TAPT on my unit
-                if ((activatedAbilityCreature.tapTargetType == 1)||(activatedAbilityCreature.tapTargetType == 3)||(activatedAbilityCreature.targetType == 1) || (activatedAbilityCreature.targetType == 3)) {
-                    int nc = Board.creature.get(0).indexOf(activatedAbilityCreature);
-                    if (activateAbilityCreatureTap){
+                if ((activatedAbility.tapTargetType == 1) || (activatedAbility.tapTargetType == 3) || (activatedAbility.targetType == 1) || (activatedAbility.targetType == 3)) {
+                    int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
+                    if (activatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
-                        Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");}
-                    else{
+                        Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                    } else {
                         System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
-                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");}
+                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                    }
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbilityCreature=null;//Not safety. Do check.
-                    activateAbilityCreatureTap=false;
+                    activatedAbility.creature = null;//Not safety. Do check.
+                    activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget)) {
+            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy unit
-                if ((activatedAbilityCreature.tapTargetType == 1)||(activatedAbilityCreature.tapTargetType == 3)||(activatedAbilityCreature.targetType == 1) || (activatedAbilityCreature.targetType == 3)) {
-                    int nc = Board.creature.get(0).indexOf(activatedAbilityCreature);
-                    if (activateAbilityCreatureTap){
+                if ((activatedAbility.tapTargetType == 1) || (activatedAbility.tapTargetType == 3) || (activatedAbility.targetType == 1) || (activatedAbility.targetType == 3)) {
+                    int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
+                    //Check correct target or it not able?
+                    if (activatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
-                        Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");}
-                    else{
-                    System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
-                    Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");}
+                        Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
+                    } else {
+                        System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
+                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
+                    }
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbilityCreature=null;//Not safety. Do check.
-                    activateAbilityCreatureTap=false;
+                    activatedAbility.creature = null;//Not safety. Do check.
+                    activatedAbility.creatureTap = false;
+                } else {
+                    printToView("Выберите корректную цель.");
+                }
+            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (activatedAbility.heroAbility)) {
+                //Hero ability on enemy unit
+                if ((players[0].targetType == 1) || (players[0].targetType == 3)) {
+                    System.out.println("$HEROTARGET(" + players[0].playerName + ",1," + num + ")");
+                    Client.writeLine("$HEROTARGET(" + players[0].playerName + ",1," + num + ")");
+                    isMyTurn = playerStatus.MyTurn;
+                    activatedAbility.heroAbility = false;
                 } else {
                     printToView("Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАПТ:"))) {
                 //TAP with target ability - first step
                 if (!Board.creature.get(0).get(num).isSummonedJust) {
-                    if (!Board.creature.get(0).get(num).isTapped){
-                    System.out.println("tapt ability.");
-                    isMyTurn = playerStatus.choiseTarget;
-                    activatedAbilityCreature = Board.creature.get(0).get(num);
-                    activateAbilityCreatureTap = true;
-                    main.repaint();}
-                    else {
+                    if (!Board.creature.get(0).get(num).isTapped) {
+                        System.out.println("tapt ability.");
+                        isMyTurn = playerStatus.choiseTarget;
+                        activatedAbility.creature = Board.creature.get(0).get(num);
+                        activatedAbility.targetType = Board.creature.get(0).get(num).targetType;
+                        activatedAbility.tapTargetType = Board.creature.get(0).get(num).tapTargetType;
+                        activatedAbility.creatureTap = true;
+                        main.repaint();
+                    } else {
                         printToView("Повернутое существо не может это сделать.");
                     }
-                }
-                else {
+                } else {
                     printToView("Это существо недавно вошло в игру.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАП:"))) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).
+                    get(num).text.contains("ТАП:"))) {
                 //TAP with target ability - first step
                 if (!Board.creature.get(0).get(num).isSummonedJust) {
-                    if (!Board.creature.get(0).get(num).isTapped){
+                    if (!Board.creature.get(0).get(num).isTapped) {
                         System.out.println("tap ability.");
-                       Board.creature.get(0).get(num).tapNoTargetAbility();
-                        main.repaint();}
-                    else {
+                        Board.creature.get(0).get(num).tapNoTargetAbility();
+                        main.repaint();
+                    } else {
                         printToView("Повернутое существо не может это сделать.");
                     }
-                }
-                else {
+                } else {
                     printToView("Это существо недавно вошло в игру.");
                 }
-            }
-            else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.IChoiseBlocker)) {
+            } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.IChoiseBlocker)) {
                 System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
                 Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.IChoiseBlocker)) {
                 //TODO can't block
-                if (Board.creature.get(0).get(num).isTapped) {
-                    printToView("Повернутые существа не могут блокировать.");
+                if ((Board.creature.get(0).get(num).isTapped) || (Board.creature.get(0).get(num).blockThisTurn)){
+                    printToView("Повернутые/уже блокировавшие существа не могут блокировать.");
                 } else if (creatureWhoAttackTarget == num) {
                     System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
                     Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
@@ -516,8 +567,8 @@ public class Main extends JFrame {
                     }
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (creatureMem != null)) {
                     //enemy hero attack by creature
-                    if (creatureMem.isTapped) {
-                        printToView("Повернутое существо не может атаковать.");
+                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn)) {
+                        printToView("Повернутое/атаковавшее существо не может атаковать.");
                     } else {
                         if (creatureMem.isSummonedJust) {
                             printToView("Это существо вошло в игру на этом ходу.");
@@ -528,8 +579,8 @@ public class Main extends JFrame {
                     }
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (creatureMem != null)) {
                     //enemy creature attack by player creature
-                    if (creatureMem.isTapped) {
-                        printToView("Повернутое существо не может атаковать.");
+                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn)) {
+                        printToView("Повернутое/атаковавшее существо не может атаковать.");
                     } else {
                         if (creatureMem.isSummonedJust) {
                             printToView("Это существо вошло в игру на этом ходу.");
@@ -638,12 +689,13 @@ public class Main extends JFrame {
         endTurnClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283);
         endTurnClick.setSize(heroW, heroW * 149 / 283);
         //Heroes
-        if (players[0].isTapped){g.drawImage(Card.tapImage(heroImage), main.getWidth() - heroH - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroH, heroW, null);
-        }
-        else g.drawImage(heroImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
-        if (players[1].isTapped){g.drawImage(Card.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
-        }
-        else g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
+        if (players[0].isTapped) {
+            g.drawImage(Card.tapImage(heroImage), main.getWidth() - heroH - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroH, heroW, null);
+        } else
+            g.drawImage(heroImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+        if (players[1].isTapped) {
+            g.drawImage(Card.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
+        } else g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
         enemyHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP);
         enemyHeroClick.setSize(heroW, heroH);
         playerHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM);
@@ -766,8 +818,8 @@ public class Main extends JFrame {
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10, h + heroH / 2 - heroH / 10, heroH / 5, heroH / 5, null);
                         }
                         if (Board.creature.get(np).get(i).poison != 0) {
-                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison"+Board.creature.get(np).get(i).poison+".png"));
-                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10-heroH/5, h + heroH / 2 - heroH / 10-heroH/5, heroH / 5, heroH / 5, null);
+                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison" + Board.creature.get(np).get(i).poison + ".png"));
+                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 - heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
                         }
                         numUnit++;
                     } catch (IOException e) {
@@ -782,8 +834,6 @@ public class Main extends JFrame {
     private static void loadImage() {
         try {
             background = ImageIO.read(Main.class.getResourceAsStream("Background.jpg"));
-            heroImage = ImageIO.read(Main.class.getResourceAsStream("cards/Тарна.jpg"));
-            enemyImage = ImageIO.read(Main.class.getResourceAsStream("cards/Тарна.jpg"));
             heroCoinImage = ImageIO.read(Main.class.getResourceAsStream("icons/Coin.png"));
             heroDeckImage = ImageIO.read(Main.class.getResourceAsStream("icons/Deck.png"));
             endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Endturn.png"));
@@ -818,7 +868,7 @@ public class Main extends JFrame {
         Board.creature = new ArrayList<ArrayList<Creature>>(2);
         Board.creature.add(new ArrayList<Creature>());
         Board.creature.add(new ArrayList<Creature>());
-   //     Board.isActiveFirst = true;
+        //     Board.isActiveFirst = true;
 
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);

@@ -22,6 +22,14 @@ public class Card {
     public int hp;//only for creature and hero, its maximum health, not current
     public String hash;
 
+    public static class ActivatedAbility{
+        public static int targetType;
+        public static int tapTargetType;
+        public static Creature creature;
+        public static boolean creatureTap;
+        public static boolean heroAbility=false;
+    }
+
     public Card(Card _card) {
         name = _card.name;
         text = _card.text;
@@ -48,7 +56,6 @@ public class Card {
         targetType = _targetType;
         tapTargetType = _tapTargetType;
     }
-
 
     public static ArrayList<String> getTextBetween(String fromText) {
         ArrayList<String> rtrn = new ArrayList<String>();
@@ -89,6 +96,9 @@ public class Card {
     }
 
     public void playOnCreature(Player _pl, Creature creature) {
+        if (creature.text.contains("Если выбрана целью заклинание - погибает."))
+        {creature.die();}
+        else
         ability(this, _pl, creature, null, text);
     }
 
@@ -98,7 +108,11 @@ public class Card {
 
     public static Card getCardByName(String name) {
         //Here all cards!
-        if (name.equals("Раскат грома"))
+        if (name.equals("Тарна"))
+            return new Card(0, "Тарна", 1, 0, 0, 0, "ТАП: Возьмите карту.", 0, 28);
+        else if (name.equals("Тиша"))
+            return new Card(0, "Тиша", 1, 0, 1, 0, "ТАПТ: Отравить выбранное существо на 1.", 0, 26);
+        else if (name.equals("Раскат грома"))
             return new Card(1, "Раскат грома", 1, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
         else if (name.equals("Гьерхор"))
             return new Card(1, "Гьерхор", 1, 2, 0, 0, "", 2, 2);
@@ -144,6 +158,18 @@ public class Card {
             return new Card(6, "Рыцарь Туллена", 1, 2, 0, 0, "Броня 3.", 6, 3);
         else if (name.equals("Орк-лучник"))
             return new Card(1, "Орк-лучник", 1, 2, 3, 0, "Гнев. Наймт: Выстрел на 1.", 1, 1);
+        else if (name.equals("Безумие"))
+            return new Card(3, name, 1, 1, 1, 0, "Нанести урон выбранному существу, равный его удару.", 0, 0);
+        else if (name.equals("Зельеварение"))
+            return new Card(1, name, 1, 1, 1, 0, "Верните выбранное существо в руку его владельца.", 0, 0);
+        else if (name.equals("Дахут"))
+            return new Card(3, name, 1, 2, 1, 0, "Наймт: Верните выбранное существо в руку его владельца.", 2, 3);
+        else if (name.equals("Забира"))
+            return new Card(2, "Забира", 1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 3, 4);
+        else if (name.equals("Десница Архааля"))
+            return new Card(4, name, 1, 2, 1, 0, "Опыт в защите. Наймт: Уничтожьте отравленное существо.", 1, 4);
+        else if (name.equals("Орк-мародер"))
+            return new Card(5, name, 1, 2, 0, 0, "Опыт в атаке. Первый удар. Рывок.", 5, 2);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;
@@ -181,10 +207,23 @@ public class Card {
             _pl.takeDamage(dmg);
             Main.printToView(_pl.playerName + " получил " + dmg + " урона.");
         }
+        if (txt.contains("Уничтожьте отравленное существо.")) {
+            if (_cr.poison>0)
+            _cr.die();
+        }
         if (txt.contains("Ранить выбранное существо на ")) {
             int dmg = getNumericAfterText(txt, "Ранить выбранное существо на ");
             _cr.takeDamage(dmg, Creature.DamageSource.ability);
             Main.printToView(_cr.name + " получил " + dmg + " урона.");
+        }
+        if (txt.contains("Нанести урон выбранному существу, равный его удару.")) {
+            int dmg = _cr.power;
+            _cr.takeDamage(dmg, Creature.DamageSource.spell);
+            Main.printToView(_cr.name + " получил " + dmg + " урона.");
+        }
+        if (txt.contains("Верните выбранное существо в руку его владельца.")) {
+            _cr.returnToHand();
+            Main.printToView(_cr.name + " возвращается в руку владельца.");
         }
         if (txt.contains("Отравить выбранное существо на ")) {
             int dmg = getNumericAfterText(txt, "Отравить выбранное существо на ");

@@ -17,8 +17,17 @@ public class Player extends Card{
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
 
-    public Player(Deck _deck,String _playerName,int _n, int _hp){
-        super(0,"Тарна",1,0,0,0,"",0,_hp);
+    public Player(Card _card,Deck _deck,String _playerName,int _n){
+        super(0,_card.name,1,0,_card.targetType,0,_card.text,0,_card.hp);
+        deck=_deck;
+        playerName=_playerName;
+        cardInHand = new ArrayList<Card>();
+        graveyard = new ArrayList<Card>();
+        numberPlayer=_n;
+    }
+
+    public Player(Deck _deck,String _heroName,String _playerName,int _n, int _hp){
+        super(0,_heroName,1,0,0,0,"",0,_hp);
         deck=_deck;
         playerName=_playerName;
         cardInHand = new ArrayList<Card>();
@@ -52,8 +61,10 @@ public class Player extends Card{
                 Board.creature.get(numberPlayer).get(i).takeDamage( Board.creature.get(numberPlayer).get(i).poison, Creature.DamageSource.poison);
             //armor
             Board.creature.get(numberPlayer).get(i).currentArmor= Board.creature.get(numberPlayer).get(i).maxArmor;
-            //for gnev
+            //for rage
             Board.creature.get(numberPlayer).get(i).takedDamageThisTurn=false;
+            Board.creature.get(numberPlayer).get(i).attackThisTurn=false;
+            Board.creature.get(numberPlayer).get(i).blockThisTurn=false;
         }
         //Draw
         if (Board.turnCount!=1) drawCard();//First player not draw card in first turn. It's rule.
@@ -114,7 +125,12 @@ public class Player extends Card{
         if (damage<0) damage=0;
     }
 
-
+    public void ability(Creature _cr, Player _pl) {
+        String txt = this.text.substring(this.text.indexOf("ТАПТ:") + "ТАПТ:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАПТ:") + 1));
+        System.out.println("ТАПТ HERO: " + txt);
+        isTapped=true;
+        Card.ability(this,this,_cr, _pl, txt);
+    }
 
     public String handToString(){
         String tmp="";

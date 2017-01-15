@@ -12,10 +12,12 @@ public class Creature extends Card {
     public boolean isSummonedJust;
     public int poison;
     public Player owner;
-    public int currentArmor=0;
-    public int maxArmor=0;
+    public int currentArmor = 0;
+    public int maxArmor = 0;
     int damage;
-    public boolean takedDamageThisTurn=false;
+    public boolean takedDamageThisTurn = false;
+    public boolean attackThisTurn = false;
+    public boolean blockThisTurn = false;
 
     public Creature(Creature _card) {
         super(_card.cost, _card.name, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
@@ -27,10 +29,10 @@ public class Creature extends Card {
         isSummonedJust = true;
         name = _card.name;
         owner = _card.owner;
-        
-        if (text.contains("Броня ")){
-            maxArmor = getNumericAfterText(text,"Броня ");
-            currentArmor=maxArmor;
+
+        if (text.contains("Броня ")) {
+            maxArmor = getNumericAfterText(text, "Броня ");
+            currentArmor = maxArmor;
         }
     }
 
@@ -44,9 +46,9 @@ public class Creature extends Card {
         isSummonedJust = true;
         name = _card.name;
         owner = _owner;
-        if (text.contains("Броня ")){
-            maxArmor = getNumericAfterText(text,"Броня ");
-            currentArmor=maxArmor;
+        if (text.contains("Броня ")) {
+            maxArmor = getNumericAfterText(text, "Броня ");
+            currentArmor = maxArmor;
         }
     }
 
@@ -65,35 +67,34 @@ public class Creature extends Card {
         for (int i = 0; i < crt.size(); i++) {
             //for (Creature cr:creature){
             if (crt.get(i).isTapped) crt.remove(crt.get(i));
+            if (crt.get(i).blockThisTurn) crt.remove(crt.get(i));
         }
         //delete from it target
         if (crt.contains(target)) crt.remove(target);
         return crt;
     }
 
-
-
     public void fightCreature(Creature second) {
         //TODO First strike and other
         Main.printToView(this.name + " сражается с " + second.name + ".");
         if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
-            this.takeDamage(second.power,DamageSource.fight,second.haveRage());
-            if (this.damage < this.hp) second.takeDamage(this.power,DamageSource.fight,second.haveRage());
+            this.takeDamage(second.power, DamageSource.fight, second.haveRage());
+            if (this.damage < this.hp) second.takeDamage(this.power, DamageSource.fight, second.haveRage());
         } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
-            second.takeDamage(this.power,DamageSource.fight,second.haveRage());
-            if (second.damage < second.hp) this.takeDamage(second.power,DamageSource.fight,second.haveRage());
+            second.takeDamage(this.power, DamageSource.fight, second.haveRage());
+            if (second.damage < second.hp) this.takeDamage(second.power, DamageSource.fight, second.haveRage());
         } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
-            this.takeDamage(second.power,DamageSource.fight,second.haveRage());
-            second.takeDamage(this.power,DamageSource.fight,second.haveRage());
+            this.takeDamage(second.power, DamageSource.fight, second.haveRage());
+            second.takeDamage(this.power, DamageSource.fight, second.haveRage());
         } else {
-            this.takeDamage(second.power,DamageSource.fight,second.haveRage());
-            second.takeDamage(this.power,DamageSource.fight,second.haveRage());
+            this.takeDamage(second.power, DamageSource.fight, second.haveRage());
+            second.takeDamage(this.power, DamageSource.fight, second.haveRage());
         }
     }
 
-    public void heal(int dmg){
-        damage-=dmg;
-        if (damage<0) damage=0;
+    public void heal(int dmg) {
+        damage -= dmg;
+        if (damage < 0) damage = 0;
     }
 
     public void fightPlayer(Player second) {
@@ -102,7 +103,9 @@ public class Creature extends Card {
     }
 
     public void attackCreature(Creature target) {
-        tapCreature();
+        if (!text.contains("Опыт в атаке."))
+            tapCreature();
+        attackThisTurn = true;
 
         if (this.text.contains("Направленный удар.")) {
             fightCreature(target);
@@ -125,7 +128,10 @@ public class Creature extends Card {
     }
 
     public void attackPlayer(Player target) {
-        tapCreature();
+        if (!text.contains("Опыт в атаке."))
+            tapCreature();
+        attackThisTurn = true;
+
         if (this.text.contains("Направленный удар.")) {
             fightPlayer(target);
         } else {
@@ -145,23 +151,23 @@ public class Creature extends Card {
         }
     }
 
-    enum DamageSource{fight,spell,poison,ability,scoot}
-    
-    public void takeDamage(int dmg, DamageSource dmgsrc,Boolean...rage) {
+    enum DamageSource {fight, spell, poison, ability, scoot}
+
+    public void takeDamage(int dmg, DamageSource dmgsrc, Boolean... rage) {
         if (!this.text.contains("Не получает ран.")) {
-            if ((dmgsrc==DamageSource.scoot) || (dmgsrc==DamageSource.fight)){
-                if ((takedDamageThisTurn)&&(rage[0])) {
+            if ((dmgsrc == DamageSource.scoot) || (dmgsrc == DamageSource.fight)) {
+                if ((takedDamageThisTurn) && (rage[0])) {
                     dmg++;
                     System.out.println("RAGE!");
                 }
-                int tmp=dmg;
-                dmg-=currentArmor;
-                currentArmor-=tmp;
-                if (dmg<0) dmg=0;
-                if(currentArmor<0) currentArmor=0;
+                int tmp = dmg;
+                dmg -= currentArmor;
+                currentArmor -= tmp;
+                if (dmg < 0) dmg = 0;
+                if (currentArmor < 0) currentArmor = 0;
             }
             damage += dmg;
-            takedDamageThisTurn=true;
+            takedDamageThisTurn = true;
             if (tougness > damage) {
             } else {
                 die();
@@ -170,25 +176,24 @@ public class Creature extends Card {
 
     }
 
-
     public void tapNoTargetAbility() {
-        String txt = this.text.substring(this.text.indexOf("ТАП:") + "ТАП:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАП:") + 1));
+        String txt = this.text.substring(this.text.indexOf("ТАП:") + "ТАП:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАП:")) + 1);
         System.out.println("ТАПТ: " + txt);
         tapCreature();
-        Card.ability(this, owner,null, null, txt);
+        Card.ability(this, owner, null, null, txt);
     }
 
     public void tapTargetAbility(Creature _cr, Player _pl) {
-        String txt = this.text.substring(this.text.indexOf("ТАПТ:") + "ТАПТ:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАПТ:") + 1));
+        String txt = this.text.substring(this.text.indexOf("ТАПТ:") + "ТАПТ:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАПТ:")) + 1);
         System.out.println("ТАПТ: " + txt);
         tapCreature();
-        Card.ability(this,owner,_cr, _pl, txt);
+        Card.ability(this, owner, _cr, _pl, txt);
     }
 
     public void cry(Creature _cr, Player _pl) {
-        String txt = this.text.substring(this.text.indexOf("Наймт:") + "Наймт:".length() + 1, this.text.indexOf(".", this.text.indexOf("Наймт:") + 1));
+        String txt = this.text.substring(this.text.indexOf("Наймт:") + "Наймт:".length() + 1, this.text.indexOf(".", this.text.indexOf("Наймт:")) + 1);
         System.out.println("Наймт: " + txt);
-        Card.ability(this,owner,_cr, _pl, txt);
+        Card.ability(this, owner, _cr, _pl, txt);
     }
 
     public void die() {
@@ -199,5 +204,12 @@ public class Creature extends Card {
         // Or not?
         Board.removeCreatureFromPlayerBoard(this);
         Board.putCardToGraveyard(this, this.owner);
+        Main.printToView(this.name + " умирает.");
+    }
+
+    public void returnToHand() {
+        Board.removeCreatureFromPlayerBoard(this);
+        owner.cardInHand.add(this);
+        // Board.putCardToGraveyard(this, this.owner);
     }
 }
