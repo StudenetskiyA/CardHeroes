@@ -95,17 +95,17 @@ public class Creature extends Card {
         //TODO First strike and other
         Main.printToView(this.name + " сражается с " + second.name + ".");
         if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
-            this.takeDamage(second.power, DamageSource.fight, second.haveRage());
-            if (this.damage < this.hp) second.takeDamage(this.power, DamageSource.fight, second.haveRage());
+            this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+            if (this.damage < this.hp) second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
         } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
-            second.takeDamage(this.power, DamageSource.fight, second.haveRage());
-            if (second.damage < second.hp) this.takeDamage(second.power, DamageSource.fight, second.haveRage());
+            second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+            if (second.damage < second.hp) this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
         } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
-            this.takeDamage(second.power, DamageSource.fight, second.haveRage());
-            second.takeDamage(this.power, DamageSource.fight, second.haveRage());
+            this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+            second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
         } else {
-            this.takeDamage(second.power, DamageSource.fight, second.haveRage());
-            second.takeDamage(this.power, DamageSource.fight, second.haveRage());
+            this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+            second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
         }
     }
 
@@ -116,7 +116,7 @@ public class Creature extends Card {
 
     public void fightPlayer(Player second) {
         Main.printToView(this.name + " атакует " + second.name + ".");
-        second.takeDamage(this.power);
+        second.takeDamage(this.getPower());
     }
 
     public void attackCreature(Creature target) {
@@ -185,7 +185,7 @@ public class Creature extends Card {
             }
             damage += dmg;
             takedDamageThisTurn = true;
-            if (tougness > damage) {
+            if (getTougness() > damage) {
             } else {
                 die();
             }

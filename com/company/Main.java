@@ -25,7 +25,7 @@ public class Main extends JFrame {
     private static int serverPort = 6666;
     private static final String address = "127.0.0.1";
 
-    public static final int sufflingConst =19;
+    public static final int sufflingConst = 19;
     private static final int B0RDER_RIGHT = 10;
     private static final int B0RDER_LEFT = 10;
     private static final int B0RDER_BOTTOM = 40;
@@ -41,6 +41,8 @@ public class Main extends JFrame {
     private static int heroH;// = (heroW * 400 / 283);
     private static int smallCardW;// = (int) (heroW * 0.7);
     private static int smallCardH;// = (int) (heroH * 0.7);
+    private static int bigCardW;
+    private static int bigCardH;
     private static int cardX;// = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
 
     private static ViewField viewField = new ViewField();
@@ -91,8 +93,8 @@ public class Main extends JFrame {
     enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget}
 
     public static int choiseXnum;
-    public static int choiseXcolor=0;
-    public static int choiseXtype=0;
+    public static int choiseXcolor = 0;
+    public static int choiseXtype = 0;
     public static String choiseXtext;
 
     public static Card.ActivatedAbility activatedAbility;
@@ -101,7 +103,7 @@ public class Main extends JFrame {
     public static boolean wantToMulligan[] = new boolean[4];
     static int creatureWhoAttack;
     static int creatureWhoAttackTarget;
-    static int hilightMyCreature=-1;
+    static int hilightMyCreature = -1;
 
     public static void main(String[] args) throws IOException {
         loadImage();
@@ -380,18 +382,17 @@ public class Main extends JFrame {
                     int apl = (pl == 0) ? 1 : 0;
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
                 } else if (fromServer.contains("$FOUND(")) {//$FOUND(Player, Card)
-                    choiseXcolor=0;
-                    choiseXtype=0;
+                    choiseXcolor = 0;
+                    choiseXtype = 0;
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
-                    if (parameter.get(1).equals("-1")){
+                    if (parameter.get(1).equals("-1")) {
                         if (pl == 0) {
                             printToView("Вы ищете в колоде, но ничего подходящего не находите.");
                         } else {
                             printToView("Противник ищет в колоде, но ничего подходящего не находит.");
                         }
-                    }
-                   else {
+                    } else {
                         if (pl == 0) {
                             Card card = players[0].deck.searchCard(parameter.get(1));
                             players[0].drawSpecialCard(card);
@@ -403,7 +404,7 @@ public class Main extends JFrame {
                         }
                     }
                 }
-                }
+            }
         }
     }
 
@@ -616,14 +617,14 @@ public class Main extends JFrame {
                     Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",1)");
                 }
             } else if ((onWhat == Compo.ChoiseX) && (isMyTurn == playerStatus.choiseX)) {
-                isMyTurn=playerStatus.MyTurn;
+                isMyTurn = playerStatus.MyTurn;
                 main.repaint();
                 releaseCardWithX(num);
             } else if ((onWhat == Compo.SearchX) && (isMyTurn == playerStatus.searchX)) {
-                isMyTurn=playerStatus.MyTurn;
+                isMyTurn = playerStatus.MyTurn;
                 main.repaint();
-                System.out.println("$FOUND(" + players[0].playerName + "," +founded.get(num).name+ ")");
-                Client.writeLine("$FOUND(" + players[0].playerName + "," +founded.get(num).name+ ")");
+                System.out.println("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
+                Client.writeLine("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
             }
 
         }
@@ -641,18 +642,17 @@ public class Main extends JFrame {
                 //
             }
 
-            if (onWhat == Compo.CreatureInMyPlay)
-            {
-                hilightMyCreature=num;
+            if (onWhat == Compo.CreatureInMyPlay) {
+                hilightMyCreature = num;
                 main.repaint();
             }
-           // printToView(whereMyMouse);
+            // printToView(whereMyMouse);
         }
 
         public void mouseExited(MouseEvent event) {
             whereMyMouse = "";
             whereMyMouseNum = 0;
-            hilightMyCreature=-1;
+            hilightMyCreature = -1;
             main.repaint();
         }
 
@@ -667,9 +667,10 @@ public class Main extends JFrame {
                             choiseXnum = num;
                             choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + ",-1,-1";
                             main.repaint();
+                        } else {
+                            System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
+                            Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
                         }
-                        else {System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
-                        Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");}
                     } else {
                         printToView("Заклинание требует цели.");
                     }
@@ -763,8 +764,8 @@ public class Main extends JFrame {
         //setLocation and setSize to other block?
         //  System.out.println("onRepaint " + repainted);
         repainted++;
-        int bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.5);
-        int bigCardH = (bigCardW * 400 / 283);
+        bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.5);
+        bigCardH = (bigCardW * 400 / 283);
         heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
         heroH = (heroW * 400 / 283);
         smallCardW = (int) (heroW * 0.7);
@@ -820,40 +821,55 @@ public class Main extends JFrame {
         //Heroes equpiment
         //TODO Enemy, durability
         if (players[0].armor == null) {
-            g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW -heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         } else {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].armor.image));
-            g.drawImage(im, main.getWidth() - smallCardW -heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            g.drawImage(im, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         }
         if (players[1].armor == null) {
-            g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW -heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+            g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
         } else {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].armor.image));
-            g.drawImage(im, main.getWidth() - smallCardW -heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+            g.drawImage(im, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
         }
         //amulet
         if (players[0].amulet == null) {
-            g.drawImage(heroNoAmuletImage, main.getWidth() - smallCardW * 2-heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            g.drawImage(heroNoAmuletImage, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         } else {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].amulet.image));
-            g.drawImage(im, main.getWidth() - smallCardW * 2-heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            g.drawImage(im, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         }
         if (players[1].amulet == null) {
-            g.drawImage(heroNoAmuletImage, main.getWidth() - smallCardW * 2-heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+            g.drawImage(heroNoAmuletImage, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
         } else {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].amulet.image));
-            g.drawImage(im, main.getWidth() - smallCardW * 2-heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+            g.drawImage(im, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
         }
         //TODO Draw N not 4
+
         if (players[0].damage != 0) {
-            im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
-            g.drawImage(im, playerHeroClick.getX() + playerHeroClick.getWidth() / 2 - heroH / 10, playerHeroClick.getY() + (playerHeroClick.getHeight() / 2 - heroH / 10), heroH / 5, heroH / 5, null);
+            int j;
+            for (j = 0; j < players[0].damage / 10; j++) {
+                im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + 10 + ".png"));
+                g.drawImage(im, playerHeroClick.getX() + playerHeroClick.getWidth() / 2 - heroH / 10 + (j - 1) * heroH / 5, playerHeroClick.getY() + (playerHeroClick.getHeight() / 2 - heroH / 10), heroH / 5, heroH / 5, null);
+            }
+            int a = players[0].damage % 10;
+            if (a != 0) {
+                im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + a + ".png"));
+                g.drawImage(im, playerHeroClick.getX() + playerHeroClick.getWidth() / 2 - heroH / 10 + (j - 1) * heroH / 5, playerHeroClick.getY() + (playerHeroClick.getHeight() / 2 - heroH / 10), heroH / 5, heroH / 5, null);
+            }
         }
-        //playerDamageLabel.setText(player.damage + "");
-        //else playerDamageLabel.setText("");
         if (players[1].damage != 0) {
-            im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
-            g.drawImage(im, enemyHeroClick.getX() + enemyHeroClick.getWidth() / 2 - heroH / 10, enemyHeroClick.getY() + (enemyHeroClick.getHeight() / 2 - heroH / 10), heroH / 5, heroH / 5, null);
+            int j;
+            for (j = 0; j < players[1].damage / 10; j++) {
+                im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + 10 + ".png"));
+                g.drawImage(im, playerHeroClick.getX() + playerHeroClick.getWidth() / 2 - heroH / 10 + (j - 1) * heroH / 5, enemyHeroClick.getY() + (playerHeroClick.getHeight() / 2 - heroH / 10), heroH / 5, heroH / 5, null);
+            }
+            int a = players[1].damage % 10;
+            if (a != 0) {
+            im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + a + ".png"));
+            g.drawImage(im, playerHeroClick.getX() + playerHeroClick.getWidth() / 2 - heroH / 10 + (j-1) * heroH / 5, enemyHeroClick.getY() + (playerHeroClick.getHeight() / 2 - heroH / 10), heroH / 5, heroH / 5, null);
+        }
         }
         // enemyDamageLabel.setLocation(enemyHeroClick.getX() + (int) (enemyHeroClick.getWidth() * HERO_DAMAGE_WHERE_TO_SHOW_X), enemyHeroClick.getY() + (int) (enemyHeroClick.getHeight() * HERO_DAMAGE_WHERE_TO_SHOW_Y));
         // if (enemy.damage != 0) enemyDamageLabel.setText(enemy.damage + "");
@@ -915,7 +931,7 @@ public class Main extends JFrame {
                         }
                         numCardInHand++;
                     } catch (IOException e) {
-                        System.out.println("Can't load image "+card.image);
+                        System.out.println("Can't load image " + card.image);
                     }
                 }
             }
@@ -940,21 +956,20 @@ public class Main extends JFrame {
         //Search in deck
         if (isMyTurn == playerStatus.searchX) {
             founded = new ArrayList<>(players[0].deck.cards);
-            for (int i = founded.size()-1; i >=0; i--) {
-                if ((choiseXcolor!=founded.get(i).color) && (choiseXcolor!=0))founded.remove(founded.get(i));
-                if ((choiseXtype!=founded.get(i).type) && (choiseXtype!=0))founded.remove(founded.get(i));
-                }
+            for (int i = founded.size() - 1; i >= 0; i--) {
+                if ((choiseXcolor != founded.get(i).color) && (choiseXcolor != 0)) founded.remove(founded.get(i));
+                if ((choiseXtype != founded.get(i).type) && (choiseXtype != 0)) founded.remove(founded.get(i));
+            }
 
-            if (founded.size()==0){
+            if (founded.size() == 0) {
                 printToView("В колоде ничего подходящего не найдено.");
                 System.out.println("$FOUND(" + players[0].playerName + ",-1)");
                 Client.writeLine("$FOUND(" + players[0].playerName + ",-1)");
-                isMyTurn=playerStatus.MyTurn;
-                choiseXcolor=0;
-                choiseXtype=0;
+                isMyTurn = playerStatus.MyTurn;
+                choiseXcolor = 0;
+                choiseXtype = 0;
                 main.repaint();
-            }
-            else {
+            } else {
                 //TODO If founded.size() small, draw bigger
                 for (int i = 0; i < founded.size(); i++) {
                     int ii = i % 10;
@@ -966,10 +981,9 @@ public class Main extends JFrame {
                     searchXLabel[i].setVisible(true);
                 }
             }
-        }
-        else {
-            for (int i=0;i<40;i++)
-            searchXLabel[i].setVisible(false);
+        } else {
+            for (int i = 0; i < 40; i++)
+                searchXLabel[i].setVisible(false);
         }
     }
 
@@ -986,41 +1000,52 @@ public class Main extends JFrame {
             {
                 if (Board.creature.get(np).get(i).image != null) {
                     try {
-
-                        im = ImageIO.read(Main.class.getResourceAsStream("cards/small/" + Board.creature.get(np).get(i).image));
+                        int effects = 0;
+                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+//                        if ((hilightMyCreature==i)&& (np==0)){
+//                            g.drawImage(im, B0RDER_LEFT, battlegroundClick.getY() + battlegroundClick.getHeight() -bigCardH , bigCardW, bigCardH, null);
+//                            //Draw effects
+//                            BufferedImage tmpim
+//                            if (Board.creature.get(np).get(i).effects.bonusPower!=0){
+//
+//                            }
+//                        }
                         if (Board.creature.get(np).get(i).isTapped) {
-                            if ((hilightMyCreature==i)&& (np==0)){
-                                g.drawImage(Card.tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h-heroW/2, (int)(heroH*1.5), (int)(heroW*1.5), null);
-                                playerUnitClick[np][numUnit].setSize((int)(heroH*1.5), (int)(heroW*1.5));
-                                playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h-heroW/2);
-                            }
-                            else {
-                                g.drawImage(Card.tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h, heroH, heroW, null);
-                                playerUnitClick[np][numUnit].setSize(heroH, heroW);
-                                playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);//May be write not center?
-                            }
+                            g.drawImage(Card.tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h, heroH, heroW, null);
+                            playerUnitClick[np][numUnit].setSize(heroH, heroW);
+                            playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);//May be write not center?
                         } else {
-                            if ((hilightMyCreature==i)&& (np==0)){
-                                g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW), h-heroH/2, (int)(heroW*1.5), (int)(heroH*1.5), null);
-                                playerUnitClick[np][numUnit].setSize((int)(heroW*1.5), (int)(heroH*1.5));
-                                playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h-heroH/2);
-                            }
-                            else {
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW), h, heroW, heroH, null);
                             playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);
                             playerUnitClick[np][numUnit].setSize(heroW, heroH);
-                         }
                         }
                         if (Board.creature.get(np).get(i).damage != 0) {
-                            //Text call neverending repaint!!!
-                            //TODO create image of damage!
-                            im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
-                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10, h + heroH / 2 - heroH / 10, heroH / 5, heroH / 5, null);
+                            for (int j = 0; j <= Board.creature.get(np).get(i).damage / 10; j++) {
+                                int a = Board.creature.get(np).get(i).damage % 10;
+                                im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + a + ".png"));
+                                g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 + j * heroH / 5, h + heroH / 2 - heroH / 10, heroH / 5, heroH / 5, null);
+                            }
                         }
                         if (Board.creature.get(np).get(i).poison != 0) {
                             im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison" + Board.creature.get(np).get(i).poison + ".png"));
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 - heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+                            effects++;
                         }
+                        if (Board.creature.get(np).get(i).effects.bonusPower != 0) {
+                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonuspower" + Board.creature.get(np).get(i).effects.bonusPower + ".png"));
+                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 - heroH / 5 + effects * heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+                            effects++;
+                        }
+//                        if (Board.creature.get(np).get(i).effects.bonusTougness != 0) {
+//                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonustougness" + Board.creature.get(np).get(i).effects.bonusTougness + ".png"));
+//                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 - heroH / 5+effects*heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+//                            effects++;
+//                        }
+//                        if (Board.creature.get(np).get(i).effects.turnToDie < 3) {
+//                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/turntodie" + Board.creature.get(np).get(i).effects.turnToDie + ".png"));
+//                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 - heroH / 5+effects*heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+//                            effects++;
+//                        }
                         numUnit++;
                     } catch (IOException e) {
                         System.out.println("Can't load image.");
