@@ -21,7 +21,7 @@ public class Player extends Card{
     public Card amulet;
 
     public Player(Card _card,Deck _deck,String _playerName,int _n){
-        super(0,_card.name,1,0,_card.targetType,0,_card.text,0,_card.hp);
+        super(0,_card.name,"",1,0,_card.targetType,0,_card.text,0,_card.hp);
         deck=_deck;
         playerName=_playerName;
         cardInHand = new ArrayList<Card>();
@@ -30,11 +30,11 @@ public class Player extends Card{
     }
 
     public Player(Deck _deck,String _heroName,String _playerName,int _n, int _hp){
-        super(0,_heroName,1,0,0,0,"",0,_hp);
+        super(0,_heroName,"",1,0,0,0,"",0,_hp);
         deck=_deck;
         playerName=_playerName;
-        cardInHand = new ArrayList<Card>();
-        graveyard = new ArrayList<Card>();
+        cardInHand = new ArrayList<>();
+        graveyard = new ArrayList<>();
         numberPlayer=_n;
     }
 
@@ -117,18 +117,18 @@ public class Player extends Card{
                 //creature
                 Board.addCreatureToBoard(_card,this);
             }
-            else if (_card.type==3){
-                if (this.armor!=null) Board.putCardToGraveyard(this.armor,this);
-                this.armor=new Card(_card);
-                Main.printToView(name+ " экипировал "+ _card.name+".");
-            }
-            else if (_card.type==4){
-                if (this.amulet!=null) Board.putCardToGraveyard(this.amulet,this);
-                this.amulet=new Card(_card);
-                Main.printToView(name+ " экипировал "+ _card.name+".");
+            else if (_card.type==3) {
+                if (_card.creatureType.equals("Броня")) {
+                    if (this.armor != null) Board.putCardToGraveyard(this.armor, this);
+                    this.armor = new Card(_card);
+                    Main.printToView(name + " экипировал " + _card.name + ".");
+                } else if (_card.creatureType.equals("Амулет")) {
+                    if (this.amulet != null) Board.putCardToGraveyard(this.amulet, this);
+                    this.amulet = new Card(_card);
+                    Main.printToView(name + " экипировал " + _card.name + ".");
+                }
             }
             //remove from hand
-
             cardInHand.remove(_card);
         }
         else{
@@ -184,8 +184,9 @@ public class Player extends Card{
         }
     }
     public void heal(int dmg){
-        damage-=dmg;
-        if (damage<0) damage=0;
+        if (amulet.name.equals("Браслет подчинения")){Main.printToView(name+" не может быть излечен.");}
+        else {damage-=dmg;
+        if (damage<0) damage=0;}
     }
 
     public void abilityNoTarget() {

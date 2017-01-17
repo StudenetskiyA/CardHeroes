@@ -38,7 +38,7 @@ public class Creature extends Card {
     public int getTougness(){return hp+effects.bonusTougness;}
 
     public Creature(Creature _card) {
-        super(_card.cost, _card.name, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
+        super(_card.cost, _card.name, _card.creatureType,_card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
         power = _card.power;
         tougness = _card.hp;
         image = _card.image;
@@ -55,7 +55,7 @@ public class Creature extends Card {
     }
 
     public Creature(Card _card, Player _owner) {
-        super(_card.cost, _card.name, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
+        super(_card.cost, _card.name, _card.creatureType, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
         power = _card.power;
         tougness = _card.hp;
         image = _card.image;

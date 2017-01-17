@@ -14,6 +14,7 @@ public class Card {
     public String name;
     public String text;
     public String image;
+    public String creatureType;
     public int color;
     public int type;//1 for spell, 2 for creature
     public int targetType;//Battlecry 1 for creatures, 2 for heroes
@@ -41,9 +42,10 @@ public class Card {
         hp = _card.hp;
         targetType = _card.targetType;
         tapTargetType = _card.tapTargetType;
+        creatureType=_card.creatureType;
     }
 
-    public Card(int _cost, String _name, int _color, int _type, int _targetType, int _tapTargetType, String _text, int _power, int _hp) {
+    public Card(int _cost, String _name, String _crtype, int _color, int _type, int _targetType, int _tapTargetType, String _text, int _power, int _hp) {
         //   board=_board;
         name = _name;
         text = _text;
@@ -55,6 +57,7 @@ public class Card {
         hp = _hp;
         targetType = _targetType;
         tapTargetType = _tapTargetType;
+        creatureType=_crtype;
     }
 
     public static ArrayList<String> getTextBetween(String fromText) {
@@ -109,89 +112,93 @@ public class Card {
     public static Card getCardByName(String name) {
         //Here all cards!
         if (name.equals("Тарна"))
-            return new Card(0, "Тарна", 1, 0, 0, 0, "ТАП: Взять карт 1.", 0, 28);
+            return new Card(0, "Тарна","", 1, 0, 0, 0, "ТАП: Взять карт 1.", 0, 28);
         else if (name.equals("Тиша"))
-            return new Card(0, "Тиша", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
+            return new Card(0, "Тиша","", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
         else if (name.equals("Раскат грома"))
-            return new Card(1, "Раскат грома", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
+            return new Card(1, "Раскат грома","", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
         else if (name.equals("Гьерхор"))
-            return new Card(1, "Гьерхор", 3, 2, 0, 0, "", 2, 2);
+            return new Card(1, "Гьерхор","Йордлинг", 3, 2, 0, 0, "", 2, 2);
         else if (name.equals("Найтин"))
-            return new Card(2, "Найтин", 6, 2, 0, 0, "Направленный удар. Рывок.", 2, 2);
+            return new Card(2, "Найтин", "",6, 2, 0, 0, "Направленный удар. Рывок.", 2, 2);
         else if (name.equals("Кригторн"))
-            return new Card(2, "Кригторн", 3, 2, 0, 0, "Первый удар. Рывок.", 2, 1);
+            return new Card(2, "Кригторн", "",3, 2, 0, 0, "Первый удар. Рывок.", 2, 1);
         else if (name.equals("Гном"))
-            return new Card(2, "Гном", 3, 2, 0, 0, "", 3, 3);
+            return new Card(2, "Гном", "Гном",3, 2, 0, 0, "", 3, 3);
         else if (name.equals("Поглощение души"))
-            return new Card(3, "Поглощение душ", 5, 1, 2, 0, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
+            return new Card(3, "Поглощение душ","", 5, 1, 2, 0, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
         else if (name.equals("Эльф-дозорный"))
-            return new Card(4, "Эльф-дозорный", 4, 2, 0, 0, "Найм: Возьмите карт 1.", 2, 5);
+            return new Card(4, "Эльф-дозорный", "",4, 2, 0, 0, "Найм: Возьмите карт 1.", 2, 5);
         else if (name.equals("Послушник"))
-            return new Card(5, "Послушник", 3, 2, 1, 0, "Наймт: Выстрел по существу на 4.", 2, 3);
+            return new Card(5, "Послушник", "Лингунг",3, 2, 1, 0, "Наймт: Выстрел по существу на 4.", 2, 3);
         else if (name.equals("Гном-лучник"))
-            return new Card(3, "Гном-лучник", 3, 2, 3, 0, "Защита от выстрелов. Наймт: Выстрел на 2.", 2, 3);
+            return new Card(3, "Гном-лучник", "Гном",3, 2, 3, 0, "Защита от выстрелов. Наймт: Выстрел на 2.", 2, 3);
         else if (name.equals("Лучник Захры"))
-            return new Card(4, "Лучник Захры", 2, 2, 3, 0, "Защита от заклинаний. Наймт: Выстрел на 2.", 4, 2);
+            return new Card(4, "Лучник Захры","Орк", 2, 2, 3, 0, "Защита от заклинаний. Наймт: Выстрел на 2.", 4, 2);
         else if (name.equals("Цепная молния"))
-            return new Card(6, "Цепная молния", 3, 1, 0, 0, "Ранить каждое существо противника на 3.", 0, 0);
+            return new Card(6, "Цепная молния","", 3, 1, 0, 0, "Ранить каждое существо противника на 3.", 0, 0);
         else if (name.equals("Волна огня"))
-            return new Card(3, "Волна огня", 2, 1, 0, 0, "Ранить каждое существо на 2.", 0, 0);
+            return new Card(3, "Волна огня", "",2, 1, 0, 0, "Ранить каждое существо на 2.", 0, 0);
         else if (name.equals("Чешуя дракона"))
-            return new Card(2, "Чешуя дракона", 4, 1, 0, 0, "Получите * 1.", 0, 0);
+            return new Card(2, "Чешуя дракона", "",4, 1, 0, 0, "Получите * 1.", 0, 0);
         else if (name.equals("Выслеживание"))
-            return new Card(0, "Выслеживание", 4, 1, 0, 0, "Получите до конца хода * 2.", 0, 0);
+            return new Card(0, "Выслеживание", "",4, 1, 0, 0, "Получите до конца хода * 2.", 0, 0);
         else if (name.equals("Фиал порчи"))
-            return new Card(2, "Фиал порчи", 1, 1, 1, 0, "Отравить выбранное существо на 2.", 0, 0);
+            return new Card(2, "Фиал порчи", "",1, 1, 1, 0, "Отравить выбранное существо на 2.", 0, 0);
         else if (name.equals("Глашатай пустоты"))
-            return new Card(1, "Глашатай пустоты", 6, 2, 0, 0, "Уникальность. Не получает ран.", 0, 1);
+            return new Card(1, "Глашатай пустоты","Пустой", 6, 2, 0, 0, "Уникальность. Не получает ран.", 0, 1);
         else if (name.equals("Велит"))
-            return new Card(2, "Велит", 2, 2, 0, 3, "ТАПТ: Выстрел на 1.", 1, 3);
+            return new Card(2, "Велит", "",2, 2, 0, 3, "ТАПТ: Выстрел на 1.", 1, 3);
         else if (name.equals("Кьелэрн"))
-            return new Card(1, "Кьелэрн", 6, 2, 0, 0, "Уникальность. Рывок. ТАП: Получите до конца хода * 1.", 0, 1);
+            return new Card(1, "Кьелэрн", "",6, 2, 0, 0, "Уникальность. Рывок. ТАП: Получите до конца хода * 1.", 0, 1);
         else if (name.equals("Агент Разана"))
-            return new Card(2, "Агент Разана", 1, 2, 1, 0, "Наймт: Отравить выбранное существо на 1.", 1, 2);
+            return new Card(2, "Агент Разана", "",1, 2, 1, 0, "Наймт: Отравить выбранное существо на 1.", 1, 2);
         else if (name.equals("Скованный еретик"))
-            return new Card(1, "Скованный еретик", 5, 2, 0, 0, "Найм: Закрыться.", 3, 2);
+            return new Card(1, "Скованный еретик", "",5, 2, 0, 0, "Найм: Закрыться.", 3, 2);
         else if (name.equals("Вэлла"))
-            return new Card(3, "Вэлла", 4, 2, 3, 0, "Наймт: Излечить выбранное существо или героя на 2.", 3, 4);
+            return new Card(3, "Вэлла", "",4, 2, 3, 0, "Наймт: Излечить выбранное существо или героя на 2.", 3, 4);
         else if (name.equals("Рыцарь Туллена"))
-            return new Card(6, "Рыцарь Туллена", 2, 2, 0, 0, "Броня 3.", 6, 3);
+            return new Card(6, "Рыцарь Туллена", "",2, 2, 0, 0, "Броня 3.", 6, 3);
         else if (name.equals("Орк-лучник"))
-            return new Card(1, name, 2, 2, 3, 0, "Гнев. Наймт: Выстрел на 1.", 1, 1);
+            return new Card(1, name, "",2, 2, 3, 0, "Гнев. Наймт: Выстрел на 1.", 1, 1);
         else if (name.equals("Безумие"))
-            return new Card(3, name, 1, 1, 1, 0, "Нанести урон выбранному существу, равный его удару.", 0, 0);
+            return new Card(3, name, "",1, 1, 1, 0, "Нанести урон выбранному существу, равный его удару.", 0, 0);
         else if (name.equals("Зельеварение"))
-            return new Card(1, name, 1, 1, 1, 0, "Верните выбранное существо в руку его владельца.", 0, 0);
+            return new Card(1, name, "",1, 1, 1, 0, "Верните выбранное существо в руку его владельца.", 0, 0);
         else if (name.equals("Дахут"))
-            return new Card(3, name, 1, 2, 1, 0, "Наймт: Верните выбранное существо в руку его владельца.", 2, 3);
+            return new Card(3, name, "",1, 2, 1, 0, "Наймт: Верните выбранное существо в руку его владельца.", 2, 3);
         else if (name.equals("Забира"))
-            return new Card(2, "Забира", 1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 3, 4);
+            return new Card(2, "Забира", "",1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 3, 4);
         else if (name.equals("Десница Архааля"))
-            return new Card(4, name, 1, 2, 1, 0, "Опыт в защите. Наймт: Уничтожьте отравленное существо.", 1, 4);
+            return new Card(4, name, "",1, 2, 1, 0, "Опыт в защите. Наймт: Уничтожьте отравленное существо.", 1, 4);
         else if (name.equals("Орк-мародер"))
-            return new Card(5, name, 2, 2, 0, 0, "Опыт в атаке. Первый удар. Рывок.", 5, 2);
+            return new Card(5, name,"", 2, 2, 0, 0, "Опыт в атаке. Первый удар. Рывок.", 5, 2);
         else if (name.equals("Менгир Каррефура"))
-            return new Card(3, name, 1, 2, 0, 1, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 10);
+            return new Card(3, name, "",1, 2, 0, 1, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 10);
         else if (name.equals("Рыцарь реки"))
-            return new Card(5, name, 1, 2, 1, 0, "Наймт: Выбранное существо не может атаковать и выступать защитником до конца следующего хода.", 4, 6);
+            return new Card(5, name, "",1, 2, 1, 0, "Наймт: Выбранное существо не может атаковать и выступать защитником до конца следующего хода.", 4, 6);
         else if (name.equals("Поиск кладов"))
-            return new Card(6, name, 1, 1, 0, 0, "Взять карт 4.", 0, 0);
+            return new Card(6, name, "",1, 1, 0, 0, "Взять карт 4.", 0, 0);
         else if (name.equals("Прозрение"))
-            return new Card(2, name, 1, 1, 0, 0, "Взять карт 1. Если у соперника больше существ, чем у вас, взять еще карт 1.", 0, 0);
+            return new Card(2, name,"", 1, 1, 0, 0, "Взять карт 1. Если у соперника больше существ, чем у вас, взять еще карт 1.", 0, 0);
         else if (name.equals("Плащ Исхара"))
-            return new Card(1, name, 1, 3, 0, 0, "", 0, 6);
+            return new Card(1, name, "Броня",1, 3, 0, 0, "", 0, 6);
         else if (name.equals("Богарт"))
-            return new Card(4, name, 6, 2, 0, 0, "Уникальность. Найм: Каждое другое существо погибает в конце хода противника.", 2, 7);
+            return new Card(4, name, "",6, 2, 0, 0, "Уникальность. Найм: Каждое другое существо погибает в конце хода противника.", 2, 7);
         else if (name.equals("Полевица"))
-            return new Card(4, name, 1, 2, 0, 0, "Гибель: Взять карт 2.", 2, 3);
+            return new Card(4, name, "",1, 2, 0, 0, "Гибель: Взять карт 2.", 2, 3);
         else if (name.equals("Смайта"))
-            return new Card(4, name, 6, 2, 3, 0, "Гибельт: Ранить выбранное существо или героя на 2.", 4, 3);
+            return new Card(4, name, "",6, 2, 3, 0, "Гибельт: Ранить выбранное существо или героя на 2.", 4, 3);
         else if (name.equals("Ядовитое пламя"))
-            return new Card(0, name, 1, 1, 1, 0, "Доплатите Х *. Ранить выбранное существо на ХХХ.", 0, 0);
+            return new Card(0, name, "",1, 1, 1, 0, "Доплатите Х *. Ранить выбранное существо на ХХХ.", 0, 0);
         else if (name.equals("Вольный воитель"))
-            return new Card(0, name, 6, 2, 0, 0, "Доплатите Х *. Найм: Получает к характеристикам + ХХХ.", 0, 0);
+            return new Card(0, name, "",6, 2, 0, 0, "Доплатите Х *. Найм: Получает к характеристикам + ХХХ.", 0, 0);
         else if (name.equals("Шар тины"))
-            return new Card(2, name, 1, 1, 0, 0, "Поиск цвет 1", 0, 0);
+            return new Card(2, name, "",1, 1, 0, 0, "Поиск цвет 1", 0, 0);
+        else if (name.equals("Гном-кузнец"))
+            return new Card(3, name, "",1, 1, 0, 0, "Найм: Поиск тип 3", 1, 4);
+        else if (name.equals("Браслет подчинения"))
+            return new Card(3, name, "Амулет",1, 3, 0, 0, "", 0, 0);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;
@@ -209,6 +216,13 @@ public class Card {
                 int dmg = getNumericAfterText(txt, "Поиск цвет ");
                 Main.isMyTurn = Main.playerStatus.searchX;
                 Main.choiseXcolor = dmg;
+            }
+        }
+        if (txt.contains("Поиск тип ")) {//Only for player, who called it.
+            if (_whis.playerName.equals(Main.players[0].playerName)) {
+                int dmg = getNumericAfterText(txt, "Поиск тип ");
+                Main.isMyTurn = Main.playerStatus.searchX;
+                Main.choiseXtype = dmg;
             }
         }
         if (txt.contains("Получает к характеристикам + ")) {

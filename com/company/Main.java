@@ -65,6 +65,7 @@ public class Main extends JFrame {
     private static Image background;
     private static BufferedImage heroImage;
     private static BufferedImage heroNoArmorImage;
+    private static BufferedImage heroNoAmuletImage;
     private static BufferedImage enemyImage;
     private static Image heroCoinImage;
     private static Image heroDeckImage;
@@ -91,6 +92,7 @@ public class Main extends JFrame {
 
     public static int choiseXnum;
     public static int choiseXcolor=0;
+    public static int choiseXtype=0;
     public static String choiseXtext;
 
     public static Card.ActivatedAbility activatedAbility;
@@ -377,21 +379,25 @@ public class Main extends JFrame {
                     int apl = (pl == 0) ? 1 : 0;
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
                 } else if (fromServer.contains("$FOUND(")) {//$FOUND(Player, Card)
+                    choiseXcolor=0;
+                    choiseXtype=0;
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
                     if (parameter.get(1).equals("-1")){
                         if (pl == 0) {
                             printToView("Вы ищете в колоде, но ничего подходящего не находите.");
                         } else {
-                            printToView("Потивник ищет в колоде, но ничего подходящего не находит.");
+                            printToView("Противник ищет в колоде, но ничего подходящего не находит.");
                         }
                     }
                    else {
                         if (pl == 0) {
-                            Card card = founded.get(players[0].deck.searchCard(parameter.get(1)));
+                            Card card = players[0].deck.searchCard(parameter.get(1));
                             players[0].drawSpecialCard(card);
                             printToView("Вы находите в колоде " + card.name + ".");
                         } else {
+                            Card card = players[1].deck.searchCard(parameter.get(1));
+                            players[1].drawSpecialCard(card);
                             printToView("Противник находит в колоде " + parameter.get(1) + ".");
                         }
                     }
@@ -805,12 +811,31 @@ public class Main extends JFrame {
         //Heroes equpiment
         //TODO Enemy, durability
         if (players[0].armor == null) {
-            g.drawImage(heroNoArmorImage, main.getWidth() - heroW * 2 - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+            g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW -heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         } else {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].armor.image));
-            g.drawImage(im, main.getWidth() - heroW * 2 - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+            g.drawImage(im, main.getWidth() - smallCardW -heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         }
-        //TODO Draw, not set text, N
+        if (players[1].armor == null) {
+            g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW -heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+        } else {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].armor.image));
+            g.drawImage(im, main.getWidth() - smallCardW -heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+        }
+        //amulet
+        if (players[0].amulet == null) {
+            g.drawImage(heroNoAmuletImage, main.getWidth() - smallCardW * 2-heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+        } else {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].amulet.image));
+            g.drawImage(im, main.getWidth() - smallCardW * 2-heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+        }
+        if (players[1].amulet == null) {
+            g.drawImage(heroNoAmuletImage, main.getWidth() - smallCardW * 2-heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+        } else {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].amulet.image));
+            g.drawImage(im, main.getWidth() - smallCardW * 2-heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+        }
+        //TODO Draw N not 4
         if (players[0].damage != 0) {
             im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/4.png"));
             g.drawImage(im, playerHeroClick.getX() + playerHeroClick.getWidth() / 2 - heroH / 10, playerHeroClick.getY() + (playerHeroClick.getHeight() / 2 - heroH / 10), heroH / 5, heroH / 5, null);
@@ -907,16 +932,21 @@ public class Main extends JFrame {
         if (isMyTurn == playerStatus.searchX) {
             founded = new ArrayList<>(players[0].deck.cards);
             for (int i = founded.size()-1; i >=0; i--) {
-                if ((choiseXcolor!=founded.get(i).color) && (choiseXcolor!=0)){founded.remove(founded.get(i));}
-            }
+                if ((choiseXcolor!=founded.get(i).color) && (choiseXcolor!=0))founded.remove(founded.get(i));
+                if ((choiseXtype!=founded.get(i).type) && (choiseXtype!=0))founded.remove(founded.get(i));
+                }
+
             if (founded.size()==0){
                 printToView("В колоде ничего подходящего не найдено.");
                 System.out.println("$FOUND(" + players[0].playerName + ",-1)");
                 Client.writeLine("$FOUND(" + players[0].playerName + ",-1)");
                 isMyTurn=playerStatus.MyTurn;
+                choiseXcolor=0;
+                choiseXtype=0;
                 main.repaint();
             }
             else {
+                //TODO If founded.size() small, draw bigger
                 for (int i = 0; i < founded.size(); i++) {
                     int ii = i % 10;
                     int jj = i / 10;
@@ -996,6 +1026,7 @@ public class Main extends JFrame {
             heroGraveyardImage = ImageIO.read(Main.class.getResourceAsStream("icons/Graveyard.png"));
             redcrossImage = ImageIO.read(Main.class.getResourceAsStream("icons/Bigredcross.png"));
             heroNoArmorImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noarmor.png"));
+            heroNoAmuletImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noamulet.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
