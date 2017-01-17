@@ -188,7 +188,7 @@ public class Main extends JFrame {
                 } else if (fromServer.contains("$MULLIGANEND(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
-                    for (int i = 0; i <= 3; i++) {
+                    for (int i = 3; i >= 0; i--) {
                         if (Integer.parseInt(parameter.get(i + 1)) == 1) {
                             players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
                             players[pl].cardInHand.remove(i);

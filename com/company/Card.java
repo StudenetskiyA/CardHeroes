@@ -169,6 +169,8 @@ public class Card {
             return new Card(3, name, "",1, 2, 1, 0, "Наймт: Верните выбранное существо в руку его владельца.", 2, 3);
         else if (name.equals("Забира"))
             return new Card(2, "Забира", "",1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 3, 4);
+        else if (name.equals("Волнорез"))
+            return new Card(3, name, "",1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 4, 5);
         else if (name.equals("Десница Архааля"))
             return new Card(4, name, "",1, 2, 1, 0, "Опыт в защите. Наймт: Уничтожьте отравленное существо.", 1, 4);
         else if (name.equals("Орк-мародер"))
@@ -200,7 +202,7 @@ public class Card {
         else if (name.equals("Браслет подчинения"))
             return new Card(3, name, "Амулет",1, 3, 0, 0, "", 0, 0);
         else {
-            System.out.println("Ошибка - Неопознанная карта.");
+            System.out.println("Ошибка - Неопознанная карта:"+name);
             return null;
         }
     }
