@@ -182,6 +182,10 @@ public class Card {
             return new Card(1, name, 1, 3, 0, 0, "", 0, 6);
         else if (name.equals("Богарт"))
             return new Card(4, name, 1, 2, 0, 0, "Уникальность. Найм: Каждое другое существо погибает в конце хода противника.", 2, 7);
+        else if (name.equals("Полевица"))
+            return new Card(4, name, 1, 2, 0, 0, "Гибель: Взять карт 2.", 2, 3);
+        else if (name.equals("Смайта"))
+            return new Card(4, name, 1, 2, 3, 0, "Гибельт: Ранить выбранное существо или героя на 2.", 4, 3);
         else {
             System.out.println("Ошибка - Неопознанная карта.");
             return null;

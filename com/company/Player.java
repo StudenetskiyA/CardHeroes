@@ -13,10 +13,12 @@ public class Player extends Card{
     public int untappedCoin;
     public int temporaryCoin=0;
     public boolean isTapped=false;
+    public boolean myTurn=false;//only for deathratle
     public Deck deck;
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
     public Card armor;
+    public Card amulet;
 
     public Player(Card _card,Deck _deck,String _playerName,int _n){
         super(0,_card.name,1,0,_card.targetType,0,_card.text,0,_card.hp);
@@ -47,12 +49,13 @@ public class Player extends Card{
        if (!Board.creature.get(1).isEmpty()) {
            for (int i = Board.creature.get(1).size() - 1; i >= 0; i--)
             Board.creature.get(1).get(i).effects.EOT();}
-
+        this.myTurn=false;
         Board.opponent(this).newTurn();
     }
 
     public void newTurn(){
         Board.turnCount++;
+        this.myTurn=true;
         Main.printToView("Ход номер "+Board.turnCount+", игрок "+playerName);
         isTapped=false;
         //Get coin
@@ -109,6 +112,11 @@ public class Player extends Card{
                 this.armor=new Card(_card);
                 Main.printToView(name+ " экипировал "+ _card.name+".");
             }
+            else if (_card.type==4){
+                if (this.amulet!=null) Board.putCardToGraveyard(this.amulet,this);
+                this.amulet=new Card(_card);
+                Main.printToView(name+ " экипировал "+ _card.name+".");
+            }
             //remove from hand
             cardInHand.remove(_card);
         }
@@ -126,6 +134,7 @@ public class Player extends Card{
     }
 
     public void takeDamage(int dmg){
+        //Armor
         if (armor!=null) {
             if (armor.name.equals("Плащ Исхара")) {
                 //Плащ исхара
@@ -138,6 +147,14 @@ public class Player extends Card{
                     Board.putCardToGraveyard(armor, this);
                     armor=null;
                 }
+            }
+        }
+        //Amulet
+        if (amulet!=null) {
+            if (amulet.name.equals("Браслет подчинения")) {
+                //Плащ исхара
+                dmg=1;
+                Main.printToView("Браслет подчинения свел атаку к 1.");
             }
         }
         if (hp>damage+dmg){

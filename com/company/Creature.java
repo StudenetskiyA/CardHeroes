@@ -202,10 +202,36 @@ public class Creature extends Card {
         Card.ability(this, owner, _cr, _pl, txt);
     }
 
+
+    public void deathratle(Creature _cr, Player _pl) {
+        String txt = this.text.substring(this.text.indexOf("Гибельт:") + "Гибельт:".length() + 1, this.text.indexOf(".", this.text.indexOf("Гибельт:")) + 1);
+        System.out.println("Гибельт: " + txt);
+        Card.ability(this, owner, _cr, _pl, txt);
+    }
+
     public void cry(Creature _cr, Player _pl) {
         String txt = this.text.substring(this.text.indexOf("Наймт:") + "Наймт:".length() + 1, this.text.indexOf(".", this.text.indexOf("Наймт:")) + 1);
         System.out.println("Наймт: " + txt);
         Card.ability(this, owner, _cr, _pl, txt);
+    }
+
+    public static void deathratleNoTarget(Creature _card,Player _owner){
+        String txt = _card.text.substring(_card.text.indexOf("Гибель:") + "Гибель:".length() + 1, _card.text.indexOf(".", _card.text.indexOf("Гибель:"))+1);
+        Card.ability(_card,_owner,_card,null,txt);//Only here 3th parametr=1th
+    }
+
+    public void deathratleTarget(Creature _creature) {
+        if (owner==Main.players[0]) {
+            Main.isMyTurn = Main.playerStatus.choiseTarget;
+        }
+        //TODO Not my creature
+        else {
+            Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
+        }
+        Main.activatedAbility.creature = new Creature(_creature);
+        Main.activatedAbility.targetType= _creature.targetType;
+        Main.activatedAbility.tapTargetType= 0;
+        Main.activatedAbility.creatureTap=false;
     }
 
     public void die() {
@@ -214,9 +240,15 @@ public class Creature extends Card {
 //        this.damage=0;
         //And may be other
         // Or not?
+        Main.printToView(this.name + " умирает.");
+        if (this.text.contains("Гибельт:")) {
+            deathratleTarget(this);
+        }
+        if (this.text.contains("Гибель:")) {
+            deathratleNoTarget(this,owner);
+        }
         Board.removeCreatureFromPlayerBoard(this);
         Board.putCardToGraveyard(this, this.owner);
-        Main.printToView(this.name + " умирает.");
     }
 
     public void returnToHand() {

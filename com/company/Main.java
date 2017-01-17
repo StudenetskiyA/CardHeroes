@@ -219,33 +219,48 @@ public class Main extends JFrame {
                         creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
                     }
                 } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
+                    // CRYTARGET also for DeathratleTarget
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     isMyTurn = playerStatus.MyTurn;
+                    Creature cr;
+                    boolean death=false;
+                     if (parameter.get(1).equals("-1")){
+                        //died creature ability.
+                         death=true;
+                         cr=activatedAbility.creature;
+                         activatedAbility.creature=null;
+                    }
+                    else { cr = Board.creature.get(pl).get(Integer.parseInt(parameter.get(1)));
+                     }
                     if (parameter.get(2).equals("1")) {
                         if (parameter.get(3).equals("-1")) {
                             if (fromServer.contains("$CRYTARGET("))
-                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(null, players[apl]);
+                                if (death) cr.deathratle(null, players[apl]);
+                                else cr.cry(null, players[apl]);
                             else
-                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(null, players[apl]);
+                               cr.tapTargetAbility(null, players[apl]);
                         } else {
                             if (fromServer.contains("$CRYTARGET("))
-                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                                if (death) cr.deathratle(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                                else cr.cry(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                             else
-                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                                cr.tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                         }
                     } else {
                         if (parameter.get(3).equals("-1")) {
                             if (fromServer.contains("$CRYTARGET("))
-                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(null, players[pl]);
+                                if (death) cr.deathratle(null, players[pl]);
+                                  else  cr.cry(null, players[pl]);
                             else
-                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(null, players[pl]);
+                                cr.tapTargetAbility(null, players[pl]);
                         } else {
                             if (fromServer.contains("$CRYTARGET("))
-                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).cry(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                                if (death) cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                                else cr.cry(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                             else
-                                Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                                cr.tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                         }
                     }
                 } else if (fromServer.contains("$HEROTARGET(")) {
@@ -421,7 +436,7 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbility.creature = null;//Not safety. Do check.
+                   // activatedAbility.creature = null;//Not safety. Do check.
                     activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
@@ -438,7 +453,7 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbility.creature = null;//Not safety. Do check.
+                   // activatedAbility.creature = null;//Not safety. Do check.
                     activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
@@ -455,7 +470,7 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbility.creature = null;//Not safety. Do check.
+                  //  activatedAbility.creature = null;//Not safety. Do check.
                     activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
@@ -473,7 +488,7 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbility.creature = null;//Not safety. Do check.
+                  //  activatedAbility.creature = null;//Not safety. Do check.
                     activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
