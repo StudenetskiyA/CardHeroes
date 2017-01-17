@@ -25,6 +25,7 @@ public class Main extends JFrame {
     private static int serverPort = 6666;
     private static final String address = "127.0.0.1";
 
+    public static final int sufflingConst =19;
     private static final int B0RDER_RIGHT = 10;
     private static final int B0RDER_LEFT = 10;
     private static final int B0RDER_BOTTOM = 40;
@@ -58,6 +59,8 @@ public class Main extends JFrame {
 //    private static JLabel enemyDamageLabel = new JLabel();
     private static JLabel gameLog = new JLabel();
     private static JLabel endTurnClick = new JLabel();
+    private static JLabel choiceXLabel[] = new JLabel[9];
+    private static JLabel searchXLabel[] = new JLabel[40];
 
     private static Image background;
     private static BufferedImage heroImage;
@@ -80,10 +83,15 @@ public class Main extends JFrame {
     private static String whereMyMouse;
     private static int whereMyMouseNum;
     private static int repainted;
+    public static ArrayList<Card> founded;
     private static int coinStart = 0;
     //private static boolean isResized = true;
 
-    enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseTarget}
+    enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget}
+
+    public static int choiseXnum;
+    public static int choiseXcolor=0;
+    public static String choiseXtext;
 
     public static Card.ActivatedAbility activatedAbility;
 
@@ -225,25 +233,26 @@ public class Main extends JFrame {
                     int apl = (pl == 0) ? 1 : 0;
                     isMyTurn = playerStatus.MyTurn;
                     Creature cr;
-                    boolean death=false;
-                     if (parameter.get(1).equals("-1")){
+                    boolean death = false;
+                    if (parameter.get(1).equals("-1")) {
                         //died creature ability.
-                         death=true;
-                         cr=activatedAbility.creature;
-                         activatedAbility.creature=null;
+                        death = true;
+                        cr = activatedAbility.creature;
+                        activatedAbility.creature = null;
+                    } else {
+                        cr = Board.creature.get(pl).get(Integer.parseInt(parameter.get(1)));
                     }
-                    else { cr = Board.creature.get(pl).get(Integer.parseInt(parameter.get(1)));
-                     }
                     if (parameter.get(2).equals("1")) {
                         if (parameter.get(3).equals("-1")) {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death) cr.deathratle(null, players[apl]);
                                 else cr.cry(null, players[apl]);
                             else
-                               cr.tapTargetAbility(null, players[apl]);
+                                cr.tapTargetAbility(null, players[apl]);
                         } else {
                             if (fromServer.contains("$CRYTARGET("))
-                                if (death) cr.deathratle(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                                if (death)
+                                    cr.deathratle(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                                 else cr.cry(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                             else
                                 cr.tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
@@ -252,12 +261,13 @@ public class Main extends JFrame {
                         if (parameter.get(3).equals("-1")) {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death) cr.deathratle(null, players[pl]);
-                                  else  cr.cry(null, players[pl]);
+                                else cr.cry(null, players[pl]);
                             else
                                 cr.tapTargetAbility(null, players[pl]);
                         } else {
                             if (fromServer.contains("$CRYTARGET("))
-                                if (death) cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                                if (death)
+                                    cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                                 else cr.cry(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                             else
                                 cr.tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
@@ -279,8 +289,8 @@ public class Main extends JFrame {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
-                    if (pl==0)
-                    isMyTurn = playerStatus.EnemyTurn;
+                    if (pl == 0)
+                        isMyTurn = playerStatus.EnemyTurn;
                     else
                         isMyTurn = playerStatus.MyTurn;
 
@@ -292,11 +302,11 @@ public class Main extends JFrame {
                         } else {
                             Creature block = Board.creature.get(pl).get(Integer.parseInt(parameter.get(3)));
                             //Fight with bocker
-                            block.blockThisTurn=true;
+                            block.blockThisTurn = true;
                             cr.fightCreature(block);
                             if (Integer.parseInt(parameter.get(4)) == 1) {
                                 if (!block.text.contains("Опыт в защите."))
-                                block.tapCreature();
+                                    block.tapCreature();
                             }
                         }
                     } else {
@@ -334,6 +344,28 @@ public class Main extends JFrame {
                         else
                             players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
                     }
+                } else if (fromServer.contains("$PLAYWITHX(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    int apl = (pl == 0) ? 1 : 0;
+                    int x = Integer.parseInt(parameter.get(4));
+                    //visible off
+                    for (int i = 0; i < 9; i++) {
+                        choiceXLabel[i].setVisible(false);
+                    }
+                    if (!parameter.get(2).equals("-1")) {//if card targets creature
+                        if ((parameter.get(3).equals(players[apl].playerName)))
+                            players[pl].playCardX(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))), null, x);
+                        else //to self creature
+                            players[pl].playCardX(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(pl).get(Integer.parseInt(parameter.get(2))), null, x);
+                    } else {
+                        if (parameter.get(3).equals(players[apl].playerName))//enemy
+                            players[pl].playCardX(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[apl], x);
+                        else if (parameter.get(3).equals(players[pl].playerName))//target - self player
+                            players[pl].playCardX(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[pl], x);
+                        else
+                            players[pl].playCardX(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null, x);
+                    }
                 } else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
@@ -344,8 +376,27 @@ public class Main extends JFrame {
                     int pl = Board.getPl(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
+                } else if (fromServer.contains("$FOUND(")) {//$FOUND(Player, Card)
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    if (parameter.get(1).equals("-1")){
+                        if (pl == 0) {
+                            printToView("Вы ищете в колоде, но ничего подходящего не находите.");
+                        } else {
+                            printToView("Потивник ищет в колоде, но ничего подходящего не находит.");
+                        }
+                    }
+                   else {
+                        if (pl == 0) {
+                            Card card = founded.get(players[0].deck.searchCard(parameter.get(1)));
+                            players[0].drawSpecialCard(card);
+                            printToView("Вы находите в колоде " + card.name + ".");
+                        } else {
+                            printToView("Противник находит в колоде " + parameter.get(1) + ".");
+                        }
+                    }
                 }
-            }
+                }
         }
     }
 
@@ -359,7 +410,7 @@ public class Main extends JFrame {
     }
 
     private static class MyListener extends MouseInputAdapter {
-        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, EndTurnButton}
+        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, EndTurnButton}
 
         Compo onWhat;
         int num;
@@ -371,8 +422,8 @@ public class Main extends JFrame {
 
         public void mouseClicked(MouseEvent e) {
             if (onWhat == Compo.Deck) {
-            //    System.out.println("$DRAWCARD(" + players[0].playerName + ")");
-            //    Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
+                //    System.out.println("$DRAWCARD(" + players[0].playerName + ")");
+                //    Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
             } else if ((onWhat == Compo.CardInHand) && (isMyTurn == playerStatus.MuliganPhase)) {
                 if (wantToMulligan[num]) wantToMulligan[num] = false;
                 else wantToMulligan[num] = true;
@@ -383,7 +434,7 @@ public class Main extends JFrame {
                 //My hero ability
                 if (!players[0].isTapped) {
                     if (players[0].name.equals("Тиша")) {
-                        if ((Board.creature.get(0).size()>0) || (Board.creature.get(1).size()>0)) {
+                        if ((Board.creature.get(0).size() > 0) || (Board.creature.get(1).size() > 0)) {
                             if (players[0].untappedCoin >= 2) {
                                 players[0].untappedCoin -= 2;
                                 //replace
@@ -397,16 +448,15 @@ public class Main extends JFrame {
                             } else {
                                 printToView("Недостаточно монет.");
                             }
+                        } else {
+                            printToView("Нет подходящих целей.");
                         }
-                        else {
-                                printToView("Нет подходящих целей.");
-                            }
                     }
                     if (players[0].name.equals("Тарна")) {
                         if (players[0].untappedCoin >= 4) {
                             players[0].untappedCoin -= 4;
                             players[0].isTapped = true;
-                           // printToView("Тарна берет карту.");
+                            // printToView("Тарна берет карту.");
                             players[0].abilityNoTarget();
 
                             main.repaint();
@@ -436,7 +486,7 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                   // activatedAbility.creature = null;//Not safety. Do check.
+                    // activatedAbility.creature = null;//Not safety. Do check.
                     activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
@@ -453,7 +503,7 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                   // activatedAbility.creature = null;//Not safety. Do check.
+                    // activatedAbility.creature = null;//Not safety. Do check.
                     activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
@@ -470,7 +520,7 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                  //  activatedAbility.creature = null;//Not safety. Do check.
+                    //  activatedAbility.creature = null;//Not safety. Do check.
                     activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
@@ -488,7 +538,7 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                  //  activatedAbility.creature = null;//Not safety. Do check.
+                    //  activatedAbility.creature = null;//Not safety. Do check.
                     activatedAbility.creatureTap = false;
                 } else {
                     printToView("Выберите корректную цель.");
@@ -549,7 +599,7 @@ public class Main extends JFrame {
                 Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.IChoiseBlocker)) {
                 //TODO can't block
-                if ((Board.creature.get(0).get(num).isTapped) || (Board.creature.get(0).get(num).blockThisTurn)){
+                if ((Board.creature.get(0).get(num).isTapped) || (Board.creature.get(0).get(num).blockThisTurn)) {
                     printToView("Повернутые/уже блокировавшие существа не могут блокировать.");
                 } else if (creatureWhoAttackTarget == num) {
                     System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
@@ -558,7 +608,17 @@ public class Main extends JFrame {
                     System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",1)");
                     Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",1)");
                 }
+            } else if ((onWhat == Compo.ChoiseX) && (isMyTurn == playerStatus.choiseX)) {
+                isMyTurn=playerStatus.MyTurn;
+                main.repaint();
+                releaseCardWithX(num);
+            } else if ((onWhat == Compo.SearchX) && (isMyTurn == playerStatus.searchX)) {
+                isMyTurn=playerStatus.MyTurn;
+                main.repaint();
+                System.out.println("$FOUND(" + players[0].playerName + "," +founded.get(num).name+ ")");
+                Client.writeLine("$FOUND(" + players[0].playerName + "," +founded.get(num).name+ ")");
             }
+
         }
 
         public void mousePressed(MouseEvent e) {
@@ -573,7 +633,7 @@ public class Main extends JFrame {
             if (cardMem != null) {
                 //
             }
-            //  printToView(whereMyMouse);
+           // printToView(whereMyMouse);
         }
 
         public void mouseExited(MouseEvent event) {
@@ -586,14 +646,21 @@ public class Main extends JFrame {
                 if ((whereMyMouse == Compo.Board.toString()) && (cardMem != null)) {
                     //put creature on board
                     if ((cardMem.targetType == 0) || (cardMem.type == 2)) {
-                        System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
-                        Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
+                        if (cardMem.text.contains("Доплатите Х *")) {
+                            //TODO If X==0
+                            isMyTurn = playerStatus.choiseX;
+                            choiseXnum = num;
+                            choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + ",-1,-1";
+                            main.repaint();
+                        }
+                        else {System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
+                        Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");}
                     } else {
                         printToView("Заклинание требует цели.");
                     }
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (creatureMem != null)) {
                     //enemy hero attack by creature
-                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock>0)) {
+                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {
                         printToView("Повернутое/атаковавшее/т.д. существо не может атаковать.");
                     } else {
                         if (creatureMem.isSummonedJust) {
@@ -605,7 +672,7 @@ public class Main extends JFrame {
                     }
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (creatureMem != null)) {
                     //enemy creature attack by player creature
-                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock>0)) {
+                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {
                         printToView("Повернутое/атаковавшее/т.д. существо не может атаковать.");
                     } else {
                         if (creatureMem.isSummonedJust) {
@@ -629,8 +696,16 @@ public class Main extends JFrame {
                         printToView("У цели защита от заклинаний.");
                     } else {
                         if ((cardMem.targetType == 1) || (cardMem.targetType == 3)) {
-                            System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
-                            Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
+                            if (cardMem.text.contains("Доплатите Х *")) {
+                                //TODO If X==0
+                                isMyTurn = playerStatus.choiseX;
+                                choiseXnum = num;
+                                choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
+                                main.repaint();
+                            } else {
+                                System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
+                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
+                            }
                         } else {
                             printToView("Некорректная цель для данного заклинания, выберите героя.");
                         }
@@ -682,6 +757,7 @@ public class Main extends JFrame {
         cardX = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
         BufferedImage im;
         int numCardInHand = 0;
+
         //Game log
         gameLog.setLocation(B0RDER_LEFT, B0RDER_TOP + smallCardH + B0RDER_BETWEEN);
         gameLog.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2);
@@ -728,11 +804,11 @@ public class Main extends JFrame {
         playerHeroClick.setSize(heroW, heroH);
         //Heroes equpiment
         //TODO Enemy, durability
-        if (players[0].armor==null) {g.drawImage(heroNoArmorImage, main.getWidth() - heroW*2 - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
-        }
-        else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/"+players[0].armor.image));
-            g.drawImage(im, main.getWidth() - heroW*2 - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+        if (players[0].armor == null) {
+            g.drawImage(heroNoArmorImage, main.getWidth() - heroW * 2 - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+        } else {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].armor.image));
+            g.drawImage(im, main.getWidth() - heroW * 2 - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
         }
         //TODO Draw, not set text, N
         if (players[0].damage != 0) {
@@ -805,7 +881,7 @@ public class Main extends JFrame {
                         }
                         numCardInHand++;
                     } catch (IOException e) {
-                        System.out.println("Can't load image.");
+                        System.out.println("Can't load image "+card.image);
                     }
                 }
             }
@@ -816,6 +892,45 @@ public class Main extends JFrame {
             for (int i = 0; i < players[1].cardInHand.size(); i++) {
                 g.drawImage(im, cardX + (int) (i * smallCardW * 0.5), B0RDER_TOP, smallCardW, smallCardH, null);
             }
+        }
+
+        //Choise X
+        if (isMyTurn == playerStatus.choiseX) {
+            for (int i = 0; i <= players[0].untappedCoin; i++) {
+                g.drawImage(heroCoinImage, cardX + B0RDER_BETWEEN * i + smallCardW * i, main.getHeight() / 2 - smallCardH / 2, smallCardW, smallCardH, null);
+                choiceXLabel[i].setLocation(cardX + B0RDER_BETWEEN * i + smallCardW * i, main.getHeight() / 2 - smallCardH / 2);
+                choiceXLabel[i].setSize(smallCardW, smallCardH);
+                choiceXLabel[i].setVisible(true);
+            }
+        }
+        //Search in deck
+        if (isMyTurn == playerStatus.searchX) {
+            founded = new ArrayList<>(players[0].deck.cards);
+            for (int i = founded.size()-1; i >=0; i--) {
+                if ((choiseXcolor!=founded.get(i).color) && (choiseXcolor!=0)){founded.remove(founded.get(i));}
+            }
+            if (founded.size()==0){
+                printToView("В колоде ничего подходящего не найдено.");
+                System.out.println("$FOUND(" + players[0].playerName + ",-1)");
+                Client.writeLine("$FOUND(" + players[0].playerName + ",-1)");
+                isMyTurn=playerStatus.MyTurn;
+                main.repaint();
+            }
+            else {
+                for (int i = 0; i < founded.size(); i++) {
+                    int ii = i % 10;
+                    int jj = i / 10;
+                    BufferedImage im_tmp = ImageIO.read(Main.class.getResourceAsStream("cards/" + founded.get(i).image));
+                    g.drawImage(im_tmp, cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1), smallCardW, smallCardH, null);
+                    searchXLabel[i].setLocation(cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1));
+                    searchXLabel[i].setSize(smallCardW, smallCardH);
+                    searchXLabel[i].setVisible(true);
+                }
+            }
+        }
+        else {
+            for (int i=0;i<40;i++)
+            searchXLabel[i].setVisible(false);
         }
     }
 
@@ -861,6 +976,14 @@ public class Main extends JFrame {
                 }
             }
         }
+
+    }
+
+    private static void releaseCardWithX(int x) {
+        // Card c = players[0].cardInHand.get(choiseXnum);
+        // c.text.replace("на Х.", "на "+x+".");
+        System.out.println(choiseXtext + "," + x + ")");
+        Client.writeLine(choiseXtext + "," + x + ")");
 
     }
 
@@ -966,6 +1089,25 @@ public class Main extends JFrame {
 //                playerUnitLabel[ii][i].setForeground(Color.RED);
 //                playerUnitLabel[ii][i].setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
             }
+        }
+        for (int i = 0; i < 9; i++) {
+            choiceXLabel[i] = new JLabel();
+            choiceXLabel[i].setHorizontalAlignment(SwingConstants.CENTER);
+            choiceXLabel[i].setVerticalAlignment(SwingConstants.CENTER);
+            choiceXLabel[i].setForeground(Color.BLACK);
+            choiceXLabel[i].setFont(new Font("Courier", Font.BOLD, 24));
+            choiceXLabel[i].setText(String.valueOf(i));
+            choiceXLabel[i].addMouseListener(new MyListener(MyListener.Compo.ChoiseX, i));
+            choiceXLabel[i].addMouseMotionListener(new MyListener(MyListener.Compo.ChoiseX, i));
+            choiceXLabel[i].setVisible(false);
+            viewField.add(choiceXLabel[i]);
+        }
+        for (int i = 0; i < 40; i++) {
+            searchXLabel[i] = new JLabel();
+            searchXLabel[i].addMouseListener(new MyListener(MyListener.Compo.SearchX, i));
+            searchXLabel[i].addMouseMotionListener(new MyListener(MyListener.Compo.SearchX, i));
+            searchXLabel[i].setVisible(false);
+            viewField.add(searchXLabel[i]);
         }
         //
         viewField.add(battlegroundClick);

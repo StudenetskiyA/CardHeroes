@@ -52,12 +52,15 @@ public class Board {
         }
         int np = _player.numberPlayer;
         creature.get(np).add(summonCreature);
-        Main.printToView("Вызов существа " + summonCreature.name);
         if (_creature.text.contains("Наймт:")) {
             battlecryTarget(summonCreature);
         }
         if (_creature.text.contains("Найм:")) {
             battlecryNoTarget(summonCreature,_player);
+        }
+
+        if (summonCreature.getTougness()<=0){
+            summonCreature.die();
         }
     }
 

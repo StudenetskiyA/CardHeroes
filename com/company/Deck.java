@@ -21,6 +21,13 @@ public class Deck {
         return cards.size();
     }
 
+    public int searchCard(String name){
+        for (int i=0;i<cards.size();i++){
+            if (cards.get(i).name.equals(name)) return i;
+        }
+        return -1;
+    }
+
     public boolean haveTopDeck(){
         if (cards.size()==0) return false;
         else return true;

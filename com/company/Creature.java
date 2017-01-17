@@ -6,8 +6,8 @@ import java.util.ArrayList;
  * Created by samsung on 30.12.2016.
  */
 public class Creature extends Card {
-    public int power;
-    public int tougness;
+    private int power;
+    private int tougness;
     public boolean isTapped;
     public boolean isSummonedJust;
     public int poison;
@@ -22,6 +22,8 @@ public class Creature extends Card {
     public Effects effects = new Effects();
 
     public class Effects{
+        public int bonusPower=0;
+        public int bonusTougness=0;
         public int cantAttackOrBlock = 0;
         public int turnToDie=999;
         public void EOT(){
@@ -31,6 +33,9 @@ public class Creature extends Card {
             if (turnToDie==0) die();
         }
     }
+
+    public int getPower(){return power+effects.bonusPower;}
+    public int getTougness(){return hp+effects.bonusTougness;}
 
     public Creature(Creature _card) {
         super(_card.cost, _card.name, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);

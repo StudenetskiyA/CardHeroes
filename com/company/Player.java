@@ -81,12 +81,22 @@ public class Player extends Card{
         if (Board.turnCount!=1) drawCard();//First player not draw card in first turn. It's rule.
     }
 
+    void playCardX(Card _card, Creature _targetCreature, Player _targetPlayer,int x){
+        int num = cardInHand.indexOf(_card);
+        if (num==-1) return;
+        Main.printToView("X = " + x+".");
+        _card.text=_card.text.replace("ХХХ",String.valueOf(x));
+        System.out.println("text after replace:"+_card.text);
+        playCard(_card,_targetCreature,_targetPlayer);
+    }
+
     void playCard(Card _card, Creature _targetCreature, Player _targetPlayer){
         int num = cardInHand.indexOf(_card);
         if (num==-1) return;
 
         if (untappedCoin>=_card.cost){
             untappedCoin-=_card.cost;
+            Main.printToView("Розыгрышь карты " + _card.name+".");
             //put on table or cast spell
             if (_card.type==1) {
                 //release text on spell
@@ -118,6 +128,7 @@ public class Player extends Card{
                 Main.printToView(name+ " экипировал "+ _card.name+".");
             }
             //remove from hand
+
             cardInHand.remove(_card);
         }
         else{
@@ -131,6 +142,12 @@ public class Player extends Card{
         else {
             Main.printToView("Deck of "+playerName+" is empty.");
         }
+    }
+
+    void drawSpecialCard(Card c){
+            cardInHand.add(c);
+            deck.cards.remove(c);
+            deck.suffleDeck(Main.sufflingConst);
     }
 
     public void takeDamage(int dmg){
