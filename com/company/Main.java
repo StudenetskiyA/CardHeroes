@@ -101,6 +101,7 @@ public class Main extends JFrame {
     public static boolean wantToMulligan[] = new boolean[4];
     static int creatureWhoAttack;
     static int creatureWhoAttackTarget;
+    static int hilightMyCreature=-1;
 
     public static void main(String[] args) throws IOException {
         loadImage();
@@ -639,12 +640,20 @@ public class Main extends JFrame {
             if (cardMem != null) {
                 //
             }
+
+            if (onWhat == Compo.CreatureInMyPlay)
+            {
+                hilightMyCreature=num;
+                main.repaint();
+            }
            // printToView(whereMyMouse);
         }
 
         public void mouseExited(MouseEvent event) {
             whereMyMouse = "";
             whereMyMouseNum = 0;
+            hilightMyCreature=-1;
+            main.repaint();
         }
 
         public void mouseReleased(MouseEvent e) {
@@ -977,17 +986,30 @@ public class Main extends JFrame {
             {
                 if (Board.creature.get(np).get(i).image != null) {
                     try {
-                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+
+                        im = ImageIO.read(Main.class.getResourceAsStream("cards/small/" + Board.creature.get(np).get(i).image));
                         if (Board.creature.get(np).get(i).isTapped) {
-                            g.drawImage(Card.tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h, heroH, heroW, null);
-                            playerUnitClick[np][numUnit].setSize(heroH, heroW);
-                            playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);//May be write not center?
-                            //  playerUnitClick[np][numUnit].setIcon(new ImageIcon(tapImage(im)));
+                            if ((hilightMyCreature==i)&& (np==0)){
+                                g.drawImage(Card.tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h-heroW/2, (int)(heroH*1.5), (int)(heroW*1.5), null);
+                                playerUnitClick[np][numUnit].setSize((int)(heroH*1.5), (int)(heroW*1.5));
+                                playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h-heroW/2);
+                            }
+                            else {
+                                g.drawImage(Card.tapImage(im), battlegroundClick.getX() + (int) (numUnit * heroW), h, heroH, heroW, null);
+                                playerUnitClick[np][numUnit].setSize(heroH, heroW);
+                                playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);//May be write not center?
+                            }
                         } else {
+                            if ((hilightMyCreature==i)&& (np==0)){
+                                g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW), h-heroH/2, (int)(heroW*1.5), (int)(heroH*1.5), null);
+                                playerUnitClick[np][numUnit].setSize((int)(heroW*1.5), (int)(heroH*1.5));
+                                playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h-heroH/2);
+                            }
+                            else {
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW), h, heroW, heroH, null);
                             playerUnitClick[np][numUnit].setLocation(battlegroundClick.getX() + (int) (numUnit * heroW), h);
                             playerUnitClick[np][numUnit].setSize(heroW, heroH);
-//                            playerUnitClick[np][numUnit].setIcon(new ImageIcon(tapImage(im)));
+                         }
                         }
                         if (Board.creature.get(np).get(i).damage != 0) {
                             //Text call neverending repaint!!!

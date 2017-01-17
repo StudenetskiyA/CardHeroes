@@ -117,6 +117,8 @@ public class Card {
             return new Card(0, "Тиша","", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
         else if (name.equals("Раскат грома"))
             return new Card(1, "Раскат грома","", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
+        else if (name.equals("Выброс силы"))
+            return new Card(2, name,"", 3, 1, 1, 0, "Ранить выбранное существо на 5.", 0, 0);
         else if (name.equals("Гьерхор"))
             return new Card(1, "Гьерхор","Йордлинг", 3, 2, 0, 0, "", 2, 2);
         else if (name.equals("Найтин"))
@@ -125,6 +127,10 @@ public class Card {
             return new Card(2, "Кригторн", "",3, 2, 0, 0, "Первый удар. Рывок.", 2, 1);
         else if (name.equals("Гном"))
             return new Card(2, "Гном", "Гном",3, 2, 0, 0, "", 3, 3);
+        else if (name.equals("Гном-легионер"))
+            return new Card(4, name, "Гном",3, 2, 0, 0, "Направленный удар. Рывок.", 3, 5);
+        else if (name.equals("Гном-смертник"))
+            return new Card(3, name, "Гном",3, 2, 0, 0, "Защита от заклинаний. Рывок.", 3, 4);
         else if (name.equals("Поглощение души"))
             return new Card(3, "Поглощение душ","", 5, 1, 2, 0, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
         else if (name.equals("Эльф-дозорный"))
@@ -135,6 +141,10 @@ public class Card {
             return new Card(3, "Гном-лучник", "Гном",3, 2, 3, 0, "Защита от выстрелов. Наймт: Выстрел на 2.", 2, 3);
         else if (name.equals("Лучник Захры"))
             return new Card(4, "Лучник Захры","Орк", 2, 2, 3, 0, "Защита от заклинаний. Наймт: Выстрел на 2.", 4, 2);
+        else if (name.equals("Цверг-заклинатель"))
+            return new Card(3, name,"Гном", 3, 2, 0, 0, "Защита от заклинаний. Защита от выстрелов. Защита от отравления.", 3, 3);
+        else if (name.equals("Верцверг"))
+            return new Card(4, name,"Гном", 3, 2, 1, 0, "Направленный удар. Наймт: Получает к атаке + 3.", 2, 4);
         else if (name.equals("Цепная молния"))
             return new Card(6, "Цепная молния","", 3, 1, 0, 0, "Ранить каждое существо противника на 3.", 0, 0);
         else if (name.equals("Волна огня"))
@@ -149,6 +159,8 @@ public class Card {
             return new Card(1, "Глашатай пустоты","Пустой", 6, 2, 0, 0, "Уникальность. Не получает ран.", 0, 1);
         else if (name.equals("Велит"))
             return new Card(2, "Велит", "",2, 2, 0, 3, "ТАПТ: Выстрел на 1.", 1, 3);
+        else if (name.equals("Пуф"))
+            return new Card(2, name, "Гном",3, 2, 0, 3, "ТАПТ: Выстрел на 1.", 2, 3);
         else if (name.equals("Кьелэрн"))
             return new Card(1, "Кьелэрн", "",6, 2, 0, 0, "Уникальность. Рывок. ТАП: Получите до конца хода * 1.", 0, 1);
         else if (name.equals("Агент Разана"))
@@ -173,6 +185,8 @@ public class Card {
             return new Card(3, name, "",1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 4, 5);
         else if (name.equals("Десница Архааля"))
             return new Card(4, name, "",1, 2, 1, 0, "Опыт в защите. Наймт: Уничтожьте отравленное существо.", 1, 4);
+        else if (name.equals("Нойта"))
+            return new Card(1, name, "Йордлинг",1, 2, 1, 0, "Наймт: Ранить существо без ран на 3.", 1, 1);
         else if (name.equals("Орк-мародер"))
             return new Card(5, name,"", 2, 2, 0, 0, "Опыт в атаке. Первый удар. Рывок.", 5, 2);
         else if (name.equals("Менгир Каррефура"))
@@ -197,6 +211,8 @@ public class Card {
             return new Card(0, name, "",6, 2, 0, 0, "Доплатите Х *. Найм: Получает к характеристикам + ХХХ.", 0, 0);
         else if (name.equals("Шар тины"))
             return new Card(2, name, "",1, 1, 0, 0, "Поиск цвет 1", 0, 0);
+        else if (name.equals("Шар молний"))
+            return new Card(2, name, "",3, 1, 0, 0, "Поиск цвет 3", 0, 0);
         else if (name.equals("Гном-кузнец"))
             return new Card(3, name, "",1, 1, 0, 0, "Найм: Поиск тип 3", 1, 4);
         else if (name.equals("Браслет подчинения"))
@@ -232,6 +248,10 @@ public class Card {
             _cr.effects.bonusTougness=dmg;
             _cr.effects.bonusPower=dmg;
         }
+        if (txt.contains("Получает к атаке + ")) {
+            int dmg = getNumericAfterText(txt, "Получает к атаке + ");
+            _cr.effects.bonusPower+=dmg;
+        }
         if (txt.contains("Излечить выбранное существо или героя на ")) {
             int dmg = getNumericAfterText(txt, "Излечить выбранное существо или героя на ");
             if (_cr != null) {
@@ -260,6 +280,12 @@ public class Card {
         if (txt.contains("Уничтожьте отравленное существо.")) {
             if (_cr.poison > 0)
                 _cr.die();
+        }
+        if (txt.contains("Ранить существо без ран на ")) {
+            int dmg = getNumericAfterText(txt, "Ранить существо без ран на ");
+            if (_cr.damage==0){
+            _cr.takeDamage(dmg, Creature.DamageSource.ability);
+            Main.printToView(_cr.name + " получил " + dmg + " урона.");}
         }
         if (txt.contains("Ранить выбранное существо на ")) {
             int dmg = getNumericAfterText(txt, "Ранить выбранное существо на ");
