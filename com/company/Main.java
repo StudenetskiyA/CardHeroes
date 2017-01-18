@@ -47,6 +47,7 @@ public class Main extends JFrame {
 
     private static ViewField viewField = new ViewField();
     private static JLabel deckClick = new JLabel();
+    private static JLabel weaponClick = new JLabel();
     private static JLabel cardClick[] = new JLabel[9];
     private static JLabel playerUnitClick[][] = new JLabel[2][9];
     //   private static JLabel playerUnitLabel[][] = new JLabel[2][9];
@@ -68,6 +69,7 @@ public class Main extends JFrame {
     private static BufferedImage heroImage;
     private static BufferedImage heroNoArmorImage;
     private static BufferedImage heroNoAmuletImage;
+    private static BufferedImage heroNoWeaponImage;
     private static BufferedImage enemyImage;
     private static Image heroCoinImage;
     private static Image heroDeckImage;
@@ -92,9 +94,12 @@ public class Main extends JFrame {
 
     enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget}
 
-    public static int choiseXnum;
+ //   public static int choiseXnum;
+    //TODO Test Вольный воитель
     public static int choiseXcolor = 0;
     public static int choiseXtype = 0;
+    public static String choiseXcreatureType="";
+    public static int choiseXcost=0;
     public static String choiseXtext;
 
     public static Card.ActivatedAbility activatedAbility;
@@ -278,6 +283,19 @@ public class Main extends JFrame {
                                 cr.tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                         }
                     }
+                } else if (fromServer.contains("$EQUIPTARGET(")) {
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    int pl = Board.getPl(parameter.get(0));
+                    int apl = (pl == 0) ? 1 : 0;
+                    isMyTurn = playerStatus.MyTurn;
+                    int equip = Integer.parseInt(parameter.get(1));
+                    if (parameter.get(2).equals("1")) {
+                        if (parameter.get(3).equals("-1")) players[pl].equpiment[equip].tapTargetAbility(null, players[1]);
+                        else players[pl].equpiment[equip].tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                    } else {
+                        if (parameter.get(3).equals("-1")) players[pl].equpiment[equip].tapTargetAbility(null, players[0]);
+                        else players[pl].equpiment[equip].tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                    }
                 } else if (fromServer.contains("$HEROTARGET(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
@@ -384,6 +402,8 @@ public class Main extends JFrame {
                 } else if (fromServer.contains("$FOUND(")) {//$FOUND(Player, Card)
                     choiseXcolor = 0;
                     choiseXtype = 0;
+                    choiseXcost=0;
+                    choiseXcreatureType="";
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
                     if (parameter.get(1).equals("-1")) {
@@ -418,7 +438,7 @@ public class Main extends JFrame {
     }
 
     private static class MyListener extends MouseInputAdapter {
-        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, EndTurnButton}
+        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, EndTurnButton}
 
         Compo onWhat;
         int num;
@@ -516,7 +536,7 @@ public class Main extends JFrame {
                 } else {
                     printToView("Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility)) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility) && (!activatedAbility.weaponAbility)) {
                 //Battlecry or TAPT on my unit
                 if ((activatedAbility.tapTargetType == 1) || (activatedAbility.tapTargetType == 3) || (activatedAbility.targetType == 1) || (activatedAbility.targetType == 3)) {
                     int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
@@ -571,6 +591,16 @@ public class Main extends JFrame {
                 } else {
                     printToView("Выберите корректную цель.");
                 }
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (activatedAbility.weaponAbility)) {
+                //Weapon ability on my unit
+                if ((players[0].equpiment[2].tapTargetType == 1) || (players[0].equpiment[2].tapTargetType == 3)) {
+                    System.out.println("$EQUIPTARGET(" + players[0].playerName + ",2,0," + num + ")");
+                    Client.writeLine("$EQUIPTARGET(" + players[0].playerName + ",2,0," + num + ")");
+                    isMyTurn = playerStatus.MyTurn;
+                    activatedAbility.weaponAbility = false;
+                } else {
+                    printToView("Выберите корректную цель.");
+                }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАПТ:"))) {
                 //TAP with target ability - first step
                 if (!Board.creature.get(0).get(num).isSummonedJust) {
@@ -588,6 +618,19 @@ public class Main extends JFrame {
                 } else {
                     printToView("Это существо недавно вошло в игру.");
                 }
+            } else if ((onWhat == Compo.Weapon) && (isMyTurn == playerStatus.MyTurn) && (players[0].equpiment[2].text.contains("ТАПТ:"))) {
+                //TAP weapon with target ability - first step
+                    if (!players[0].equpiment[2].isTapped) {
+                        System.out.println("tapt weapon ability.");
+                        isMyTurn = playerStatus.choiseTarget;
+                        activatedAbility.targetType = players[0].equpiment[2].targetType;
+                        activatedAbility.tapTargetType = players[0].equpiment[2].tapTargetType;
+                        activatedAbility.weaponAbility = true;
+                        activatedAbility.creature = null;
+                        main.repaint();
+                    } else {
+                        printToView("Повернутое оружие не может это сделать.");
+                    }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).
                     get(num).text.contains("ТАП:"))) {
                 //TAP with target ability - first step
@@ -664,7 +707,7 @@ public class Main extends JFrame {
                         if (cardMem.text.contains("Доплатите Х *")) {
                             //TODO If X==0
                             isMyTurn = playerStatus.choiseX;
-                            choiseXnum = num;
+                            //choiseXnum = num;
                             choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + ",-1,-1";
                             main.repaint();
                         } else {
@@ -715,7 +758,7 @@ public class Main extends JFrame {
                             if (cardMem.text.contains("Доплатите Х *")) {
                                 //TODO If X==0
                                 isMyTurn = playerStatus.choiseX;
-                                choiseXnum = num;
+                                //choiseXnum = num;
                                 choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
                                 main.repaint();
                             } else {
@@ -820,29 +863,47 @@ public class Main extends JFrame {
         playerHeroClick.setSize(heroW, heroH);
         //Heroes equpiment
         //TODO Enemy, durability
-        if (players[0].armor == null) {
+        if (players[0].equpiment[0] == null) {
             g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].armor.image));
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].equpiment[0].image));
             g.drawImage(im, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         }
-        if (players[1].armor == null) {
+        if (players[1].equpiment[0] == null) {
             g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
         } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].armor.image));
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].equpiment[0].image));
             g.drawImage(im, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
         }
+        //weapon
+        //TODO Click on weapon
+        weaponClick.setLocation(main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM);
+        weaponClick.setSize(smallCardW, smallCardH);
+        if (players[0].equpiment[2] == null) {
+            g.drawImage(heroNoWeaponImage, main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+        } else {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].equpiment[2].image));
+            if (players[0].equpiment[2].isTapped) g.drawImage(Card.tapImage(im), main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardH, smallCardW, null);
+            else g.drawImage(im, main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+        }
+        if (players[1].equpiment[2] == null) {
+            g.drawImage(heroNoWeaponImage, main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+        } else {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].equpiment[2].image));
+            if (players[1].equpiment[2].isTapped) g.drawImage(Card.tapImage(im), main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+            else g.drawImage(im, main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
+        }
         //amulet
-        if (players[0].amulet == null) {
+        if (players[0].equpiment[1] == null) {
             g.drawImage(heroNoAmuletImage, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].amulet.image));
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].equpiment[1].image));
             g.drawImage(im, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         }
-        if (players[1].amulet == null) {
+        if (players[1].equpiment[1] == null) {
             g.drawImage(heroNoAmuletImage, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
         } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].amulet.image));
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].equpiment[1].image));
             g.drawImage(im, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, B0RDER_TOP, smallCardW, smallCardH, null);
         }
         //TODO Draw N not 4
@@ -871,9 +932,6 @@ public class Main extends JFrame {
             g.drawImage(im, playerHeroClick.getX() + playerHeroClick.getWidth() / 2 - heroH / 10 + (j-1) * heroH / 5, enemyHeroClick.getY() + (playerHeroClick.getHeight() / 2 - heroH / 10), heroH / 5, heroH / 5, null);
         }
         }
-        // enemyDamageLabel.setLocation(enemyHeroClick.getX() + (int) (enemyHeroClick.getWidth() * HERO_DAMAGE_WHERE_TO_SHOW_X), enemyHeroClick.getY() + (int) (enemyHeroClick.getHeight() * HERO_DAMAGE_WHERE_TO_SHOW_Y));
-        // if (enemy.damage != 0) enemyDamageLabel.setText(enemy.damage + "");
-        // else enemyDamageLabel.setText("");
         //Decks
         g.drawImage(heroDeckImage, B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
         deckClick.setLocation(B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM);
@@ -957,8 +1015,22 @@ public class Main extends JFrame {
         if (isMyTurn == playerStatus.searchX) {
             founded = new ArrayList<>(players[0].deck.cards);
             for (int i = founded.size() - 1; i >= 0; i--) {
-                if ((choiseXcolor != founded.get(i).color) && (choiseXcolor != 0)) founded.remove(founded.get(i));
-                if ((choiseXtype != founded.get(i).type) && (choiseXtype != 0)) founded.remove(founded.get(i));
+                if ((choiseXcolor != founded.get(i).color) && (choiseXcolor != 0)) {
+                    founded.remove(founded.get(i));
+                    continue;//Without it may be deleted twice one card
+                }
+                if ((choiseXtype != founded.get(i).type) && (choiseXtype != 0)) {
+                    founded.remove(founded.get(i));
+                    continue;
+                }
+                if (((!choiseXcreatureType.equals(founded.get(i).creatureType))) && (!choiseXcreatureType.equals(""))) {
+                    founded.remove(founded.get(i));
+                    continue;
+                }
+                if ((choiseXcost < founded.get(i).cost) && (choiseXcost != 0)){
+                    founded.remove(founded.get(i));
+                    continue;
+                }
             }
 
             if (founded.size() == 0) {
@@ -1031,9 +1103,15 @@ public class Main extends JFrame {
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 - heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
                             effects++;
                         }
+                        //TODO When icons complite, replace 3 for
                         if (Board.creature.get(np).get(i).effects.bonusPower != 0) {
-                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonuspower" + Board.creature.get(np).get(i).effects.bonusPower + ".png"));
+                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonuspower" + 3 + ".png"));
                             g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 - heroH / 5 + effects * heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+                            effects++;
+                        }
+                        if (Board.creature.get(np).get(i).effects.bonusArmor != 0) {
+                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonusarmor" + 3 + ".png"));
+                            g.drawImage(im, battlegroundClick.getX() + (int) (numUnit * heroW) + heroW / 2 - heroH / 10 - heroH / 5+effects*heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
                             effects++;
                         }
 //                        if (Board.creature.get(np).get(i).effects.bonusTougness != 0) {
@@ -1074,6 +1152,7 @@ public class Main extends JFrame {
             redcrossImage = ImageIO.read(Main.class.getResourceAsStream("icons/Bigredcross.png"));
             heroNoArmorImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noarmor.png"));
             heroNoAmuletImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noamulet.png"));
+            heroNoWeaponImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noweapon.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -1129,6 +1208,9 @@ public class Main extends JFrame {
 
         deckClick.addMouseMotionListener(new MyListener(MyListener.Compo.Deck, 0));
         deckClick.addMouseListener(new MyListener(MyListener.Compo.Deck, 0));
+        weaponClick.addMouseMotionListener(new MyListener(MyListener.Compo.Weapon, 0));
+        weaponClick.addMouseListener(new MyListener(MyListener.Compo.Weapon, 0));
+
         battlegroundClick.addMouseMotionListener(new MyListener(MyListener.Compo.Board, 0));
         battlegroundClick.addMouseListener(new MyListener(MyListener.Compo.Board, 0));
         endTurnClick.addMouseListener(new MyListener(MyListener.Compo.EndTurnButton, 0));
@@ -1190,6 +1272,7 @@ public class Main extends JFrame {
         //
         viewField.add(battlegroundClick);
         viewField.add(deckClick);
+        viewField.add(weaponClick);
         viewField.add(playerGraveyardClick);
         viewField.add(enemyGraveyardClick);
         viewField.add(endTurnClick);

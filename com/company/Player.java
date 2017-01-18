@@ -17,8 +17,7 @@ public class Player extends Card{
     public Deck deck;
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
-    public Card armor;
-    public Card amulet;
+public Equpiment equpiment[];//0-armor,1-amulet,2-weapon
 
     public Player(Card _card,Deck _deck,String _playerName,int _n){
         super(0,_card.name,"",1,0,_card.targetType,0,_card.text,0,_card.hp);
@@ -27,6 +26,10 @@ public class Player extends Card{
         cardInHand = new ArrayList<Card>();
         graveyard = new ArrayList<Card>();
         numberPlayer=_n;
+        equpiment = new Equpiment[3];
+        equpiment[0]=null;
+        equpiment[1]=null;
+        equpiment[2]=null;
     }
 
     public Player(Deck _deck,String _heroName,String _playerName,int _n, int _hp){
@@ -36,6 +39,10 @@ public class Player extends Card{
         cardInHand = new ArrayList<>();
         graveyard = new ArrayList<>();
         numberPlayer=_n;
+        equpiment = new Equpiment[3];
+        equpiment[0]=null;
+        equpiment[1]=null;
+        equpiment[2]=null;
     }
 
     public void endTurn(){
@@ -62,6 +69,10 @@ public class Player extends Card{
         if (totalCoin<10) totalCoin++;
         //Untap
         untappedCoin=totalCoin;
+
+        if (equpiment[0]!=null) equpiment[0].isTapped=false;
+        if (equpiment[1]!=null) equpiment[1].isTapped=false;
+        if (equpiment[2]!=null) equpiment[2].isTapped=false;
 
         for (int i=Board.creature.get(numberPlayer).size()-1;i>=0;i--){
                 //untap
@@ -93,9 +104,17 @@ public class Player extends Card{
     void playCard(Card _card, Creature _targetCreature, Player _targetPlayer){
         int num = cardInHand.indexOf(_card);
         if (num==-1) return;
+        int effectiveCost=_card.cost;
+        //Gnome cost less
+        if (_card.creatureType.equals("Гном")){
+        int runopevecFounded=0;
+        for (int i=0;i<Board.creature.get(numberPlayer).size();i++){
+            if (Board.creature.get(numberPlayer).get(i).name.equals("Рунопевец")) runopevecFounded++;
+        }
+        effectiveCost-=runopevecFounded;}
 
-        if (untappedCoin>=_card.cost){
-            untappedCoin-=_card.cost;
+        if (untappedCoin>=effectiveCost){
+            untappedCoin-=effectiveCost;
             Main.printToView("Розыгрышь карты " + _card.name+".");
             //put on table or cast spell
             if (_card.type==1) {
@@ -118,14 +137,16 @@ public class Player extends Card{
                 Board.addCreatureToBoard(_card,this);
             }
             else if (_card.type==3) {
+                Main.printToView(name + " экипировал " + _card.name + ".");
                 if (_card.creatureType.equals("Броня")) {
-                    if (this.armor != null) Board.putCardToGraveyard(this.armor, this);
-                    this.armor = new Card(_card);
-                    Main.printToView(name + " экипировал " + _card.name + ".");
+                    if (this.equpiment[0] != null) Board.putCardToGraveyard(this.equpiment[0], this);
+                    this.equpiment[0] = new Equpiment(_card,this);
                 } else if (_card.creatureType.equals("Амулет")) {
-                    if (this.amulet != null) Board.putCardToGraveyard(this.amulet, this);
-                    this.amulet = new Card(_card);
-                    Main.printToView(name + " экипировал " + _card.name + ".");
+                    if (this.equpiment[1] != null) Board.putCardToGraveyard(this.equpiment[1], this);
+                    this.equpiment[1] = new Equpiment(_card,this);
+                } else if (_card.creatureType.equals("Оружие")) {
+                    if (this.equpiment[2] != null) Board.putCardToGraveyard(this.equpiment[2], this);
+                    this.equpiment[2] = new Equpiment(_card,this);
                 }
             }
             //remove from hand
@@ -151,24 +172,24 @@ public class Player extends Card{
     }
 
     public void takeDamage(int dmg){
-        //Armor
-        if (armor!=null) {
-            if (armor.name.equals("Плащ Исхара")) {
+        //equpiment[0]
+        if (equpiment[0]!=null) {
+            if (equpiment[0].name.equals("Плащ Исхара")) {
                 //Плащ исхара
                 int tmp = dmg;
-                dmg -= armor.hp;
-                armor.hp -= tmp;
+                dmg -= equpiment[0].hp;
+                equpiment[0].hp -= tmp;
                 if (dmg < 0) dmg = 0;
                 Main.printToView("Плащ Исхара предотвратил "+(tmp-dmg)+" урона.");
-                if (armor.hp <= 0) {
-                    Board.putCardToGraveyard(armor, this);
-                    armor=null;
+                if (equpiment[0].hp <= 0) {
+                    Board.putCardToGraveyard(equpiment[0], this);
+                    equpiment[0]=null;
                 }
             }
         }
-        //Amulet
-        if (amulet!=null) {
-            if (amulet.name.equals("Браслет подчинения")) {
+        //equpiment[1]
+        if (equpiment[1]!=null) {
+            if (equpiment[1].name.equals("Браслет подчинения")) {
                 //Плащ исхара
                 dmg=1;
                 Main.printToView("Браслет подчинения свел атаку к 1.");
@@ -184,7 +205,7 @@ public class Player extends Card{
         }
     }
     public void heal(int dmg){
-        if (amulet.name.equals("Браслет подчинения")){Main.printToView(name+" не может быть излечен.");}
+        if (equpiment[1].name.equals("Браслет подчинения")){Main.printToView(name+" не может быть излечен.");}
         else {damage-=dmg;
         if (damage<0) damage=0;}
     }

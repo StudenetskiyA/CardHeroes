@@ -29,6 +29,7 @@ public class Card {
         public static Creature creature;
         public static boolean creatureTap;
         public static boolean heroAbility = false;
+        public static boolean weaponAbility = false;
     }
 
     public Card(Card _card) {
@@ -214,9 +215,19 @@ public class Card {
         else if (name.equals("Шар молний"))
             return new Card(2, name, "",3, 1, 0, 0, "Поиск цвет 3", 0, 0);
         else if (name.equals("Гном-кузнец"))
-            return new Card(3, name, "",1, 1, 0, 0, "Найм: Поиск тип 3", 1, 4);
+            return new Card(3, name, "Гном",1, 2, 0, 0, "Найм: Поиск тип 3", 1, 4);
+        else if (name.equals("Гном-кладоискатель"))
+            return new Card(5, name, "Гном",3, 2, 0, 0, "Броня 1. Найм: Поиск комбо+ 2 Гном 2.", 5, 4);
+        else if (name.equals("Рунопевец"))
+            return new Card(3, name, "Гном",3, 2, 0, 0, "Статичный эффект.", 3, 3);
+        else if (name.equals("Тан гномов"))
+            return new Card(6, name, "Гном",3, 2, 0, 0, "Броня 2. Статичный эффект.", 5, 4);
+        else if (name.equals("Безумный охотник"))
+            return new Card(5, name, "",6, 2, 0, 0, "Найм: Получает +Х к удару и Броню Х, где Х - число других ваших существ.", 4, 4);
         else if (name.equals("Браслет подчинения"))
             return new Card(3, name, "Амулет",1, 3, 0, 0, "", 0, 0);
+        else if (name.equals("Молот прародителя"))
+            return new Card(2, name, "Оружие",3, 3, 0, 1, "ТАПТ: Выбранное существо до конца хода получает к атаке + 2.", 0, 0);
         else {
             System.out.println("Ошибка - Неопознанная карта:"+name);
             return null;
@@ -236,6 +247,17 @@ public class Card {
                 Main.choiseXcolor = dmg;
             }
         }
+        if (txt.contains("Поиск комбо+ ")) {//Only for player, who called it.
+            if (_whis.playerName.equals(Main.players[0].playerName)) {
+                int type = getNumericAfterText(txt, "Поиск комбо+ ");
+                Main.isMyTurn = Main.playerStatus.searchX;
+                Main.choiseXtype = type;
+                Main.choiseXcreatureType=txt.substring(txt.indexOf("Поиск комбо+ ")+"Поиск комбо+ ".length()+2,txt.indexOf(" ",txt.indexOf("Поиск комбо+ ")+"Поиск комбо+ ".length()+2));
+                System.out.println("search type = "+  Main.choiseXcreatureType);
+                Main.choiseXcost= getNumericAfterText(txt, "Поиск комбо+ "+type+ " "+ Main.choiseXcreatureType+" ");
+                System.out.println("search cost = "+  Main.choiseXcost);
+            }
+        }
         if (txt.contains("Поиск тип ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int dmg = getNumericAfterText(txt, "Поиск тип ");
@@ -245,8 +267,25 @@ public class Card {
         }
         if (txt.contains("Получает к характеристикам + ")) {
             int dmg = getNumericAfterText(txt, "Получает к характеристикам + ");
-            _cr.effects.bonusTougness=dmg;
-            _cr.effects.bonusPower=dmg;
+            _cr.effects.bonusTougness+=dmg;
+            _cr.effects.bonusPower+=dmg;
+        }
+        if (txt.contains("Выбранное существо до конца хода получает к атаке + ")) {
+            int dmg = getNumericAfterText(txt, "Выбранное существо до конца хода получает к атаке + ");
+            Main.printToView(_cr.name+" получает +"+dmg +" к удару до конца хода.");
+            _cr.effects.bonusPowerUEOT+=dmg;
+        }
+        if (txt.contains("Получает к броне + ")) {
+            int dmg = getNumericAfterText(txt, "Получает к броне + ");
+            _cr.effects.bonusArmor+=dmg;
+        }
+        if (txt.contains("Получает +Х к удару и Броню Х, где Х - число других ваших существ.")) {
+            int dmg = Board.creature.get(_cr.owner.numberPlayer).size()-1;
+            if (dmg>0){
+            _cr.effects.bonusPower+=dmg;
+            _cr.effects.bonusArmor+=dmg;
+            _cr.currentArmor+=dmg;
+            Main.printToView(_cr.name+" получает +"+dmg +" к удару и броне.");}
         }
         if (txt.contains("Получает к атаке + ")) {
             int dmg = getNumericAfterText(txt, "Получает к атаке + ");

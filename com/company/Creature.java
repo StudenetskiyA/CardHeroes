@@ -21,24 +21,50 @@ public class Creature extends Card {
 
     public Effects effects = new Effects();
 
-    public class Effects{
-        public int bonusPower=0;
-        public int bonusTougness=0;
+    public class Effects {
+        public int bonusPower = 0;
+        public int bonusPowerUEOT = 0;
+        public int bonusTougness = 0;
+        public int bonusArmor = 0;
         public int cantAttackOrBlock = 0;
-        public int turnToDie=999;
-        public void EOT(){
-            cantAttackOrBlock --;
+        public int turnToDie = 999;
+
+        public void EOT() {
+            cantAttackOrBlock--;
             turnToDie--;
-            if (cantAttackOrBlock<0) cantAttackOrBlock=0;
-            if (turnToDie==0) die();
+            bonusPowerUEOT=0;
+            if (cantAttackOrBlock < 0) cantAttackOrBlock = 0;
+            if (turnToDie == 0) die();
         }
     }
 
-    public int getPower(){return power+effects.bonusPower;}
-    public int getTougness(){return hp+effects.bonusTougness;}
+    public int getMaxArmor() {
+        return maxArmor + effects.bonusArmor;
+    }
+
+    public int getCurrentArmor() {
+        return currentArmor;
+    }
+
+    public int getPower() {
+        int staticBonus = 0;
+        //Gnome cost less
+        if ((creatureType.equals("Гном")) && (!name.equals("Тан гномов"))) {
+            int tanFounded = 0;
+            for (int i = 0; i < Board.creature.get(owner.numberPlayer).size(); i++) {
+                if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Тан гномов")) tanFounded++;
+            }
+            staticBonus += tanFounded;
+        }
+        return power + effects.bonusPower + staticBonus+effects.bonusPowerUEOT;
+    }
+
+    public int getTougness() {
+        return hp + effects.bonusTougness;
+    }
 
     public Creature(Creature _card) {
-        super(_card.cost, _card.name, _card.creatureType,_card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
+        super(_card.cost, _card.name, _card.creatureType, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
         power = _card.power;
         tougness = _card.hp;
         image = _card.image;
@@ -50,7 +76,7 @@ public class Creature extends Card {
 
         if (text.contains("Броня ")) {
             maxArmor = getNumericAfterText(text, "Броня ");
-            currentArmor = maxArmor;
+            currentArmor = getMaxArmor();
         }
     }
 
@@ -66,7 +92,7 @@ public class Creature extends Card {
         owner = _owner;
         if (text.contains("Броня ")) {
             maxArmor = getNumericAfterText(text, "Броня ");
-            currentArmor = maxArmor;
+            currentArmor = getMaxArmor();
         }
     }
 
@@ -85,7 +111,8 @@ public class Creature extends Card {
         if (crt.contains(target)) crt.remove(target);
         for (int i = 0; i < crt.size(); i++) {
             //for (Creature cr:creature){
-            if ((crt.get(i).blockThisTurn)||(crt.get(i).isTapped)||(crt.get(i).effects.cantAttackOrBlock>0)) crt.remove(crt.get(i));
+            if ((crt.get(i).blockThisTurn) || (crt.get(i).isTapped) || (crt.get(i).effects.cantAttackOrBlock > 0))
+                crt.remove(crt.get(i));
         }
         //delete from it target
         return crt;
@@ -190,7 +217,6 @@ public class Creature extends Card {
                 die();
             }
         }
-
     }
 
     public void tapNoTargetAbility() {
@@ -207,7 +233,6 @@ public class Creature extends Card {
         Card.ability(this, owner, _cr, _pl, txt);
     }
 
-
     public void deathratle(Creature _cr, Player _pl) {
         String txt = this.text.substring(this.text.indexOf("Гибельт:") + "Гибельт:".length() + 1, this.text.indexOf(".", this.text.indexOf("Гибельт:")) + 1);
         System.out.println("Гибельт: " + txt);
@@ -220,13 +245,13 @@ public class Creature extends Card {
         Card.ability(this, owner, _cr, _pl, txt);
     }
 
-    public static void deathratleNoTarget(Creature _card,Player _owner){
-        String txt = _card.text.substring(_card.text.indexOf("Гибель:") + "Гибель:".length() + 1, _card.text.indexOf(".", _card.text.indexOf("Гибель:"))+1);
-        Card.ability(_card,_owner,_card,null,txt);//Only here 3th parametr=1th
+    public static void deathratleNoTarget(Creature _card, Player _owner) {
+        String txt = _card.text.substring(_card.text.indexOf("Гибель:") + "Гибель:".length() + 1, _card.text.indexOf(".", _card.text.indexOf("Гибель:")) + 1);
+        Card.ability(_card, _owner, _card, null, txt);//Only here 3th parametr=1th
     }
 
     public void deathratleTarget(Creature _creature) {
-        if (owner==Main.players[0]) {
+        if (owner == Main.players[0]) {
             Main.isMyTurn = Main.playerStatus.choiseTarget;
         }
         //TODO Not my creature
@@ -234,9 +259,9 @@ public class Creature extends Card {
             Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
         }
         Main.activatedAbility.creature = new Creature(_creature);
-        Main.activatedAbility.targetType= _creature.targetType;
-        Main.activatedAbility.tapTargetType= 0;
-        Main.activatedAbility.creatureTap=false;
+        Main.activatedAbility.targetType = _creature.targetType;
+        Main.activatedAbility.tapTargetType = 0;
+        Main.activatedAbility.creatureTap = false;
     }
 
     public void die() {
@@ -250,7 +275,7 @@ public class Creature extends Card {
             deathratleTarget(this);
         }
         if (this.text.contains("Гибель:")) {
-            deathratleNoTarget(this,owner);
+            deathratleNoTarget(this, owner);
         }
         Board.removeCreatureFromPlayerBoard(this);
         Board.putCardToGraveyard(this, this.owner);
