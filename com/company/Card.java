@@ -30,6 +30,7 @@ public class Card {
         public static boolean creatureTap;
         public static boolean heroAbility = false;
         public static boolean weaponAbility = false;
+        public int heroAbilityCost;
     }
 
     public Card(Card _card) {
@@ -113,7 +114,9 @@ public class Card {
     public static Card getCardByName(String name) {
         //Here all cards!
         if (name.equals("Тарна"))
-            return new Card(0, "Тарна","", 1, 0, 0, 0, "ТАП: Взять карт 1.", 0, 28);
+            return new Card(0, "Тарна","", 1, 0, 0, 0, "ТАП:4 Взять карт 1.", 0, 28);
+        else if (name.equals("Бьорнбон"))
+            return new Card(0, name,"", 3, 0, 0, 0, "ТАП:0 Получить щит ББ.", 0, 30);
         else if (name.equals("Тиша"))
             return new Card(0, "Тиша","", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
         else if (name.equals("Раскат грома"))
@@ -239,6 +242,10 @@ public class Card {
         //Which Card player(_who), who player(_whis), on what creature(_cr, may null), on what player(_pl, may null), text to play(txt)
         if (txt.contains("Закрыться.")) {//Only here - _cr=_who to get access to creature
             _cr.tapCreature();
+        }
+        if (txt.contains("Получить щит ББ.")) {//Only here - _cr=_who to get access to creature
+            _whis.bbshield=true;
+            Main.printToView("Бьорнбон активирует свой щит.");
         }
         if (txt.contains("Поиск цвет ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
