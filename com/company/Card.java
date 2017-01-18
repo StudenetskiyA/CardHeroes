@@ -223,6 +223,8 @@ public class Card {
             return new Card(5, name, "Гном",3, 2, 0, 0, "Броня 1. Найм: Поиск комбо+ 2 Гном 2.", 5, 4);
         else if (name.equals("Рунопевец"))
             return new Card(3, name, "Гном",3, 2, 0, 0, "Статичный эффект.", 3, 3);
+        else if (name.equals("Гном-каратель"))
+            return new Card(4, name, "Гном",3, 2, 0, 3, "Броня 2. ТАПТ: Ранить выбранное существо или героя на 2.", 1, 3);
         else if (name.equals("Тан гномов"))
             return new Card(6, name, "Гном",3, 2, 0, 0, "Броня 2. Статичный эффект.", 5, 4);
         else if (name.equals("Безумный охотник"))

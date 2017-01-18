@@ -173,6 +173,14 @@ public class Player extends Card {
     }
 
     public void takeDamage(int dmg) {
+        //equpiment[1]
+        if (equpiment[1] != null) {
+            if (equpiment[1].name.equals("Браслет подчинения")) {
+                //Плащ исхара
+                dmg = 1;
+                Main.printToView("Браслет подчинения свел атаку к 1.");
+            }
+        }
         //equpiment[0]
         if (equpiment[0] != null) {
             if (equpiment[0].name.equals("Плащ Исхара")) {
@@ -188,16 +196,9 @@ public class Player extends Card {
                 }
             }
         }
-        //equpiment[1]
-        if (equpiment[1] != null) {
-            if (equpiment[1].name.equals("Браслет подчинения")) {
-                //Плащ исхара
-                dmg = 1;
-                Main.printToView("Браслет подчинения свел атаку к 1.");
-            }
-        }
         if (hp > damage + dmg) {
             damage += dmg;
+            Main.printToView(this.name+" получет "+dmg +" урона.");
         } else {
             System.out.println("Player lose game.");
             Main.printToView(playerName + " проиграл игру.");
