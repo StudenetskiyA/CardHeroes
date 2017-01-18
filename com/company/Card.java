@@ -30,7 +30,7 @@ public class Card {
         public static boolean creatureTap;
         public static boolean heroAbility = false;
         public static boolean weaponAbility = false;
-        public int heroAbilityCost;
+        public static int heroAbilityCost=0;
     }
 
     public Card(Card _card) {
@@ -322,23 +322,27 @@ public class Card {
         }
         if (txt.contains("Ранить выбранного героя на ")) {
             int dmg = getNumericAfterText(txt, "Ранить выбранного героя на ");
-            _pl.takeDamage(dmg);
             Main.printToView(_pl.playerName + " получил " + dmg + " урона.");
+            _pl.takeDamage(dmg);
+
         }
         if (txt.contains("Уничтожьте отравленное существо.")) {
-            if (_cr.poison > 0)
+            if (_cr.poison > 0) {
+                Main.printToView(_who.name + " уничтожает "+_cr.name+".");
                 _cr.die();
+            }
         }
         if (txt.contains("Ранить существо без ран на ")) {
             int dmg = getNumericAfterText(txt, "Ранить существо без ран на ");
             if (_cr.damage==0){
-            _cr.takeDamage(dmg, Creature.DamageSource.ability);
-            Main.printToView(_cr.name + " получил " + dmg + " урона.");}
+                Main.printToView(_cr.name + " получил " + dmg + " урона.");
+                _cr.takeDamage(dmg, Creature.DamageSource.ability);
+            }
         }
         if (txt.contains("Ранить выбранное существо на ")) {
             int dmg = getNumericAfterText(txt, "Ранить выбранное существо на ");
-            _cr.takeDamage(dmg, Creature.DamageSource.ability);
             Main.printToView(_cr.name + " получил " + dmg + " урона.");
+            _cr.takeDamage(dmg, Creature.DamageSource.ability);
         }
         if (txt.contains("Выбранное существо не может атаковать и выступать защитником до конца следующего хода.")) {
             _cr.effects.cantAttackOrBlock=2;
@@ -346,8 +350,8 @@ public class Card {
         }
         if (txt.contains("Нанести урон выбранному существу, равный его удару.")) {
             int dmg = _cr.getPower();
-            _cr.takeDamage(dmg, Creature.DamageSource.spell);
             Main.printToView(_cr.name + " получил " + dmg + " урона.");
+            _cr.takeDamage(dmg, Creature.DamageSource.spell);
         }
         if (txt.contains("Верните выбранное существо в руку его владельца.")) {
             _cr.returnToHand();
@@ -357,11 +361,11 @@ public class Card {
             int dmg = getNumericAfterText(txt, "Отравить+ выбранное существо на ");
             if (_cr.poison != 0) {
                 _cr.poison++;
-                Main.printToView(_cr.name + " усилил отравление на " + dmg + ".");
+                Main.printToView("У " + _cr.name + " усилено отравление на " + dmg + ".");
             } else {
                 if (_cr.poison <= dmg)
                     _cr.poison = dmg;
-                Main.printToView(_cr.name + " получил отравление на " + dmg + ".");
+                Main.printToView(_who.name+ " отравил " + _cr.name + " на " + dmg + ".");
             }
         }
         if (txt.contains("Отравить выбранное существо на ")) {

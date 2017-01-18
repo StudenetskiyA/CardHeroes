@@ -159,12 +159,11 @@ public class Creature extends Card {
             if (blocker.size() != 0) {
                 int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
                 int nt = Board.creature.get(Board.opponentN(owner)).indexOf(target);
-                System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
-                Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
-                Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
-                for (Creature cr : blocker) {
-                    Main.printToView(cr.name + " can block!");
+                if (Main.replayCounter==0) {
+                    System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
+                    Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
                 }
+                Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
             } else {
                 fightCreature(target);
             }
@@ -183,12 +182,11 @@ public class Creature extends Card {
             if (blocker.size() != 0) {
                 int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
                 int nt = -1;
-                System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
-                Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
-                Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
-                for (Creature cr : blocker) {
-                    Main.printToView(cr.name + " can block!");
+                if (Main.replayCounter==0) {
+                    System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
+                    Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
                 }
+                Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
             } else {
                 fightPlayer(target);
             }

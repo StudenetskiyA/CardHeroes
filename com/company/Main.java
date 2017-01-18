@@ -18,12 +18,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Main extends JFrame {
     private static ArrayList<String> replay;
-    private static int replayCounter = 0;
+    public static int replayCounter = 0;
 
     private static String serverPort = "6666";
     private static final String address = "127.0.0.1";
     private static PrintWriter writerToLog;
-    public static final int sufflingConst = 19;
+    public static final int sufflingConst = 21;
     private static final int B0RDER_RIGHT = 10;
     private static final int B0RDER_LEFT = 10;
     private static int B0RDER_BOTTOM = 40;
@@ -94,8 +94,6 @@ public class Main extends JFrame {
 
     enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget}
 
-    //   public static int choiseXnum;
-    //TODO Test Вольный воитель
     public static int choiseXcolor = 0;
     public static int choiseXtype = 0;
     public static String choiseXcreatureType = "";
@@ -132,27 +130,27 @@ public class Main extends JFrame {
         loadDeck(simpleDeck, par2);
         Card c = new Card(simpleDeck.cards.get(0));
         simpleDeck.cards.remove(0);
-        simpleDeck.suffleDeck(19);
+        simpleDeck.suffleDeck(sufflingConst);
         //TODO Load hero
         heroImage = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
         players[0] = new Player(c, simpleDeck, par1, 0);
         players[1] = new Player(simpleDeck, "", par1, 0, 30);
 
-        main.setLocation(477, 0);
-        main.setSize(890, 688);
-        main.setVisible(true);
-
-//        //FULL SCREEN
-//        main.dispose();
-//        main.setUndecorated(true);
-//        main.setAlwaysOnTop(true);
-//        main.setResizable(false);
-//        Toolkit tk = Toolkit.getDefaultToolkit();
-//        int xsize = (int)tk.getScreenSize().getWidth();
-//        int ysize = (int)tk.getScreenSize().getHeight();
-//        main.setSize(xsize,ysize);
-//        B0RDER_BOTTOM=10;
+//        main.setLocation(477, 0);
+//        main.setSize(890, 688);
 //        main.setVisible(true);
+
+        //FULL SCREEN
+        main.dispose();
+        main.setUndecorated(true);
+        main.setAlwaysOnTop(true);
+        main.setResizable(false);
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        int xsize = (int)tk.getScreenSize().getWidth();
+        int ysize = (int)tk.getScreenSize().getHeight();
+        main.setSize(xsize,ysize);
+        B0RDER_BOTTOM=10;
+        main.setVisible(true);
         //
         viewField.setVisible(true);
 
@@ -193,6 +191,7 @@ public class Main extends JFrame {
         TimeUnit.SECONDS.sleep(1);
         if (replayCounter < replay.size()) {
             String tmp = replay.get(replayCounter);
+            System.out.println("Replay - "+tmp);
             replayCounter++;
             return tmp;
         } else {
@@ -226,7 +225,7 @@ public class Main extends JFrame {
                     enemyImage = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
                     players[1] = new Player(c, simpleEnemyDeck, parameter.get(0), 1);
                     simpleEnemyDeck.cards.remove(0);
-                    simpleEnemyDeck.suffleDeck(19);
+                    simpleEnemyDeck.suffleDeck(sufflingConst);
 
                     players[0].untappedCoin = coinStart;
                     players[0].totalCoin = coinStart;
@@ -491,12 +490,10 @@ public class Main extends JFrame {
     }
 
     public static void printToView(String txt) {
+        if (txt.contains("Ход номер "))  Main.gameLog.setText("<html>");
         Main.gameLog.setText(Main.gameLog.getText() + txt + "<br>");
         if (gameLog.getText().length() > 600)
             Main.gameLog.setText("<html>" + gameLog.getText().substring(gameLog.getText().length() - 600, gameLog.getText().length()));
-
-        // playerCoinLabel.setText(player.untappedCoin + "/" + player.totalCoin);
-        // enemyCoinLabel.setText(enemy.untappedCoin + "/" + enemy.totalCoin);
     }
 
     private static class MyListener extends MouseInputAdapter {
@@ -529,7 +526,6 @@ public class Main extends JFrame {
                     if (players[0].name.equals("Тиша")) {
                         if ((Board.creature.get(0).size() > 0) || (Board.creature.get(1).size() > 0)) {
                             if (players[0].untappedCoin >= 2) {
-                                players[0].untappedCoin -= 2;
                                 //replace
                                 //players[0].isTapped = true;
                                 isMyTurn = playerStatus.choiseTarget;
@@ -858,9 +854,18 @@ public class Main extends JFrame {
                         printToView("У цели защита от заклинаний.");
                     } else {
                         if ((cardMem.targetType == 1) || (cardMem.targetType == 3)) {
-                            System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
-                            Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
-                        } else {
+                            if (cardMem.text.contains("Доплатите Х *")) {
+                                //TODO If X==0
+                                isMyTurn = playerStatus.choiseX;
+                                //choiseXnum = num;
+                                choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
+                                main.repaint();
+                            }
+                            else {
+                                System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
+                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
+                            }
+                            } else {
                             printToView("Некорректная цель для данного заклинания, выберите героя.");
                         }
                     }
@@ -1035,6 +1040,8 @@ public class Main extends JFrame {
 
         //Choise X
         if (isMyTurn == playerStatus.choiseX) {
+            //Work too slow!
+            System.out.println("choiseX");
             for (int i = 0; i <= players[0].untappedCoin; i++) {
                 g.drawImage(heroCoinImage, cardX + B0RDER_BETWEEN * i + smallCardW * i, main.getHeight() / 2 - smallCardH / 2, smallCardW, smallCardH, null);
                 choiceXLabel[i].setLocation(cardX + B0RDER_BETWEEN * i + smallCardW * i, main.getHeight() / 2 - smallCardH / 2);
@@ -1223,11 +1230,8 @@ public class Main extends JFrame {
     }
 
     private static void releaseCardWithX(int x) {
-        // Card c = players[0].cardInHand.get(choiseXnum);
-        // c.text.replace("на Х.", "на "+x+".");
         System.out.println(choiseXtext + "," + x + ")");
         Client.writeLine(choiseXtext + "," + x + ")");
-
     }
 
     private static void loadImage() {

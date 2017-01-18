@@ -19,6 +19,7 @@ public class Player extends Card {
     public ArrayList<Card> graveyard;
     public Equpiment equpiment[];//0-armor,1-amulet,2-weapon
     public Boolean bbshield=false;
+    private static int tempX;//For card with X, for correct minus cost
 
     public Player(Card _card, Deck _deck, String _playerName, int _n) {
         super(0, _card.name, "", 1, 0, _card.targetType, 0, _card.text, 0, _card.hp);
@@ -48,6 +49,7 @@ public class Player extends Card {
 
     public void endTurn() {
         totalCoin -= temporaryCoin;
+        bbshield=false;
         if (untappedCoin > totalCoin) untappedCoin = totalCoin;
         temporaryCoin = 0;
         //Creature effects until eot
@@ -101,14 +103,17 @@ public class Player extends Card {
         Main.printToView("X = " + x + ".");
         _card.text = _card.text.replace("ХХХ", String.valueOf(x));
         System.out.println("text after replace:" + _card.text);
+        tempX=x;
         playCard(_card, _targetCreature, _targetPlayer);
+        tempX=0;
     }
 
     void playCard(Card _card, Creature _targetCreature, Player _targetPlayer) {
         int num = cardInHand.indexOf(_card);
         if (num == -1) return;
         int effectiveCost = _card.cost;
-        //Gnome cost less
+        if (tempX!=0) effectiveCost+=tempX;
+            //Gnome cost less
         if (_card.creatureType.equals("Гном")) {
             int runopevecFounded = 0;
             for (int i = 0; i < Board.creature.get(numberPlayer).size(); i++) {
@@ -177,8 +182,10 @@ public class Player extends Card {
         if (equpiment[1] != null) {
             if (equpiment[1].name.equals("Браслет подчинения")) {
                 //Плащ исхара
-                dmg = 1;
+                if (dmg!=1)
                 Main.printToView("Браслет подчинения свел атаку к 1.");
+                dmg = 1;
+
             }
         }
         //equpiment[0]
@@ -198,6 +205,7 @@ public class Player extends Card {
         }
         if (hp > damage + dmg) {
             damage += dmg;
+            if (dmg!=0)
             Main.printToView(this.name+" получет "+dmg +" урона.");
         } else {
             System.out.println("Player lose game.");
