@@ -136,21 +136,21 @@ public class Main extends JFrame {
         players[0] = new Player(c, simpleDeck, par1, 0);
         players[1] = new Player(simpleDeck, "", par1, 0, 30);
 
-//        main.setLocation(477, 0);
-//        main.setSize(890, 688);
-//        main.setVisible(true);
-
-        //FULL SCREEN
-        main.dispose();
-        main.setUndecorated(true);
-        main.setAlwaysOnTop(true);
-        main.setResizable(false);
-        Toolkit tk = Toolkit.getDefaultToolkit();
-        int xsize = (int)tk.getScreenSize().getWidth();
-        int ysize = (int)tk.getScreenSize().getHeight();
-        main.setSize(xsize,ysize);
-        B0RDER_BOTTOM=10;
+        main.setLocation(477, 0);
+        main.setSize(890, 688);
         main.setVisible(true);
+
+//        //FULL SCREEN
+//        main.dispose();
+//        main.setUndecorated(true);
+//        main.setAlwaysOnTop(true);
+//        main.setResizable(false);
+//        Toolkit tk = Toolkit.getDefaultToolkit();
+//        int xsize = (int)tk.getScreenSize().getWidth();
+//        int ysize = (int)tk.getScreenSize().getHeight();
+//        main.setSize(xsize,ysize);
+//        B0RDER_BOTTOM=10;
+//        main.setVisible(true);
         //
         viewField.setVisible(true);
 
@@ -912,7 +912,7 @@ public class Main extends JFrame {
         g.drawImage(background, 0, 0, main.getWidth(), main.getHeight(), null);
         //Battleground
         battlegroundClick.setLocation(cardX, B0RDER_TOP + B0RDER_BETWEEN + smallCardH);
-        battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - cardX - heroW - B0RDER_BETWEEN, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - heroH - smallCardH);
+        battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - cardX - heroW - B0RDER_BETWEEN, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP  - smallCardH*2);
         g.drawRect(battlegroundClick.getX(), battlegroundClick.getY(), battlegroundClick.getWidth(), battlegroundClick.getHeight());//TODO Image of battleground
         //End turn button
         if (isMyTurn == playerStatus.MyTurn) {
@@ -1003,7 +1003,8 @@ public class Main extends JFrame {
         drawPlayerCreature(g, 1);
         //Hero card in hand
         if (!players[0].cardInHand.isEmpty()) {
-            for (int i = 0; i < players[0].cardInHand.size(); i++)
+            //for (int i = 0; i < players[0].cardInHand.size(); i++)
+            for (int i = players[0].cardInHand.size()-1; i >=0 ; i--)
             //for (Card card : player.cardInHand)   // I don't know why, but it create ConcurrentModificationException
             {
                 Card card = players[0].cardInHand.get(i);
@@ -1013,15 +1014,15 @@ public class Main extends JFrame {
                         if (isMyTurn == playerStatus.MuliganPhase) {
                             int tmp = (battlegroundClick.getWidth() - bigCardW * 4) / 5;
                             g.drawImage(im, cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2, bigCardW, bigCardH, null);
-                            cardClick[numCardInHand].setLocation(cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2);
-                            cardClick[numCardInHand].setSize(bigCardW, bigCardH);
+                            cardClick[i].setLocation(cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2);
+                            cardClick[i].setSize(bigCardW, bigCardH);
                             if (wantToMulligan[i]) {
                                 g.drawImage(redcrossImage, cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2, bigCardW, bigCardH, null);
                             }
                         } else {
-                            g.drawImage(im, cardX + (numCardInHand * heroW), main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
-                            cardClick[numCardInHand].setLocation(cardX + (numCardInHand * heroW), main.getHeight() - heroH - B0RDER_BOTTOM);
-                            cardClick[numCardInHand].setSize(heroW, heroH);
+                            g.drawImage(im, cardX + smallCardW+(int)(numCardInHand * smallCardW*0.75), main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+                            cardClick[i].setLocation(cardX + smallCardW+(int)(numCardInHand * smallCardW*0.75), main.getHeight() - smallCardH - B0RDER_BOTTOM);
+                            cardClick[i].setSize(smallCardW, smallCardH);
                         }
                         numCardInHand++;
                     } catch (IOException e) {
@@ -1034,7 +1035,7 @@ public class Main extends JFrame {
         im = ImageIO.read(Main.class.getResourceAsStream("icons/Deck.png"));//His card deck up
         if (!players[1].cardInHand.isEmpty()) {
             for (int i = 0; i < players[1].cardInHand.size(); i++) {
-                g.drawImage(im, cardX + (int) (i * smallCardW * 0.5), B0RDER_TOP, smallCardW, smallCardH, null);
+                g.drawImage(im, cardX +smallCardW+ (int) (i * smallCardW * 0.5), B0RDER_TOP, smallCardW, smallCardH, null);
             }
         }
 
