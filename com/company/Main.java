@@ -215,6 +215,8 @@ public class Main extends JFrame {
                     System.out.println("Disconnect");
                     printToView("Разрыв соединения!");
                     writerToLog.close();
+                    printToView("Opponent disconnected");
+                    TimeUnit.SECONDS.sleep(5);
                     System.exit(1);
                     break;
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
@@ -512,6 +514,8 @@ public class Main extends JFrame {
                 //    System.out.println("$DRAWCARD(" + players[0].playerName + ")");
                 //    Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
             } else if (onWhat == Compo.Menu) {
+                System.out.println("$DISCONNECT");
+                Client.writeLine("$DISCONNECT");
                 writerToLog.close();
                 System.exit(0);
             } else if ((onWhat == Compo.CardInHand) && (isMyTurn == playerStatus.MuliganPhase)) {
@@ -1226,6 +1230,22 @@ public class Main extends JFrame {
                     }
                 }
             }
+            if (isMyTurn==playerStatus.IChoiseBlocker){
+                im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiator.png"));
+                g.drawImage(im, battlegroundClick.getX() + (int) (creatureWhoAttack * heroW) + heroH / 2- heroH/10 ,  battlegroundClick.getY() + heroW , heroH / 5, heroH / 5, null);
+                if (creatureWhoAttackTarget!=-1)
+                g.drawImage(im, battlegroundClick.getX() + (int) (creatureWhoAttackTarget * heroW) + heroW / 2- heroH/10 , battlegroundClick.getY() + battlegroundClick.getHeight() - heroH - heroH/5 , heroH / 5, heroH / 5, null);
+                else
+                    g.drawImage(im, playerHeroClick.getX() + heroW / 2- heroH/5 , playerHeroClick.getY() - heroH/10 , heroH / 5, heroH / 5, null);
+            }
+            if ((isMyTurn==playerStatus.EnemyChoiseBlocker) && (Main.replayCounter==0)){
+                im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiatorrevert.png"));
+                g.drawImage(im, battlegroundClick.getX() + (int) (creatureWhoAttack * heroW) + heroW / 2- heroH/10 ,  battlegroundClick.getY()+ battlegroundClick.getHeight() - heroH  - heroH/5 , heroH / 5, heroH / 5, null);
+                if (creatureWhoAttackTarget!=-1)
+                    g.drawImage(im, battlegroundClick.getX() + (int) (creatureWhoAttackTarget * heroW) + heroW / 2- heroH/10, battlegroundClick.getY() + heroH, heroH / 5, heroH / 5, null);
+                else
+                    g.drawImage(im, enemyHeroClick.getX() + heroW / 2- heroH/10, enemyHeroClick.getY(), heroH / 5, heroH / 5, null);
+            }
         }
 
     }
@@ -1272,6 +1292,20 @@ public class Main extends JFrame {
     }
 
     private static void setInitialProperties() throws IOException {
+        main.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (JOptionPane.showConfirmDialog(main,
+                        "Are you sure to close this window?", "Really Closing?",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+                    System.out.println("$DISCONNECT");
+                    Client.writeLine("$DISCONNECT");
+                    writerToLog.close();
+                    System.exit(0);
+                }
+            }
+        });
         DateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmss");
         Date date = new Date();
         System.out.println(dateFormat.format(date));
