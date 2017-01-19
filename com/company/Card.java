@@ -244,6 +244,7 @@ public class Card {
         //Which Card player(_who), who player(_whis), on what creature(_cr, may null), on what player(_pl, may null), text to play(txt)
         if (txt.contains("Закрыться.")) {//Only here - _cr=_who to get access to creature
             _cr.tapCreature();
+            Main.printToView(_cr+" закрывается.");
         }
         if (txt.contains("Получить щит ББ.")) {//Only here - _cr=_who to get access to creature
             _whis.bbshield=true;
@@ -278,6 +279,7 @@ public class Card {
             int dmg = getNumericAfterText(txt, "Получает к характеристикам + ");
             _cr.effects.bonusTougness+=dmg;
             _cr.effects.bonusPower+=dmg;
+            Main.printToView(_cr+" получает + " +dmg+" к характеристикам.");
         }
         if (txt.contains("Выбранное существо до конца хода получает к атаке + ")) {
             int dmg = getNumericAfterText(txt, "Выбранное существо до конца хода получает к атаке + ");
@@ -299,7 +301,8 @@ public class Card {
         if (txt.contains("Получает к атаке + ")) {
             int dmg = getNumericAfterText(txt, "Получает к атаке + ");
             _cr.effects.bonusPower+=dmg;
-        }
+            Main.printToView(_cr.name+" получает +"+dmg +" к атаке.");
+    }
         if (txt.contains("Излечить выбранное существо или героя на ")) {
             int dmg = getNumericAfterText(txt, "Излечить выбранное существо или героя на ");
             if (_cr != null) {
