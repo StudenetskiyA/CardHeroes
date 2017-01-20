@@ -17,13 +17,15 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class Main extends JFrame {
+
+    private static final String CLIENT_VERSION="0.01";
     private static ArrayList<String> replay;
     public static int replayCounter = 0;
-
+    public static boolean connected=false;
     private static String serverPort = "6666";
-    private static final String address = "127.0.0.1";
+    private static final String address = "127.0.0.1";//"cardheroes.hldns.ru";
     private static PrintWriter writerToLog;
-    public static final int sufflingConst = 21;
+    public static int sufflingConst = 21;
     private static final int B0RDER_RIGHT = 10;
     private static final int B0RDER_LEFT = 10;
     private static int B0RDER_BOTTOM = 40;
@@ -127,11 +129,9 @@ public class Main extends JFrame {
 
         simpleDeck = new Deck(par2);
         simpleEnemyDeck = new Deck("defaultDeck");
-        loadDeck(simpleDeck, par2);
+        loadDeckFromFile(simpleDeck, par2);
         Card c = new Card(simpleDeck.cards.get(0));
         simpleDeck.cards.remove(0);
-        simpleDeck.suffleDeck(sufflingConst);
-        //TODO Load hero
         heroImage = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
         players[0] = new Player(c, simpleDeck, par1, 0);
         players[1] = new Player(simpleDeck, "", par1, 0, 30);
@@ -139,7 +139,6 @@ public class Main extends JFrame {
         main.setLocation(477, 0);
         main.setSize(890, 688);
         main.setVisible(true);
-
 //        //FULL SCREEN
 //        main.dispose();
 //        main.setUndecorated(true);
@@ -172,18 +171,25 @@ public class Main extends JFrame {
         } else {
             try {
                 Client.connect(Integer.parseInt(serverPort), address);
-                isMyTurn = playerStatus.waitOtherPlayer;
-            } catch (Exception x) {
+                } catch (Exception x) {
                 System.out.println("Cloud not connect to server.");
             }
 
             Main.gameLog.setText("<html>");
             printToView("Player=" + players[0].playerName + ",port=" + serverPort);
 
-            System.out.println("$IAM(" + players[0].playerName + "," + players[0].deck.name + ")");
-            Client.writeLine("$IAM(" + players[0].playerName + "," + players[0].deck.name + ")");
+        if (connected) {
+            System.out.println("$IAM(" + players[0].playerName + "," + players[0].deck.name + ","+CLIENT_VERSION+")");
+            Client.writeLine("$IAM(" + players[0].playerName + "," + players[0].deck.name + ","+CLIENT_VERSION+")");
+            //Send deck
+            Client.writeLine(players[0].name);
+            for (Card card:players[0].deck.cards){
+                Client.writeLine(card.name);
+            }
+            Client.writeLine("$ENDDECK");
 
             cycleServerRead(false);
+        }
         }
     }
 
@@ -219,14 +225,28 @@ public class Main extends JFrame {
                     TimeUnit.SECONDS.sleep(5);
                     System.exit(1);
                     break;
+                } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck and other correct
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    String code_not_ok = parameter.get(0);
+                    printToView(code_not_ok);
+                    main.repaint();
+                } else if (fromServer.contains("$YOUAREOK")) {//You client,deck and other correct
+                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    sufflingConst= Integer.parseInt(parameter.get(0));
+                    isMyTurn = playerStatus.waitOtherPlayer;
+                    simpleDeck.suffleDeck(sufflingConst);
+                    main.repaint();
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
 
-                    loadDeck(simpleEnemyDeck, parameter.get(1));
+                    loadDeckFromServer(simpleEnemyDeck);
+                   // System.out.print("enemy hero= "+simpleEnemyDeck.cards.get(0).name);
+
                     Card c = new Card(simpleEnemyDeck.cards.get(0));
                     enemyImage = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
                     players[1] = new Player(c, simpleEnemyDeck, parameter.get(0), 1);
                     simpleEnemyDeck.cards.remove(0);
+
                     simpleEnemyDeck.suffleDeck(sufflingConst);
 
                     players[0].untappedCoin = coinStart;
@@ -1272,7 +1292,14 @@ public class Main extends JFrame {
         }
     }
 
-    private static void loadDeck(Deck deck, String deckName) throws IOException {
+    private static void loadDeckFromServer(Deck deck) throws IOException {
+         String card;
+        while (!(card = Client.readLine()).equals("$ENDDECK")){
+            deck.cards.add(new Card(Card.getCardByName(card)));
+        }
+    }
+
+    private static void loadDeckFromFile(Deck deck, String deckName) throws IOException {
         URL path = Main.class.getResource(deckName + ".txt");
         File f = new File(path.getFile());
         BufferedReader br = new BufferedReader(new InputStreamReader(

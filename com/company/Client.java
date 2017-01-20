@@ -20,13 +20,14 @@ public class Client {
     }
     static void connect(int serverPort, String address){
         try {
-            System.out.println("Try to connect to socket with IP address " + address + " and port " + serverPort + "?");
+            System.out.println("Try to connect to socket with IP address " + address + " and port " + serverPort + ".");
             // Setup networking
             socket = new Socket(address, serverPort);
             in = new BufferedReader(new InputStreamReader(
                     socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
             System.out.println("Yes! Connection ok.");
+            Main.connected=true;
         }
         catch (Exception x) {
             x.printStackTrace();
@@ -37,6 +38,7 @@ public class Client {
         return in.readLine();
     }
     static void writeLine(String line){
+        if (Main.connected)
         out.println(line);
     }
 }
