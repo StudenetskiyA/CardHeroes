@@ -187,13 +187,13 @@ public class Main extends JFrame {
                     Client.writeLine(card.name);
                 }
                 Client.writeLine("$ENDDECK");
-
-                heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
-                heroH = (heroW * 400 / 283);
-                 cardX = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
-                 Graphics g=main.getGraphics();
-                g.drawImage(menuImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN, heroW, heroW * 149 / 283, null);
-               // menuClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN);
+//
+//                heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
+//                heroH = (heroW * 400 / 283);
+//                 cardX = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
+//                 Graphics g=main.getGraphics();
+//                g.drawImage(menuImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN, heroW, heroW * 149 / 283, null);
+//               // menuClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN);
                 //menuClick.setSize(heroW, heroW * 149 / 283);
 
                 cycleServerRead(false);
@@ -296,6 +296,7 @@ public class Main extends JFrame {
                         isMyTurn = playerStatus.MyTurn;
                         players[1].endTurn();
                     }
+                    main.repaint();
                 } else if (fromServer.contains("$NEWTURN(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     main.repaint();
@@ -530,7 +531,8 @@ public class Main extends JFrame {
             Main.gameLog.setText(Main.gameLog.getText() + txt + "<br>");
         }
         else if (type==1){
-        messageToShow = new MessageToShow(txt, 3000);}
+        messageToShow = new MessageToShow(txt, 1500);
+        }
     }
 
     private static class MyListener extends MouseInputAdapter {
@@ -559,6 +561,7 @@ public class Main extends JFrame {
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.MyTurn)) {
                 System.out.println("$ENDTURN(" + players[0].playerName + ")");
                 Client.writeLine("$ENDTURN(" + players[0].playerName + ")");
+                main.repaint();
             } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.MyTurn)) {
                 //My hero ability
                 if (!players[0].isTapped) {
@@ -1126,24 +1129,20 @@ public class Main extends JFrame {
         if ((messageToShow.lenght > delta) || (messageToShow.whenAdd==0) && (!messageToShow.message.equals(" "))){
             if (messageToShow.whenAdd==0)
             messageToShow.whenAdd=cal.getTimeInMillis();
-            //TRY ANOTHER. SLOW AGAIN(((
-//            message.setLocation(main.getWidth()/2,main.getHeight()/2);
-//            message.setText( messageToShow.message);
-//            message.setVisible(true);
-            //SUPER SLOW!!!!!
-//            font = new Font("Georgia", Font.ITALIC, 50);
-//            g1 = (Graphics2D) g;
-//            g1.setFont(font);
-//            metrics = g1.getFontMetrics();
-//            int x = main.getWidth() / 2 - metrics.stringWidth(messageToShow.message) / 2;
-//            int y = main.getHeight() / 2;
-//            g1.setPaint(new Color(150, 150, 150));
-//            TextLayout textLayout = new TextLayout(messageToShow.message, font, g1.getFontRenderContext());
-//            textLayout.draw(g1, x + 3, y + 3);
-//
-//            g1.setPaint(Color.yellow);
-//            textLayout.draw(g1, x, y);
-   //           main.repaint();
+
+            font = new Font("Georgia", Font.ITALIC, 50);
+            g1 = (Graphics2D) g;
+            g1.setFont(font);
+            metrics = g1.getFontMetrics();
+            int x = main.getWidth() / 2 - metrics.stringWidth(messageToShow.message) / 2;
+            int y = main.getHeight() / 2;
+            g1.setPaint(new Color(150, 150, 150));
+            TextLayout textLayout = new TextLayout(messageToShow.message, font, g1.getFontRenderContext());
+            textLayout.draw(g1, x + 3, y + 3);
+
+            g1.setPaint(Color.yellow);
+            textLayout.draw(g1, x, y);
+            main.repaint();
         }
         else if (messageToShow.lenght < delta) message.setVisible(false);
     }
@@ -1557,17 +1556,19 @@ public class Main extends JFrame {
         main.setVisible(true);
     }
 
+    public static boolean needToRefreshMessage=false;
+
     private static class ViewField extends JPanel {
-        boolean initFontGraphics=false;
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-//            try {
-//                onRepaint(g);//its too slow!! TODO repaint not many time
-//            } catch (IOException e) {
-//                System.out.println("Error in onRepaint.");
-//                e.printStackTrace();
-//            }
+            try {
+                onRepaint(g);//its too slow!! TODO repaint not many time
+            //    if (needToRefreshMessage) { drawMessage(g);}
+            } catch (IOException e) {
+                System.out.println("Error in onRepaint.");
+                e.printStackTrace();
+            }
         }
 
         ViewField() {
