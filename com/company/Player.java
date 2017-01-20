@@ -68,7 +68,7 @@ public class Player extends Card {
     public void newTurn() {
         Board.turnCount++;
         this.myTurn = true;
-        Main.printToView("Ход номер " + Board.turnCount + ", игрок " + playerName);
+        Main.printToView(1,"Ход номер " + Board.turnCount + ", игрок " + playerName);
         isTapped = false;
         //Get coin
         if (totalCoin < 10) totalCoin++;
@@ -100,7 +100,7 @@ public class Player extends Card {
     void playCardX(Card _card, Creature _targetCreature, Player _targetPlayer, int x) {
         int num = cardInHand.indexOf(_card);
         if (num == -1) return;
-        Main.printToView("X = " + x + ".");
+        Main.printToView(0,"X = " + x + ".");
         _card.text = _card.text.replace("ХХХ", String.valueOf(x));
         System.out.println("text after replace:" + _card.text);
         tempX=x;
@@ -124,7 +124,7 @@ public class Player extends Card {
 
         if (untappedCoin >= effectiveCost) {
             untappedCoin -= effectiveCost;
-            Main.printToView("Розыгрышь карты " + _card.name + ".");
+            Main.printToView(0,"Розыгрышь карты " + _card.name + ".");
             //put on table or cast spell
             if (_card.type == 1) {
                 //release text on spell
@@ -144,7 +144,7 @@ public class Player extends Card {
                 //creature
                 Board.addCreatureToBoard(_card, this);
             } else if (_card.type == 3) {
-                Main.printToView(name + " экипировал " + _card.name + ".");
+                Main.printToView(0,name + " экипировал " + _card.name + ".");
                 if (_card.creatureType.equals("Броня")) {
                     if (this.equpiment[0] != null) Board.putCardToGraveyard(this.equpiment[0], this);
                     this.equpiment[0] = new Equpiment(_card, this);
@@ -159,7 +159,7 @@ public class Player extends Card {
             //remove from hand
             cardInHand.remove(_card);
         } else {
-            Main.printToView("Не хватает монет.");
+            Main.printToView(0,"Не хватает монет.");
         }
     }
 
@@ -167,7 +167,7 @@ public class Player extends Card {
         if (deck.haveTopDeck())
             cardInHand.add(deck.drawTopDeck());
         else {
-            Main.printToView("Deck of " + playerName + " is empty.");
+            Main.printToView(0,"Deck of " + playerName + " is empty.");
         }
     }
 
@@ -183,7 +183,7 @@ public class Player extends Card {
             if (equpiment[1].name.equals("Браслет подчинения")) {
                 //Плащ исхара
                 if (dmg!=1)
-                Main.printToView("Браслет подчинения свел атаку к 1.");
+                Main.printToView(0,"Браслет подчинения свел атаку к 1.");
                 dmg = 1;
 
             }
@@ -196,7 +196,7 @@ public class Player extends Card {
                 dmg -= equpiment[0].hp;
                 equpiment[0].hp -= tmp;
                 if (dmg < 0) dmg = 0;
-                Main.printToView("Плащ Исхара предотвратил " + (tmp - dmg) + " урона.");
+                Main.printToView(0,"Плащ Исхара предотвратил " + (tmp - dmg) + " урона.");
                 if (equpiment[0].hp <= 0) {
                     Board.putCardToGraveyard(equpiment[0], this);
                     equpiment[0] = null;
@@ -206,17 +206,17 @@ public class Player extends Card {
         if (hp > damage + dmg) {
             damage += dmg;
             if (dmg!=0)
-            Main.printToView(this.name+" получет "+dmg +" урона.");
+            Main.printToView(0,this.name+" получет "+dmg +" урона.");
         } else {
             System.out.println("Player lose game.");
-            Main.printToView(playerName + " проиграл игру.");
+            Main.printToView(0,playerName + " проиграл игру.");
             //TODO Lose play
         }
     }
 
     public void heal(int dmg) {
         if (equpiment[1].name.equals("Браслет подчинения")) {
-            Main.printToView(name + " не может быть излечен.");
+            Main.printToView(0,name + " не может быть излечен.");
         } else {
             damage -= dmg;
             if (damage < 0) damage = 0;

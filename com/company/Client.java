@@ -30,7 +30,7 @@ public class Client {
             Main.connected=true;
         }
         catch (Exception x) {
-            x.printStackTrace();
+           // x.printStackTrace();
         }
     }
 

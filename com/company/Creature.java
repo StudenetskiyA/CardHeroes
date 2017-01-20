@@ -120,7 +120,7 @@ public class Creature extends Card {
 
     public void fightCreature(Creature second) {
         //TODO First strike and other
-        Main.printToView(this.name + " сражается с " + second.name + ".");
+        Main.printToView(0,this.name + " сражается с " + second.name + ".");
         if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
             this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
             if (this.damage < this.hp) second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
@@ -142,7 +142,7 @@ public class Creature extends Card {
     }
 
     public void fightPlayer(Player second) {
-        Main.printToView(this.name + " атакует " + second.name + ".");
+        Main.printToView(0,this.name + " атакует " + second.name + ".");
         second.takeDamage(this.getPower());
     }
 
@@ -162,6 +162,8 @@ public class Creature extends Card {
                 if (Main.replayCounter==0) {
                     System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
                     Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
+                    Main.creatureWhoAttackTarget=nt;
+                    Main.creatureWhoAttack=nc;
                 }
                 Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
             } else {
@@ -185,6 +187,8 @@ public class Creature extends Card {
                 if (Main.replayCounter==0) {
                     System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
                     Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
+                    Main.creatureWhoAttackTarget=nt;
+                    Main.creatureWhoAttack=nc;
                 }
                 Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
             } else {
@@ -268,7 +272,7 @@ public class Creature extends Card {
 //        this.damage=0;
         //And may be other
         // Or not?
-        Main.printToView(this.name + " умирает.");
+        Main.printToView(0,this.name + " умирает.");
         if (this.text.contains("Гибельт:")) {
             deathratleTarget(this);
         }
