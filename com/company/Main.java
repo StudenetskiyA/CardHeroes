@@ -140,9 +140,10 @@ public class Main extends JFrame {
         main.setLocation(477, 0);
         main.setSize(890, 688);
         main.setVisible(true);
-//        //FULL SCREEN
+        //FULL SCREEN
 //        main.dispose();
 //        main.setUndecorated(true);
+        //????? Here
 //        main.setAlwaysOnTop(true);
 //        main.setResizable(false);
 //        Toolkit tk = Toolkit.getDefaultToolkit();
