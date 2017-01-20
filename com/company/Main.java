@@ -238,13 +238,13 @@ public class Main extends JFrame {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     String code_not_ok = parameter.get(0);
                     printToView(0,code_not_ok);
-                    main.repaint();
+                   // main.repaint();
                 } else if (fromServer.contains("$YOUAREOK")) {//You client,deck and other correct
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     sufflingConst = Integer.parseInt(parameter.get(0));
                     isMyTurn = playerStatus.waitOtherPlayer;
                     simpleDeck.suffleDeck(sufflingConst);
-                    main.repaint();
+                   // main.repaint();
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
 
@@ -268,7 +268,7 @@ public class Main extends JFrame {
                             players[1].drawCard();
                         }
                         isMyTurn = playerStatus.MuliganPhase;
-                        main.repaint();
+                     //   main.repaint();
                     }
                 } else if (fromServer.contains("$MULLIGANEND(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
@@ -280,7 +280,7 @@ public class Main extends JFrame {
                             players[pl].drawCard();
                         }
                     }
-                    main.repaint();
+                   // main.repaint();
                 } else if (fromServer.contains("$DRAWCARD(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
@@ -296,10 +296,10 @@ public class Main extends JFrame {
                         isMyTurn = playerStatus.MyTurn;
                         players[1].endTurn();
                     }
-                    main.repaint();
+                    //main.repaint();
                 } else if (fromServer.contains("$NEWTURN(")) {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    main.repaint();
+                    //main.repaint();
                     if (players[0].playerName.equals(parameter.get(0))) {
                         isMyTurn = playerStatus.MyTurn;
                         players[0].newTurn();
@@ -313,7 +313,7 @@ public class Main extends JFrame {
                         isMyTurn = playerStatus.IChoiseBlocker;
                         creatureWhoAttack = Integer.parseInt(parameter.get(1));
                         creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
-                        main.repaint();
+                      //  main.repaint();
                     }
                 } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
                     // CRYTARGET also for DeathratleTarget
@@ -520,6 +520,7 @@ public class Main extends JFrame {
                         }
                     }
                 }
+                main.repaint();
             }
         }
     }
