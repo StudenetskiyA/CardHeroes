@@ -108,6 +108,7 @@ public class Main extends JFrame {
     static int creatureWhoAttackTarget;
     static int hilightMyCreature = -1;
     static int hilightMyCard = -1;
+    static String replayDeck="";
 
     public static void main(String[] args) throws IOException, InterruptedException {
         String replayName = "";
@@ -124,6 +125,7 @@ public class Main extends JFrame {
             if (i == 0) serverPort = args[i];
             if (i == 3) coinStart = Integer.parseInt(args[i]);
             if (i == 4) replayName = args[i];
+            if (i==5) replayDeck=args[i];
         }
 
         simpleDeck = new Deck(par2);
@@ -154,14 +156,20 @@ public class Main extends JFrame {
 
         replay = new ArrayList<>();
         if (serverPort.equals("replay")) {
-            File file = new File(replayName + ".txt");
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+
+            InputStream path = Main.class.getResourceAsStream("replays/"+ replayName + ".txt");
+            BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
+
+            try  {
                 String line;
                 while ((line = br.readLine()) != null) {
                     // process the line.
                     replay.add(line);
                     System.out.println(line);
                 }
+            }
+            catch (Exception x) {
+                System.out.println("Cloud not read replay.");
             }
             Main.gameLog.setText("<html>");
             printToView(0,"Player=" + players[0].playerName + ",port=" + serverPort);
@@ -202,7 +210,7 @@ public class Main extends JFrame {
     }
 
     private static String getNextReplayLine() throws InterruptedException {
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(2);
         if (replayCounter < replay.size()) {
             String tmp = replay.get(replayCounter);
             System.out.println("Replay - " + tmp);
@@ -247,8 +255,9 @@ public class Main extends JFrame {
                    // main.repaint();
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
-
+                    if (replayCounter==0)
                     loadDeckFromServer(simpleEnemyDeck);
+                    else loadDeckFromFile(simpleEnemyDeck,replayDeck);
                     // System.out.print("enemy hero= "+simpleEnemyDeck.cards.get(0).name);
 
                     Card c = new Card(simpleEnemyDeck.cards.get(0));
@@ -487,13 +496,13 @@ public class Main extends JFrame {
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
-                    printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + "атакует " + players[apl].name);
+                    printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + players[apl].name);
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackPlayer(players[apl]);
                 } else if (fromServer.contains("$ATTACKCREATURE(")) {//$ATTACKREATURE(Player, Creature, TargetCreature)
                     ArrayList<String> parameter = Card.getTextBetween(fromServer);
                     int pl = Board.getPl(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
-                    printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + "атакует " + Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))).name);
+                    printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))).name);
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
                 } else if (fromServer.contains("$FOUND(")) {//$FOUND(Player, Card)
                     choiseXcolor = 0;
@@ -939,7 +948,7 @@ public class Main extends JFrame {
 
     private static void onRepaint(Graphics g) throws IOException {
         //setLocation and setSize to other block?
-        System.out.println("onRepaint " + repainted);
+       // System.out.println("onRepaint " + repainted);
         repainted++;
         bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.8);
         bigCardH = (bigCardW * 400 / 283);
@@ -1373,10 +1382,8 @@ public class Main extends JFrame {
     }
 
     private static void loadDeckFromFile(Deck deck, String deckName) throws IOException {
-        URL path = Main.class.getResource(deckName + ".txt");
-        File f = new File(path.getFile());
-        BufferedReader br = new BufferedReader(new InputStreamReader(
-                new FileInputStream(f), "windows-1251"));
+        InputStream path = Main.class.getResourceAsStream(deckName + ".txt");
+        BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
         try {
             String line = "";
             while (line != null) {
@@ -1410,6 +1417,7 @@ public class Main extends JFrame {
         Date date = new Date();
         System.out.println(dateFormat.format(date));
         String fname = dateFormat.format(date);
+
         File file = new File(fname + ".txt");
         FileWriter writer = new FileWriter(file, true);
         writerToLog = new PrintWriter(writer);
