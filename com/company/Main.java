@@ -576,16 +576,16 @@ public class Main extends JFrame {
             } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.MyTurn)) {
                 //My hero ability
                 if (!players[0].isTapped) {
-                    if (players[0].name.equals("Тиша")) {
+                    if (players[0].name.equals("Тиша") || players[0].name.equals("Руах")) {
                         if ((Board.creature.get(0).size() > 0) || (Board.creature.get(1).size() > 0)) {
-                            if (players[0].untappedCoin >= 2) {
-                                //replace
-                                //players[0].isTapped = true;
+                            int cost = MyFunction.getNumericAfterText(players[0].text, "ТАПТ:");
+                            System.out.println("hero ability cost = " + cost);
+                            if (players[0].untappedCoin >= cost) {
                                 isMyTurn = playerStatus.choiseTarget;
                                 //change
                                 Card.ActivatedAbility.targetType = players[0].targetType;
                                 Card.ActivatedAbility.heroAbility = true;
-                                Card.ActivatedAbility.heroAbilityCost = 2;
+                                Card.ActivatedAbility.heroAbilityCost = cost;
                                 Card.ActivatedAbility.creature = null;
                                 main.repaint();
                             } else {

@@ -77,7 +77,9 @@ class Card {
             case "Бьорнбон":
                 return new Card(0, name, "", 3, 0, 0, 0, "ТАП:0 Получить щит ББ.", 0, 30);
             case "Тиша":
-                return new Card(0, "Тиша", "", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
+                return new Card(0, "Тиша", "", 1, 0, 1, 0, "ТАПТ:2 Отравить+ выбранное существо на 1.", 0, 26);
+            case "Руах":
+                return new Card(0, name, "", 2, 0, 1, 0, "ТАПТ:1 Ранить на половину жизней выбранное существо.", 0, 25);
             case "Раскат грома":
                 return new Card(1, "Раскат грома", "", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
             case "Выброс силы":
@@ -312,6 +314,13 @@ class Card {
             } else {
                 Main.printToView(0, _who.name + " излечивает " + _pl.name + " на " + dmg + ".");
                 _pl.heal(dmg);
+            }
+        }
+        if (txt.contains("Ранить на половину жизней выбранное существо.")) {
+            if (_cr != null) {
+                int dmg=(_cr.getTougness()-_cr.damage)/2;
+                Main.printToView(0, _who.name + " ранит " + _cr.name + " на " + dmg + ".");
+                _cr.takeDamage(dmg, Creature.DamageSource.ability);
             }
         }
         if (txt.contains("Ранить выбранное существо или героя на ")) {

@@ -28,7 +28,7 @@ public class Player extends Card {
         cardInHand = new ArrayList<>();
         graveyard = new ArrayList<>();
         numberPlayer = _n;
-        equpiment = new Equpiment[3];
+        equpiment = new Equpiment[4];
         equpiment[0] = null;
         equpiment[1] = null;
         equpiment[2] = null;
@@ -42,7 +42,7 @@ public class Player extends Card {
         cardInHand = new ArrayList<>();
         graveyard = new ArrayList<>();
         numberPlayer = _n;
-        equpiment = new Equpiment[3];
+        equpiment = new Equpiment[4];
         equpiment[0] = null;
         equpiment[1] = null;
         equpiment[2] = null;
