@@ -25,9 +25,7 @@ public class Board {
 
     static void addCreatureToBoard(Card _creature, Player _player) {
         Creature summonCreature = new Creature(_creature, _player);
-        if (_creature.text.contains("Рывок.")) {
-            summonCreature.isSummonedJust = false;
-        }
+
         if (_creature.text.contains("Уникальность.")) {
             for (int i = Board.creature.get(_player.numberPlayer).size() - 1; i >= 0; i--) {
                 if (Board.creature.get(_player.numberPlayer).get(i).name.equals(_creature.name)){

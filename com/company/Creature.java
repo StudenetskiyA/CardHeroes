@@ -21,6 +21,7 @@ public class Creature extends Card {
     Effects effects = new Effects();
 
     public class Effects {
+        String additionalText="";
         public int poison=0;
         public int bonusPower = 0;
         public int bonusPowerUEOT = 0;
@@ -47,6 +48,8 @@ public class Creature extends Card {
     }
 
     boolean getIsSummonedJust(){
+        if (text.contains("Рывок.")) return false;
+        if (effects.additionalText.contains("Рывок.")) return false;
         //Chain dog take charge
         if ((name.equals("Цепной пес"))) {
             int houndFounded = 0;
@@ -59,7 +62,6 @@ public class Creature extends Card {
             }
             if (houndFounded>1) return false;
         }
-
         return isSummonedJust;
     }
 
@@ -156,19 +158,26 @@ public class Creature extends Card {
     }
 
     void fightCreature(Creature second) {
-        //TODO First strike and other
-        Main.printToView(0,this.name + " сражается с " + second.name + ".");
-        if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
-            this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
-            if (this.damage < this.hp) second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
-        } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
-            second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
-            if (second.damage < second.hp) this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
-        } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
-            this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
-            second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
-        } else {
-            this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+        if (!second.isTapped) {
+            Main.printToView(0, this.name + " сражается с " + second.name + ".");
+            if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
+                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+                if (this.damage < this.hp) second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+            } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
+                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+                if (second.damage < second.hp)
+                    this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+            } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
+                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+            } else {
+                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+            }
+        }
+        else
+        {
+            Main.printToView(0, this.name + " ударяет " + second.name + ".");
             second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
         }
     }
@@ -183,7 +192,7 @@ public class Creature extends Card {
     }
 
     void attackCreature(Creature target) {
-        if (!text.contains("Опыт в атаке."))
+        if (!text.contains("Опыт в атаке.") || !effects.additionalText.contains("Опыт в атаке."))
             tapCreature();
         attackThisTurn = true;
 

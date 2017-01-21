@@ -26,7 +26,7 @@ public class Main extends JFrame {
     static Graphics2D g1;
     static FontMetrics metrics;
     private static String serverPort = "6666";
-    private static final String address = "127.0.0.1";//"cardheroes.hldns.ru";
+    private static final String address ="test1.uralgufk.ru";// "127.0.0.1";//"cardheroes.hldns.ru";
     private static PrintWriter writerToLog;
     static int sufflingConst = 21;//By default 21, in normal - get from server
     //View constant
@@ -328,7 +328,6 @@ public class Main extends JFrame {
                         isMyTurn = playerStatus.IChoiseBlocker;
                         creatureWhoAttack = Integer.parseInt(parameter.get(1));
                         creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
-                        //  main.repaint();
                     }
                 } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
                     // CRYTARGET also for DeathratleTarget
@@ -812,6 +811,8 @@ public class Main extends JFrame {
 
         public void mousePressed(MouseEvent e) {
             // you may not need this method
+            //System.out.println("pressed");
+           // hilightMyCard = -1;
         }
 
         public void mouseEntered(MouseEvent event) {
@@ -948,13 +949,24 @@ public class Main extends JFrame {
         }
 
         public void mouseDragged(MouseEvent e) {
+            hilightMyCard = -1;
+
             if (onWhat == Compo.CardInHand) {//Creature in hand
                 cardMem = players[0].cardInHand.get(num);
+                Toolkit toolkit = Toolkit.getDefaultToolkit();
+                Image image = toolkit.getImage("cards/"+players[0].cardInHand.get(num).image);
+                
+                Cursor c = toolkit.createCustomCursor(image , new Point(main.getX(),
+                        main.getY()), "img");
+                Dimension a= toolkit.getBestCursorSize(100,200);
+                System.out.println(a.getSize());
+                //main.setCursor (c);
+
             } else if (onWhat == Compo.CreatureInMyPlay) {//Creature in play
                 creatureMem = Board.creature.get(0).get(num);
             }
 
-
+            main.repaint();
         }
     }
 
@@ -1359,7 +1371,7 @@ public class Main extends JFrame {
                 im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiatorrevert.png"));
                 g.drawImage(im, battlegroundClick.getX() + creatureWhoAttack * (heroH + BORDER_CREATURE) + heroH / 2 - heroH / 10, battlegroundClick.getY() + battlegroundClick.getHeight() - (heroH + heroW) / 2 - heroH / 10, heroH / 5, heroH / 5, null);
                 if (creatureWhoAttackTarget != -1) {
-                    if (Board.creature.get(0).get(creatureWhoAttackTarget).isTapped) {
+                    if (Board.creature.get(1).get(creatureWhoAttackTarget).isTapped) {
                         g.drawImage(im, battlegroundClick.getX() + creatureWhoAttackTarget * (heroH + BORDER_CREATURE) + heroH / 2 - heroH / 10, battlegroundClick.getY() + (heroH + heroW) / 2 - heroH / 10, heroH / 5, heroH / 5, null);
                     } else
                         g.drawImage(im, battlegroundClick.getX() + creatureWhoAttackTarget * (heroH + BORDER_CREATURE) + heroW / 2 - heroH / 10, battlegroundClick.getY() + heroH - heroH / 10, heroH / 5, heroH / 5, null);

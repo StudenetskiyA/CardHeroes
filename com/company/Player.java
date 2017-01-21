@@ -51,7 +51,9 @@ public class Player extends Card {
 
     void endTurn() {
         totalCoin -= temporaryCoin;
-        bbshield=false;
+
+        if (Board.opponent(this).bbshield) Board.opponent(this).bbshield=false;
+
         if (untappedCoin > totalCoin) untappedCoin = totalCoin;
         temporaryCoin = 0;
         //Creature effects until eot

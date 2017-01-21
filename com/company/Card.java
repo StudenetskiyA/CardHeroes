@@ -78,6 +78,8 @@ class Card {
                 return new Card(0, name, "", 3, 0, 0, 0, "ТАП:0 Получить щит ББ.", 0, 30);
             case "Тиша":
                 return new Card(0, "Тиша", "", 1, 0, 1, 0, "ТАПТ:2 Отравить+ выбранное существо на 1.", 0, 26);
+            case "Свирепый резак":
+                return new Card(0, name, "", 2, 0, 1, 0, "ТАПТ:2 Выбранное существо получает 'Опыт в атаке. Рывок.'.", 0, 28);
             case "Руах":
                 return new Card(0, name, "", 2, 0, 1, 0, "ТАПТ:1 Ранить на половину жизней выбранное существо.", 0, 25);
             case "Раскат грома":
@@ -375,6 +377,10 @@ class Card {
             int dmg = _cr.getPower();
             Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
             _cr.takeDamage(dmg, Creature.DamageSource.spell);
+        }
+        if (txt.contains("Выбранное существо получает 'Опыт в атаке. Рывок.'")) {
+            Main.printToView(0, _whis.name+" дает " + _cr.name + " опыт в атаке и рывок.");
+            _cr.effects.additionalText+="Опыт в атаке. Рывок.";
         }
         if (txt.contains("Верните выбранное существо в руку его владельца.")) {
             _cr.returnToHand();
