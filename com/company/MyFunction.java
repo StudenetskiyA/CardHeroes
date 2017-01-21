@@ -31,6 +31,14 @@ public class MyFunction {
         {
             if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 ) return true;
         }
+        else if (target==Target.myPlayer.enemyPlayer)
+        {
+            if (targetType==2 || targetType==3 || targetType==5 || targetType==6) return true;
+        }
+        else if (target==Target.myPlayer.enemyCreature)
+        {
+            if (targetType==1 || targetType==3 || targetType==4 || targetType==6) return true;
+        }
         return false;
     }
 

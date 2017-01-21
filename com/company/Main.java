@@ -635,7 +635,7 @@ public class Main extends JFrame {
                 }
             } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy hero
-                if ((Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.tapTargetType == 2) || (Card.ActivatedAbility.targetType == 2) || (Card.ActivatedAbility.targetType == 3)) {
+                if (MyFunction.canTarget(MyFunction.Target.enemyPlayer, Card.ActivatedAbility.targetType) || MyFunction.canTarget(MyFunction.Target.enemyPlayer, Card.ActivatedAbility.tapTargetType)) {
                     if ((players[1].bbshield) && (Card.ActivatedAbility.creature.text.contains("Выстрел"))) {
                         players[1].bbshield = false;
                     }
@@ -676,7 +676,8 @@ public class Main extends JFrame {
                 }
             } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy unit
-                if ((Card.ActivatedAbility.tapTargetType == 1) || (Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.targetType == 1) || (Card.ActivatedAbility.targetType == 3)) {
+                if (MyFunction.canTarget(MyFunction.Target.enemyCreature, Card.ActivatedAbility.targetType) || MyFunction.canTarget(MyFunction.Target.enemyCreature, Card.ActivatedAbility.tapTargetType))
+                    {
                     //Bjornbon check attack or not this cry or tap.
                     if ((players[1].bbshield) && (Card.ActivatedAbility.creature.text.contains("Выстрел"))) {
                         printToView(0, "Целью первой атаки должен быть Бьорнбон.");
