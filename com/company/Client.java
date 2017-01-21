@@ -3,6 +3,7 @@ package com.company;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,9 +24,9 @@ public class Client {
             System.out.println("Try to connect to socket with IP address " + address + " and port " + serverPort + ".");
             // Setup networking
             socket = new Socket(address, serverPort);
-            in = new BufferedReader(new InputStreamReader(
-                    socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream(),"windows-1251"));
+          //  out = new PrintWriter(socket.getOutputStream(), true);
+            out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "windows-1251"), true);
             System.out.println("Yes! Connection ok.");
             Main.connected=true;
         }

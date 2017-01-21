@@ -38,6 +38,23 @@ public class Creature extends Card {
         }
     }
 
+    boolean getIsSummonedJust(){
+        //Chain dog take charge
+        if ((name.equals("Цепной пес"))) {
+            int houndFounded = 0;
+            for (int i = 0; i < Board.creature.get(owner.numberPlayer).size(); i++) {
+                if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Цепной пес")) houndFounded++;
+            }
+            //and for opponent
+            for (int i = 0; i < Board.creature.get(Board.opponentN(owner)).size(); i++) {
+                if (Board.creature.get(Board.opponentN(owner)).get(i).name.equals("Цепной пес")) houndFounded++;
+            }
+            if (houndFounded>1) return false;
+        }
+
+        return isSummonedJust;
+    }
+
     int getMaxArmor() {
         return maxArmor + effects.bonusArmor;
     }
@@ -48,13 +65,25 @@ public class Creature extends Card {
 
     int getPower() {
         int staticBonus = 0;
-        //Gnome cost less
+        //TanGnome take + for power
         if ((creatureType.equals("Гном")) && (!name.equals("Тан гномов"))) {
             int tanFounded = 0;
             for (int i = 0; i < Board.creature.get(owner.numberPlayer).size(); i++) {
                 if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Тан гномов")) tanFounded++;
             }
             staticBonus += tanFounded;
+        }
+        //Chain dog take and get + power
+        if ((name.equals("Цепной пес"))) {
+            int houndFounded = 0;
+            for (int i = 0; i < Board.creature.get(owner.numberPlayer).size(); i++) {
+                if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Цепной пес")) houndFounded++;
+            }
+            //and for opponent
+            for (int i = 0; i < Board.creature.get(Board.opponentN(owner)).size(); i++) {
+                if (Board.creature.get(Board.opponentN(owner)).get(i).name.equals("Цепной пес")) houndFounded++;
+            }
+            staticBonus += houndFounded-1;
         }
         return power + effects.bonusPower + staticBonus+effects.bonusPowerUEOT;
     }

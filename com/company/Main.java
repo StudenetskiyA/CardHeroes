@@ -731,7 +731,7 @@ public class Main extends JFrame {
                 }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАПТ:"))) {
                 //TAP with target ability - first step
-                if (!Board.creature.get(0).get(num).isSummonedJust) {
+                if (!Board.creature.get(0).get(num).getIsSummonedJust()) {
                     if (!Board.creature.get(0).get(num).isTapped) {
                         System.out.println("tapt ability.");
                         isMyTurn = playerStatus.choiseTarget;
@@ -766,7 +766,7 @@ public class Main extends JFrame {
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).
                     get(num).text.contains("ТАП:"))) {
                 //TAP with target ability - first step
-                if (!Board.creature.get(0).get(num).isSummonedJust) {
+                if (!Board.creature.get(0).get(num).getIsSummonedJust()) {
                     if (!Board.creature.get(0).get(num).isTapped) {
                         System.out.println("tap ability.");
                         Board.creature.get(0).get(num).tapNoTargetAbility();
@@ -858,7 +858,7 @@ public class Main extends JFrame {
                     if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {
                         printToView(0, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
                     } else {
-                        if (creatureMem.isSummonedJust) {
+                        if (creatureMem.getIsSummonedJust()) {
                             printToView(0, "Это существо вошло в игру на этом ходу.");
                         } else {
                             players[1].bbshield = false;
@@ -874,7 +874,7 @@ public class Main extends JFrame {
                         if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {
                             printToView(0, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
                         } else {
-                            if (creatureMem.isSummonedJust) {
+                            if (creatureMem.getIsSummonedJust()) {
                                 printToView(0, "Это существо вошло в игру на этом ходу.");
                             } else {
                                 System.out.println("$ATTACKCREATURE(" + players[0].playerName + "," + num + "," + whereMyMouseNum + ")");
@@ -956,7 +956,7 @@ public class Main extends JFrame {
         //setLocation and setSize to other block?
         // System.out.println("onRepaint " + repainted);
         repainted++;
-        bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.8);
+        bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.9);
         bigCardH = (bigCardW * 400 / 283);
         heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
         heroH = (heroW * 400 / 283);
