@@ -24,7 +24,7 @@ public class Main extends JFrame {
     static boolean connected = false;
     static Font font;
     static Graphics2D g1;
-    static  FontMetrics metrics;
+    static FontMetrics metrics;
     private static String serverPort = "6666";
     private static final String address = "127.0.0.1";//"cardheroes.hldns.ru";
     private static PrintWriter writerToLog;
@@ -84,7 +84,7 @@ public class Main extends JFrame {
     private static Card cardMem;
     private static Creature creatureMem;
 
-  
+
     private static String whereMyMouse;
     private static int whereMyMouseNum;
     private static int repainted;//For test how many times called onRepaint
@@ -94,21 +94,21 @@ public class Main extends JFrame {
 
     enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget}
 
-      static int choiceXcolor = 0;
-      static int choiceXtype = 0;
-      static String choiceXcreatureType = "";
-      static int choiceXcost = 0;
-     static String choiceXtext;
+    static int choiceXcolor = 0;
+    static int choiceXtype = 0;
+    static String choiceXcreatureType = "";
+    static int choiceXcost = 0;
+    static String choiceXtext;
 
-   //  static Card.ActivatedAbility Card.ActivatedAbility;
+    //  static Card.ActivatedAbility Card.ActivatedAbility;
 
-     static playerStatus isMyTurn = playerStatus.waitingForConnection;
-     static boolean wantToMulligan[] = new boolean[4];
+    static playerStatus isMyTurn = playerStatus.waitingForConnection;
+    static boolean wantToMulligan[] = new boolean[4];
     static int creatureWhoAttack;
     static int creatureWhoAttackTarget;
     static int hilightMyCreature = -1;
     static int hilightMyCard = -1;
-    private static String replayDeck="";
+    private static String replayDeck = "";
 
     public static void main(String[] args) throws IOException, InterruptedException {
         String replayName = "";
@@ -125,7 +125,7 @@ public class Main extends JFrame {
             if (i == 0) serverPort = args[i];
             if (i == 3) coinStart = Integer.parseInt(args[i]);
             if (i == 4) replayName = args[i];
-            if (i==5) replayDeck=args[i];
+            if (i == 5) replayDeck = args[i];
         }
 
         simpleDeck = new Deck(par2);
@@ -158,22 +158,21 @@ public class Main extends JFrame {
         replay = new ArrayList<>();
         if (serverPort.equals("replay")) {
 
-            InputStream path = Main.class.getResourceAsStream("replays/"+ replayName + ".txt");
+            InputStream path = Main.class.getResourceAsStream("replays/" + replayName + ".txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
 
-            try  {
+            try {
                 String line;
                 while ((line = br.readLine()) != null) {
                     // process the line.
                     replay.add(line);
                     System.out.println(line);
                 }
-            }
-            catch (Exception x) {
+            } catch (Exception x) {
                 System.out.println("Cloud not read replay.");
             }
             Main.gameLog.setText("<html>");
-            printToView(0,"Player=" + players[0].playerName + ",port=" + serverPort);
+            printToView(0, "Player=" + players[0].playerName + ",port=" + serverPort);
             isMyTurn = playerStatus.waitOtherPlayer;
             cycleServerRead(true);
         } else {
@@ -185,7 +184,7 @@ public class Main extends JFrame {
             }
 
             Main.gameLog.setText("<html>");
-            printToView(0,"Player=" + players[0].playerName + ",port=" + serverPort);
+            printToView(0, "Player=" + players[0].playerName + ",port=" + serverPort);
 
             if (connected) {
                 System.out.println("$IAM(" + players[0].playerName + "," + players[0].deck.name + "," + CLIENT_VERSION + ")");
@@ -237,28 +236,28 @@ public class Main extends JFrame {
                 System.out.println("Server: " + fromServer);
                 if (fromServer.contains("$DISCONNECT")) {
                     System.out.println("Disconnect");
-                    printToView(0,"Разрыв соединения!");
+                    printToView(0, "Разрыв соединения!");
                     writerToLog.close();
-                    printToView(0,"Opponent disconnected");
+                    printToView(0, "Opponent disconnected");
                     TimeUnit.SECONDS.sleep(5);
                     System.exit(1);
                     break;
                 } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck and other correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     String code_not_ok = parameter.get(0);
-                    printToView(0,code_not_ok);
-                   // main.repaint();
+                    printToView(0, code_not_ok);
+                    // main.repaint();
                 } else if (fromServer.contains("$YOUAREOK")) {//You client,deck and other correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     sufflingConst = Integer.parseInt(parameter.get(0));
                     isMyTurn = playerStatus.waitOtherPlayer;
                     simpleDeck.suffleDeck(sufflingConst);
-                   // main.repaint();
+                    // main.repaint();
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-                    if (replayCounter==0)
-                    loadDeckFromServer(simpleEnemyDeck);
-                    else loadDeckFromFile(simpleEnemyDeck,replayDeck);
+                    if (replayCounter == 0)
+                        loadDeckFromServer(simpleEnemyDeck);
+                    else loadDeckFromFile(simpleEnemyDeck, replayDeck);
                     // System.out.print("enemy hero= "+simpleEnemyDeck.cards.get(0).name);
 
                     Card c = new Card(simpleEnemyDeck.cards.get(0));
@@ -278,7 +277,7 @@ public class Main extends JFrame {
                             players[1].drawCard();
                         }
                         isMyTurn = playerStatus.MuliganPhase;
-                     //   main.repaint();
+                        //   main.repaint();
                     }
                 } else if (fromServer.contains("$MULLIGANEND(")) {
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -290,7 +289,7 @@ public class Main extends JFrame {
                             players[pl].drawCard();
                         }
                     }
-                   // main.repaint();
+                    // main.repaint();
                 } else if (fromServer.contains("$DRAWCARD(")) {
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     int pl = Board.getPlayerNumByName(parameter.get(0));
@@ -323,7 +322,7 @@ public class Main extends JFrame {
                         isMyTurn = playerStatus.IChoiseBlocker;
                         creatureWhoAttack = Integer.parseInt(parameter.get(1));
                         creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
-                      //  main.repaint();
+                        //  main.repaint();
                     }
                 } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
                     // CRYTARGET also for DeathratleTarget
@@ -352,7 +351,8 @@ public class Main extends JFrame {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death)
                                     cr.deathratle(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
-                                else cr.battlecryTarget(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                                else
+                                    cr.battlecryTarget(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                             else
                                 cr.tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                         }
@@ -367,7 +367,8 @@ public class Main extends JFrame {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death)
                                     cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
-                                else cr.battlecryTarget(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                                else
+                                    cr.battlecryTarget(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                             else
                                 cr.tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                         }
@@ -497,13 +498,13 @@ public class Main extends JFrame {
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
-                    printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + players[apl].name);
+                    printToView(0, Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + players[apl].name);
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackPlayer(players[apl]);
                 } else if (fromServer.contains("$ATTACKCREATURE(")) {//$ATTACKREATURE(Player, Creature, TargetCreature)
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
-                    printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))).name);
+                    printToView(0, Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))).name);
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
                 } else if (fromServer.contains("$FOUND(")) {//$FOUND(Player, Card)
                     choiceXcolor = 0;
@@ -514,19 +515,19 @@ public class Main extends JFrame {
                     int pl = Board.getPlayerNumByName(parameter.get(0));
                     if (parameter.get(1).equals("-1")) {
                         if (pl == 0) {
-                            printToView(0,"Вы ищете в колоде, но ничего подходящего не находите.");
+                            printToView(0, "Вы ищете в колоде, но ничего подходящего не находите.");
                         } else {
-                            printToView(0,"Противник ищет в колоде, но ничего подходящего не находит.");
+                            printToView(0, "Противник ищет в колоде, но ничего подходящего не находит.");
                         }
                     } else {
                         if (pl == 0) {
                             Card card = players[0].deck.searchCard(parameter.get(1));
                             players[0].drawSpecialCard(card);
-                            printToView(0,"Вы находите в колоде " + card.name + ".");
+                            printToView(0, "Вы находите в колоде " + card.name + ".");
                         } else {
                             Card card = players[1].deck.searchCard(parameter.get(1));
                             players[1].drawSpecialCard(card);
-                            printToView(0,"Противник находит в колоде " + parameter.get(1) + ".");
+                            printToView(0, "Противник находит в колоде " + parameter.get(1) + ".");
                         }
                     }
                 }
@@ -538,11 +539,10 @@ public class Main extends JFrame {
     public static void printToView(int type, String txt) {
         if (txt.contains("Ход номер ")) Main.gameLog.setText("<html>");
 
-        if (type==0) {
+        if (type == 0) {
             Main.gameLog.setText(Main.gameLog.getText() + txt + "<br>");
-        }
-        else if (type==1){
-        messageToShow = new MessageToShow(txt, 1500);
+        } else if (type == 1) {
+            messageToShow = new MessageToShow(txt, 1500);
         }
     }
 
@@ -589,10 +589,10 @@ public class Main extends JFrame {
                                 Card.ActivatedAbility.creature = null;
                                 main.repaint();
                             } else {
-                                printToView(0,"Недостаточно монет.");
+                                printToView(0, "Недостаточно монет.");
                             }
                         } else {
-                            printToView(0,"Нет подходящих целей.");
+                            printToView(0, "Нет подходящих целей.");
                         }
                     }
                     if ((players[0].name.equals("Тарна")) || (players[0].name.equals("Бьорнбон"))) {
@@ -603,11 +603,11 @@ public class Main extends JFrame {
                             Client.writeLine("$HERONOTARGET(" + players[0].playerName + "," + cost + ")");
                             main.repaint();
                         } else {
-                            printToView(0,"Недостаточно монет.");
+                            printToView(0, "Недостаточно монет.");
                         }
                     }
                 } else {
-                    printToView(0,"Повернутый герой не может действовать.");
+                    printToView(0, "Повернутый герой не может действовать.");
                 }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.MuliganPhase)) {
                 //TODO when remake server
@@ -618,7 +618,7 @@ public class Main extends JFrame {
                 isMyTurn = playerStatus.waitingMulligan;
             } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on my hero
-                if ((Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.tapTargetType == 2) || (Card.ActivatedAbility.targetType == 2) || (Card.ActivatedAbility.targetType == 3)) {
+                if (MyFunction.canTarget(MyFunction.Target.myPlayer, Card.ActivatedAbility.targetType) || MyFunction.canTarget(MyFunction.Target.myPlayer, Card.ActivatedAbility.tapTargetType)) {
                     int nc = Board.creature.get(0).indexOf(Card.ActivatedAbility.creature);
                     if (Card.ActivatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
@@ -631,7 +631,7 @@ public class Main extends JFrame {
                     // Card.ActivatedAbility.creature = null;//Not safety. Do check.
                     Card.ActivatedAbility.creatureTap = false;
                 } else {
-                    printToView(0,"Выберите корректную цель.");
+                    printToView(0, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy hero
@@ -651,31 +651,35 @@ public class Main extends JFrame {
                     // Card.ActivatedAbility.creature = null;//Not safety. Do check.
                     Card.ActivatedAbility.creatureTap = false;
                 } else {
-                    printToView(0,"Выберите корректную цель.");
+                    printToView(0, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility) && (!Card.ActivatedAbility.weaponAbility)) {
                 //Battlecry or TAPT on my unit
-                if ((Card.ActivatedAbility.tapTargetType == 1) || (Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.targetType == 1) || (Card.ActivatedAbility.targetType == 3)) {
+                if (MyFunction.canTarget(MyFunction.Target.myCreature, Card.ActivatedAbility.targetType) || MyFunction.canTarget(MyFunction.Target.myCreature, Card.ActivatedAbility.tapTargetType)) {
                     int nc = Board.creature.get(0).indexOf(Card.ActivatedAbility.creature);
-                    if (Card.ActivatedAbility.creatureTap) {
-                        System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
-                        Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                    if (Card.ActivatedAbility.targetType == 10 && nc == num) {
+                        printToView(0, "Существо не может целить само себя.");
                     } else {
-                        System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
-                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                        if (Card.ActivatedAbility.creatureTap) {
+                            System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                            Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                        } else {
+                            System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                            Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                        }
+                        isMyTurn = playerStatus.MyTurn;
+                        //  Card.ActivatedAbility.creature = null;//Not safety. Do check.
+                        Card.ActivatedAbility.creatureTap = false;
                     }
-                    isMyTurn = playerStatus.MyTurn;
-                    //  Card.ActivatedAbility.creature = null;//Not safety. Do check.
-                    Card.ActivatedAbility.creatureTap = false;
                 } else {
-                    printToView(0,"Выберите корректную цель.");
+                    printToView(0, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy unit
                 if ((Card.ActivatedAbility.tapTargetType == 1) || (Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.targetType == 1) || (Card.ActivatedAbility.targetType == 3)) {
                     //Bjornbon check attack or not this cry or tap.
                     if ((players[1].bbshield) && (Card.ActivatedAbility.creature.text.contains("Выстрел"))) {
-                        printToView(0,"Целью первой атаки должен быть Бьорнбон.");
+                        printToView(0, "Целью первой атаки должен быть Бьорнбон.");
                     } else {
                         int nc = Board.creature.get(0).indexOf(Card.ActivatedAbility.creature);
 
@@ -692,7 +696,7 @@ public class Main extends JFrame {
                         Card.ActivatedAbility.creatureTap = false;
                     }
                 } else {
-                    printToView(0,"Выберите корректную цель.");
+                    printToView(0, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (Card.ActivatedAbility.heroAbility)) {
                 //Hero ability on enemy unit
@@ -702,7 +706,7 @@ public class Main extends JFrame {
                     isMyTurn = playerStatus.MyTurn;
                     Card.ActivatedAbility.heroAbility = false;
                 } else {
-                    printToView(0,"Выберите корректную цель.");
+                    printToView(0, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (Card.ActivatedAbility.heroAbility)) {
                 //Hero ability on my unit
@@ -712,7 +716,7 @@ public class Main extends JFrame {
                     isMyTurn = playerStatus.MyTurn;
                     Card.ActivatedAbility.heroAbility = false;
                 } else {
-                    printToView(0,"Выберите корректную цель.");
+                    printToView(0, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (Card.ActivatedAbility.weaponAbility)) {
                 //Weapon ability on my unit
@@ -722,7 +726,7 @@ public class Main extends JFrame {
                     isMyTurn = playerStatus.MyTurn;
                     Card.ActivatedAbility.weaponAbility = false;
                 } else {
-                    printToView(0,"Выберите корректную цель.");
+                    printToView(0, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАПТ:"))) {
                 //TAP with target ability - first step
@@ -736,17 +740,17 @@ public class Main extends JFrame {
                         Card.ActivatedAbility.creatureTap = true;
                         main.repaint();
                     } else {
-                        printToView(0,"Повернутое существо не может это сделать.");
+                        printToView(0, "Повернутое существо не может это сделать.");
                     }
                 } else {
-                    printToView(0,"Это существо недавно вошло в игру.");
+                    printToView(0, "Это существо недавно вошло в игру.");
                 }
             } else if ((onWhat == Compo.Weapon) && (isMyTurn == playerStatus.MyTurn) && (players[0].equpiment[2].text.contains("ТАПТ:"))) {
                 //TAP weapon with target ability - first step
                 if (!players[0].equpiment[2].isTapped) {
                     System.out.println("tapt weapon ability.");
                     if ((players[0].equpiment[2].tapTargetType == 1) && (Board.creature.get(0).isEmpty()) && (Board.creature.get(1).isEmpty())) {
-                        printToView(0,"Нет подходящей цели.");
+                        printToView(0, "Нет подходящей цели.");
                     } else {
                         isMyTurn = playerStatus.choiseTarget;
                         Card.ActivatedAbility.targetType = players[0].equpiment[2].targetType;
@@ -756,7 +760,7 @@ public class Main extends JFrame {
                         main.repaint();
                     }
                 } else {
-                    printToView(0,"Повернутое оружие не может это сделать.");
+                    printToView(0, "Повернутое оружие не может это сделать.");
                 }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.MyTurn) && (Board.creature.get(0).
                     get(num).text.contains("ТАП:"))) {
@@ -767,10 +771,10 @@ public class Main extends JFrame {
                         Board.creature.get(0).get(num).tapNoTargetAbility();
                         main.repaint();
                     } else {
-                        printToView(0,"Повернутое существо не может это сделать.");
+                        printToView(0, "Повернутое существо не может это сделать.");
                     }
                 } else {
-                    printToView(0,"Это существо недавно вошло в игру.");
+                    printToView(0, "Это существо недавно вошло в игру.");
                 }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == playerStatus.IChoiseBlocker)) {
                 System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
@@ -778,7 +782,7 @@ public class Main extends JFrame {
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.IChoiseBlocker)) {
                 //TODO can't block
                 if ((Board.creature.get(0).get(num).isTapped) || (Board.creature.get(0).get(num).blockThisTurn)) {
-                    printToView(0,"Повернутые/уже блокировавшие существа не могут блокировать.");
+                    printToView(0, "Повернутые/уже блокировавшие существа не могут блокировать.");
                 } else if (creatureWhoAttackTarget == num) {
                     System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
                     Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
@@ -846,15 +850,15 @@ public class Main extends JFrame {
                             Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
                         }
                     } else {
-                        printToView(0,"Заклинание требует цели.");
+                        printToView(0, "Заклинание требует цели.");
                     }
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (creatureMem != null)) {
                     //enemy hero attack by creature
                     if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {
-                        printToView(0,"Повернутое/атаковавшее/т.д. существо не может атаковать.");
+                        printToView(0, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
                     } else {
                         if (creatureMem.isSummonedJust) {
-                            printToView(0,"Это существо вошло в игру на этом ходу.");
+                            printToView(0, "Это существо вошло в игру на этом ходу.");
                         } else {
                             players[1].bbshield = false;
                             System.out.println("$ATTACKPLAYER(" + players[0].playerName + "," + num + ")");
@@ -864,13 +868,13 @@ public class Main extends JFrame {
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (creatureMem != null)) {
                     //enemy creature attack by player creature
                     if (players[1].bbshield) {
-                        printToView(0,"Первая атака должна быть в Бьорнбона.");
+                        printToView(0, "Первая атака должна быть в Бьорнбона.");
                     } else {
                         if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {
-                            printToView(0,"Повернутое/атаковавшее/т.д. существо не может атаковать.");
+                            printToView(0, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
                         } else {
                             if (creatureMem.isSummonedJust) {
-                                printToView(0,"Это существо вошло в игру на этом ходу.");
+                                printToView(0, "Это существо вошло в игру на этом ходу.");
                             } else {
                                 System.out.println("$ATTACKCREATURE(" + players[0].playerName + "," + num + "," + whereMyMouseNum + ")");
                                 Client.writeLine("$ATTACKCREATURE(" + players[0].playerName + "," + num + "," + whereMyMouseNum + ")");
@@ -883,12 +887,12 @@ public class Main extends JFrame {
                         System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1," + players[1].playerName + ")");
                         Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1," + players[1].playerName + ")");
                     } else {
-                        printToView(0,"Некорректная цель для данного заклинания, выберите существо.");
+                        printToView(0, "Некорректная цель для данного заклинания, выберите существо.");
                     }
                 } else if ((whereMyMouse == Compo.CreatureInMyPlay.toString()) && (cardMem != null)) {
                     //spell from hand to my creature in play
                     if (Board.creature.get(0).get(whereMyMouseNum).text.contains("Защита от заклинаний.")) {
-                        printToView(0,"У цели защита от заклинаний.");
+                        printToView(0, "У цели защита от заклинаний.");
                     } else {
                         if ((cardMem.targetType == 1) || (cardMem.targetType == 3)) {
                             if (cardMem.text.contains("Доплатите Х *")) {
@@ -902,13 +906,13 @@ public class Main extends JFrame {
                                 Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
                             }
                         } else {
-                            printToView(0,"Некорректная цель для данного заклинания, выберите героя.");
+                            printToView(0, "Некорректная цель для данного заклинания, выберите героя.");
                         }
                     }
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (cardMem != null)) {
                     //spell from hand to enemy creature in play
                     if (Board.creature.get(1).get(whereMyMouseNum).text.contains("Защита от заклинаний.")) {
-                        printToView(0,"У цели защита от заклинаний.");
+                        printToView(0, "У цели защита от заклинаний.");
                     } else {
                         if ((cardMem.targetType == 1) || (cardMem.targetType == 3)) {
                             if (cardMem.text.contains("Доплатите Х *")) {
@@ -922,13 +926,13 @@ public class Main extends JFrame {
                                 Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
                             }
                         } else {
-                            printToView(0,"Некорректная цель для данного заклинания, выберите героя.");
+                            printToView(0, "Некорректная цель для данного заклинания, выберите героя.");
                         }
                     }
                 }
             } else {
                 if (isMyTurn == playerStatus.EnemyTurn) {
-                    printToView(0,"Сейчас идет не ваш ход.");
+                    printToView(0, "Сейчас идет не ваш ход.");
                 }
                 main.repaint();
             }
@@ -949,7 +953,7 @@ public class Main extends JFrame {
 
     private static void onRepaint(Graphics g) throws IOException {
         //setLocation and setSize to other block?
-       // System.out.println("onRepaint " + repainted);
+        // System.out.println("onRepaint " + repainted);
         repainted++;
         bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.8);
         bigCardH = (bigCardW * 400 / 283);
@@ -1130,14 +1134,14 @@ public class Main extends JFrame {
 
         drawMessage(g);
     }
-    
+
     private static void drawMessage(Graphics g) {
         Calendar cal = Calendar.getInstance();
         long delta = cal.getTimeInMillis() - messageToShow.whenAdd;
         //  System.out.println("Delta="+delta);
-        if ((messageToShow.lenght > delta) || (messageToShow.whenAdd==0) && (!messageToShow.message.equals(" "))){
-            if (messageToShow.whenAdd==0)
-            messageToShow.whenAdd=cal.getTimeInMillis();
+        if ((messageToShow.lenght > delta) || (messageToShow.whenAdd == 0) && (!messageToShow.message.equals(" "))) {
+            if (messageToShow.whenAdd == 0)
+                messageToShow.whenAdd = cal.getTimeInMillis();
 
             font = new Font("Georgia", Font.ITALIC, 50);
             g1 = (Graphics2D) g;
@@ -1152,8 +1156,7 @@ public class Main extends JFrame {
             g1.setPaint(Color.yellow);
             textLayout.draw(g1, x, y);
             main.repaint();
-        }
-        else if (messageToShow.lenght < delta) message.setVisible(false);
+        } else if (messageToShow.lenght < delta) message.setVisible(false);
     }
 
     private static void drawSearchInDeck(Graphics g) throws IOException {
@@ -1177,7 +1180,7 @@ public class Main extends JFrame {
             }
         }
         if (founded.size() == 0) {
-            printToView(0,"В колоде ничего подходящего не найдено.");
+            printToView(0, "В колоде ничего подходящего не найдено.");
             System.out.println("$FOUND(" + players[0].playerName + ",-1)");
             Client.writeLine("$FOUND(" + players[0].playerName + ",-1)");
             isMyTurn = playerStatus.MyTurn;
@@ -1381,7 +1384,7 @@ public class Main extends JFrame {
     }
 
     private static void loadDeckFromFile(Deck deck, String deckName) throws IOException {
-        InputStream path = Main.class.getResourceAsStream("decks/"+deckName + ".txt");
+        InputStream path = Main.class.getResourceAsStream("decks/" + deckName + ".txt");
         BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
         try {
             String line = "";
@@ -1421,7 +1424,7 @@ public class Main extends JFrame {
             folder.mkdir();
         }
 
-        File file = new File("logs/"+fname + ".txt");
+        File file = new File("logs/" + fname + ".txt");
         FileWriter writer = new FileWriter(file, true);
         writerToLog = new PrintWriter(writer);
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -1574,7 +1577,7 @@ public class Main extends JFrame {
             super.paintComponent(g);
             try {
                 onRepaint(g);//its too slow!! TODO repaint not many time
-            //    if (needToRefreshMessage) { drawMessage(g);}
+                //    if (needToRefreshMessage) { drawMessage(g);}
             } catch (IOException e) {
                 System.out.println("Error in onRepaint.");
                 e.printStackTrace();

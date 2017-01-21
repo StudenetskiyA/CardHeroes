@@ -13,7 +13,7 @@ class Card {
     String creatureType;
     int color;//1-swamp,2-field,3-mountain,4-forest,5-dark,6-neutral,7 and more - multicolor
     int type;//1 for spell, 2 for creature
-    int targetType;//Battlecry 1 for creatures, 2 for heroes, 3 for heroes and creatures, 4 for only opponent creature
+    int targetType;//Battlecry 1 for creatures, 2 for heroes, 3 for heroes and creatures, 4 for only opponent creature, 9 for my creature or hero, 10 as 9, but not self
     int tapTargetType;//May exist cards with Battlecry and TAP. Today its only one)))
     int power;//only for creature, ignore for other
     int hp;//only for creature and hero, its maximum health, not current
@@ -84,6 +84,8 @@ class Card {
                 return new Card(2, name, "", 3, 1, 1, 0, "Ранить выбранное существо на 5.", 0, 0);
             case "Гьерхор":
                 return new Card(1, "Гьерхор", "Йордлинг", 3, 2, 0, 0, "", 2, 2);
+            case "Алчущие крови":
+                return new Card(2, name, "Слуа", 5, 2, 10, 0, "Направленный удар. Наймт: Жажда 1.", 3, 3);
             case "Лики судьбы":
                 return new Card(3, name, "Пустой", 6, 2, 0, 0, "Найм: Лики-абилка.", 2, 3);
             case "Найтин":
@@ -313,6 +315,16 @@ class Card {
                 _cr.takeDamage(dmg, Creature.DamageSource.ability);
             } else {
                 Main.printToView(0, _who.name + " ранит " + _pl.name + " на " + dmg + ".");
+                _pl.takeDamage(dmg);
+            }
+        }
+        if (txt.contains("Жажда ")) {
+            int dmg = MyFunction.getNumericAfterText(txt, "Жажда ");
+            if (_cr != null) {
+                Main.printToView(0, _who.name + " жаждит " + _cr.name + " на " + dmg + ".");
+                _cr.takeDamage(dmg, Creature.DamageSource.ability);
+            } else {
+                Main.printToView(0, _who.name + " жаждит " + _pl.name + " на " + dmg + ".");
                 _pl.takeDamage(dmg);
             }
         }

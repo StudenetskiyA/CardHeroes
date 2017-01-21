@@ -20,6 +20,20 @@ public class MyFunction {
         return rtrn;
     }
 
+    enum Target {myPlayer,myCreature,enemyPlayer,enemyCreature}
+
+    public static boolean canTarget(Target target,int targetType){
+        if (target==Target.myPlayer)
+        {
+            if (targetType==2 || targetType==3 || targetType==9 || targetType==10 ) return true;
+        }
+        else if (target==Target.myPlayer.myCreature)
+        {
+            if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 ) return true;
+        }
+        return false;
+    }
+
     public static int getNumericAfterText(String fromText, String afterText) {
         int begin = fromText.indexOf(afterText);
         int end1 = fromText.indexOf(" ", begin + afterText.length() + 1);
