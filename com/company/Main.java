@@ -26,7 +26,7 @@ public class Main extends JFrame {
     static Graphics2D g1;
     static FontMetrics metrics;
     private static String serverPort = "6666";
-    private static final String address ="test1.uralgufk.ru";// "127.0.0.1";//"cardheroes.hldns.ru";
+    private static final String address = "test1.uralgufk.ru";// "127.0.0.1";//"cardheroes.hldns.ru";
     private static PrintWriter writerToLog;
     static int sufflingConst = 21;//By default 21, in normal - get from server
     //View constant
@@ -233,9 +233,10 @@ public class Main extends JFrame {
                 fromServer = getNextReplayLine();
             }
             if (fromServer != null) {
-                if (!fromServer.equals("wait")){
-                writerToLog.println(fromServer);
-                System.out.println("Server: " + fromServer);}
+                if (!fromServer.equals("wait")) {
+                    writerToLog.println(fromServer);
+                    System.out.println("Server: " + fromServer);
+                }
                 if (fromServer.contains("$DISCONNECT")) {
                     System.out.println("Disconnect");
                     printToView(0, "Разрыв соединения!");
@@ -551,6 +552,9 @@ public class Main extends JFrame {
         }
     }
 
+    static boolean isYouDraggedCard = false;
+    static boolean isYouDraggedAttackCreature = false;
+
     private static class MyListener extends MouseInputAdapter {
         enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton}
 
@@ -560,6 +564,13 @@ public class Main extends JFrame {
         MyListener(Compo _compo, int _code) {
             onWhat = _compo;
             num = _code;
+        }
+
+        public void mouseMoved(MouseEvent e) {
+            if (isYouDraggedCard) {
+                main.repaint();
+            }
+            //System.out.println("Mouse moved at "+ e.getX());
         }
 
         public void mouseClicked(MouseEvent e) {
@@ -681,8 +692,7 @@ public class Main extends JFrame {
                 }
             } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy unit
-                if (MyFunction.canTarget(MyFunction.Target.enemyCreature, Card.ActivatedAbility.targetType) || MyFunction.canTarget(MyFunction.Target.enemyCreature, Card.ActivatedAbility.tapTargetType))
-                    {
+                if (MyFunction.canTarget(MyFunction.Target.enemyCreature, Card.ActivatedAbility.targetType) || MyFunction.canTarget(MyFunction.Target.enemyCreature, Card.ActivatedAbility.tapTargetType)) {
                     //Bjornbon check attack or not this cry or tap.
                     if ((players[1].bbshield) && (Card.ActivatedAbility.creature.text.contains("Выстрел"))) {
                         printToView(0, "Целью первой атаки должен быть Бьорнбон.");
@@ -812,7 +822,7 @@ public class Main extends JFrame {
         public void mousePressed(MouseEvent e) {
             // you may not need this method
             //System.out.println("pressed");
-           // hilightMyCard = -1;
+            // hilightMyCard = -1;
         }
 
         public void mouseEntered(MouseEvent event) {
@@ -843,6 +853,8 @@ public class Main extends JFrame {
         }
 
         public void mouseReleased(MouseEvent e) {
+            isYouDraggedCard = false;
+            isYouDraggedAttackCreature = false;
             if (isMyTurn == playerStatus.MyTurn) {
                 if ((whereMyMouse == Compo.Board.toString()) && (cardMem != null)) {
                     //put creature on board
@@ -951,19 +963,12 @@ public class Main extends JFrame {
         public void mouseDragged(MouseEvent e) {
             hilightMyCard = -1;
 
-            if (onWhat == Compo.CardInHand) {//Creature in hand
+            if (onWhat == Compo.CardInHand && isMyTurn == playerStatus.MyTurn) {//Creature in hand
                 cardMem = players[0].cardInHand.get(num);
-                Toolkit toolkit = Toolkit.getDefaultToolkit();
-                Image image = toolkit.getImage("cards/"+players[0].cardInHand.get(num).image);
-                
-                Cursor c = toolkit.createCustomCursor(image , new Point(main.getX(),
-                        main.getY()), "img");
-                Dimension a= toolkit.getBestCursorSize(100,200);
-                System.out.println(a.getSize());
-                //main.setCursor (c);
-
-            } else if (onWhat == Compo.CreatureInMyPlay) {//Creature in play
+                isYouDraggedCard = true;
+            } else if (onWhat == Compo.CreatureInMyPlay && isMyTurn == playerStatus.MyTurn) {//Creature in play
                 creatureMem = Board.creature.get(0).get(num);
+                isYouDraggedAttackCreature = true;
             }
 
             main.repaint();
@@ -1091,33 +1096,35 @@ public class Main extends JFrame {
                 Card card = players[0].cardInHand.get(i);
                 if (card.image != null) {
                     try {
-                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + card.image));
-                        if (isMyTurn == playerStatus.MuliganPhase) {
-                            int tmp = (battlegroundClick.getWidth() - bigCardW * 4) / 5;
-                            g.drawImage(im, cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2, bigCardW, bigCardH, null);
-                            cardClick[i].setLocation(cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2);
-                            cardClick[i].setSize(bigCardW, bigCardH);
-                            if (wantToMulligan[i]) {
-                                g.drawImage(redcrossImage, cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2, bigCardW, bigCardH, null);
-                            }
-                        } else {
-                            if (hilightMyCard == i) {
-                                g.drawImage(im, cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - bigCardH - B0RDER_BOTTOM, bigCardW, bigCardH, null);
-                                cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - bigCardH - B0RDER_BOTTOM);
+                            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + card.image));
+                            if (isMyTurn == playerStatus.MuliganPhase) {
+                                int tmp = (battlegroundClick.getWidth() - bigCardW * 4) / 5;
+                                g.drawImage(im, cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2, bigCardW, bigCardH, null);
+                                cardClick[i].setLocation(cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2);
                                 cardClick[i].setSize(bigCardW, bigCardH);
+                                if (wantToMulligan[i]) {
+                                    g.drawImage(redcrossImage, cardX + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2, bigCardW, bigCardH, null);
+                                }
                             } else {
-                                if ((hilightMyCard > i) && (hilightMyCard != -1)) {
-                                    g.drawImage(im, cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75) + bigCardW - smallCardW, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
-                                    cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75) + bigCardW - smallCardW, main.getHeight() - smallCardH - B0RDER_BOTTOM);
-                                    cardClick[i].setSize(smallCardW, smallCardH);
-                                } else {
-                                    g.drawImage(im, cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
-                                    cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - smallCardH - B0RDER_BOTTOM);
-                                    cardClick[i].setSize(smallCardW, smallCardH);
+                                if (!isYouDraggedCard || card != cardMem) {
+                                    if (hilightMyCard == i) {
+                                        g.drawImage(im, cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - bigCardH - B0RDER_BOTTOM, bigCardW, bigCardH, null);
+                                        cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - bigCardH - B0RDER_BOTTOM);
+                                        cardClick[i].setSize(bigCardW, bigCardH);
+                                    } else {
+                                        if ((hilightMyCard > i) && (hilightMyCard != -1)) {
+                                            g.drawImage(im, cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75) + bigCardW - smallCardW, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+                                            cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75) + bigCardW - smallCardW, main.getHeight() - smallCardH - B0RDER_BOTTOM);
+                                            cardClick[i].setSize(smallCardW, smallCardH);
+                                        } else {
+                                            g.drawImage(im, cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+                                            cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - smallCardH - B0RDER_BOTTOM);
+                                            cardClick[i].setSize(smallCardW, smallCardH);
+                                        }
+                                    }
                                 }
                             }
-                        }
-                        numCardInHand++;
+                            numCardInHand++;
                     } catch (IOException e) {
                         System.out.println("Can't load image " + card.image);
                     }
@@ -1150,7 +1157,10 @@ public class Main extends JFrame {
             for (int i = 0; i < 40; i++)
                 searchXLabel[i].setVisible(false);
         }
-
+        if (isYouDraggedCard && cardMem != null) {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + cardMem.image));
+            g.drawImage(im, (int) MouseInfo.getPointerInfo().getLocation().getX() - smallCardW / 2 - (int) main.getLocationOnScreen().getX(), (int) MouseInfo.getPointerInfo().getLocation().getY() - smallCardH - (int) main.getLocationOnScreen().getY(), smallCardW, smallCardH, null);
+        }
         drawMessage(g);
     }
 
