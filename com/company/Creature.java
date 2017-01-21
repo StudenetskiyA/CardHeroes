@@ -3,25 +3,27 @@ package com.company;
 import java.util.ArrayList;
 
 /**
- * Created by samsung on 30.12.2016.
+ * Created by StudenetskiyA on 30.12.2016.
  */
 public class Creature extends Card {
-    private int power;
-    private int tougness;
+    //private int power;
+    //private int tougness;
     public boolean isTapped;
     public boolean isSummonedJust;
-    public int poison;
-    public Player owner;
-    public int currentArmor = 0;
-    public int maxArmor = 0;
-    int damage;
     public boolean takedDamageThisTurn = false;
     public boolean attackThisTurn = false;
     public boolean blockThisTurn = false;
 
+    public Player owner;
+    public int currentArmor = 0;
+    public int maxArmor = 0;
+    int damage;//taked damage
+    enum DamageSource {fight, spell, poison, ability, scoot}
+
     public Effects effects = new Effects();
 
     public class Effects {
+        public int poison=0;
         public int bonusPower = 0;
         public int bonusPowerUEOT = 0;
         public int bonusTougness = 0;
@@ -65,8 +67,8 @@ public class Creature extends Card {
 
     public Creature(Creature _card) {
         super(_card.cost, _card.name, _card.creatureType, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
-        power = _card.power;
-        tougness = _card.hp;
+       // power = _card.power;
+        //tougness = _card.hp;
         image = _card.image;
         cost = _card.cost;
         isTapped = false;
@@ -75,15 +77,15 @@ public class Creature extends Card {
         owner = _card.owner;
 
         if (text.contains("Броня ")) {
-            maxArmor = getNumericAfterText(text, "Броня ");
+            maxArmor = MyFunction.getNumericAfterText(text, "Броня ");
             currentArmor = getMaxArmor();
         }
     }
 
     public Creature(Card _card, Player _owner) {
         super(_card.cost, _card.name, _card.creatureType, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
-        power = _card.power;
-        tougness = _card.hp;
+        //power = _card.power;
+        //tougness = _card.hp;
         image = _card.image;
         cost = _card.cost;
         isTapped = false;
@@ -91,7 +93,7 @@ public class Creature extends Card {
         name = _card.name;
         owner = _owner;
         if (text.contains("Броня ")) {
-            maxArmor = getNumericAfterText(text, "Броня ");
+            maxArmor = MyFunction.getNumericAfterText(text, "Броня ");
             currentArmor = getMaxArmor();
         }
     }
@@ -100,7 +102,7 @@ public class Creature extends Card {
         isTapped = true;
     }
 
-    ArrayList<Creature> canAnyoneBlock(Creature target) {
+    ArrayList<Creature> canAnyoneBlock(Creature target) {//Return list of creature, who may be block this
         int pl;
         if (owner.numberPlayer == 0) pl = 1;
         else pl = 0;
@@ -142,8 +144,7 @@ public class Creature extends Card {
     }
 
     public void fightPlayer(Player second) {
-        Main.printToView(0,this.name + " атакует " + second.name + ".");
-        second.takeDamage(this.getPower());
+         second.takeDamage(this.getPower());
     }
 
     public void attackCreature(Creature target) {
@@ -197,8 +198,6 @@ public class Creature extends Card {
         }
     }
 
-    enum DamageSource {fight, spell, poison, ability, scoot}
-
     public void takeDamage(int dmg, DamageSource dmgsrc, Boolean... rage) {
         if (!this.text.contains("Не получает ран.")) {
             if ((dmgsrc == DamageSource.scoot) || (dmgsrc == DamageSource.fight)) {
@@ -241,7 +240,12 @@ public class Creature extends Card {
         Card.ability(this, owner, _cr, _pl, txt);
     }
 
-    public void cry(Creature _cr, Player _pl) {
+    public void battlecryNoTarget(){
+        String txt = this.text.substring(this.text.indexOf("Найм:") + "Найм:".length() + 1, this.text.indexOf(".", this.text.indexOf("Найм:"))+1);
+        Card.ability(this,this.owner,this,null,txt);//Only here 3th parametr=1th
+    }
+
+    public void battlecryTarget(Creature _cr, Player _pl) {
         String txt = this.text.substring(this.text.indexOf("Наймт:") + "Наймт:".length() + 1, this.text.indexOf(".", this.text.indexOf("Наймт:")) + 1);
         System.out.println("Наймт: " + txt);
         Card.ability(this, owner, _cr, _pl, txt);
@@ -279,13 +283,17 @@ public class Creature extends Card {
         if (this.text.contains("Гибель:")) {
             deathratleNoTarget(this, owner);
         }
-        Board.removeCreatureFromPlayerBoard(this);
+        removeCreatureFromPlayerBoard();
         Board.putCardToGraveyard(this, this.owner);
     }
 
     public void returnToHand() {
-        Board.removeCreatureFromPlayerBoard(this);
+        removeCreatureFromPlayerBoard();
         owner.cardInHand.add(this);
         // Board.putCardToGraveyard(this, this.owner);
+    }
+
+    public void removeCreatureFromPlayerBoard() {
+        Board.creature.get(owner.numberPlayer).remove(this);
     }
 }

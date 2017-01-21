@@ -244,18 +244,18 @@ public class Main extends JFrame {
                     System.exit(1);
                     break;
                 } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck and other correct
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     String code_not_ok = parameter.get(0);
                     printToView(0,code_not_ok);
                    // main.repaint();
                 } else if (fromServer.contains("$YOUAREOK")) {//You client,deck and other correct
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     sufflingConst = Integer.parseInt(parameter.get(0));
                     isMyTurn = playerStatus.waitOtherPlayer;
                     simpleDeck.suffleDeck(sufflingConst);
                    // main.repaint();
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     if (replayCounter==0)
                     loadDeckFromServer(simpleEnemyDeck);
                     else loadDeckFromFile(simpleEnemyDeck,replayDeck);
@@ -281,8 +281,8 @@ public class Main extends JFrame {
                      //   main.repaint();
                     }
                 } else if (fromServer.contains("$MULLIGANEND(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     for (int i = 3; i >= 0; i--) {
                         if (Integer.parseInt(parameter.get(i + 1)) == 1) {
                             players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
@@ -292,12 +292,12 @@ public class Main extends JFrame {
                     }
                    // main.repaint();
                 } else if (fromServer.contains("$DRAWCARD(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     //  System.out.println("Draw Card " + parameter.get(0));
                     players[pl].drawCard();
                 } else if (fromServer.contains("$ENDTURN(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     System.out.println("End turn " + parameter.get(0));
                     if (players[0].playerName.equals(parameter.get(0))) {
                         isMyTurn = playerStatus.EnemyTurn;
@@ -308,7 +308,7 @@ public class Main extends JFrame {
                     }
                     //main.repaint();
                 } else if (fromServer.contains("$NEWTURN(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     //main.repaint();
                     if (players[0].playerName.equals(parameter.get(0))) {
                         isMyTurn = playerStatus.MyTurn;
@@ -318,7 +318,7 @@ public class Main extends JFrame {
                         players[1].newTurn();
                     }
                 } else if (fromServer.contains("$CHOISEBLOCKER(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     if (players[0].playerName.equals(parameter.get(0))) {
                         isMyTurn = playerStatus.IChoiseBlocker;
                         creatureWhoAttack = Integer.parseInt(parameter.get(1));
@@ -327,8 +327,8 @@ public class Main extends JFrame {
                     }
                 } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
                     // CRYTARGET also for DeathratleTarget
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     isMyTurn = playerStatus.MyTurn;
                     Creature cr;
@@ -345,14 +345,14 @@ public class Main extends JFrame {
                         if (parameter.get(3).equals("-1")) {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death) cr.deathratle(null, players[apl]);
-                                else cr.cry(null, players[apl]);
+                                else cr.battlecryTarget(null, players[apl]);
                             else
                                 cr.tapTargetAbility(null, players[apl]);
                         } else {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death)
                                     cr.deathratle(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
-                                else cr.cry(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
+                                else cr.battlecryTarget(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                             else
                                 cr.tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                         }
@@ -360,21 +360,21 @@ public class Main extends JFrame {
                         if (parameter.get(3).equals("-1")) {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death) cr.deathratle(null, players[pl]);
-                                else cr.cry(null, players[pl]);
+                                else cr.battlecryTarget(null, players[pl]);
                             else
                                 cr.tapTargetAbility(null, players[pl]);
                         } else {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death)
                                     cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
-                                else cr.cry(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+                                else cr.battlecryTarget(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                             else
                                 cr.tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                         }
                     }
                 } else if (fromServer.contains("$EQUIPTARGET(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     isMyTurn = playerStatus.MyTurn;
                     int equip = Integer.parseInt(parameter.get(1));
@@ -390,8 +390,8 @@ public class Main extends JFrame {
                             players[pl].equpiment[equip].tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                     }
                 } else if (fromServer.contains("$HEROTARGET(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     if (pl == 0) isMyTurn = playerStatus.MyTurn;
                     else isMyTurn = playerStatus.EnemyTurn;
@@ -405,16 +405,16 @@ public class Main extends JFrame {
                         else players[pl].ability(Board.creature.get(pl).get(Integer.parseInt(parameter.get(2))), null);
                     }
                 } else if (fromServer.contains("$HERONOTARGET(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     if (pl == 0) isMyTurn = playerStatus.MyTurn;
                     else isMyTurn = playerStatus.EnemyTurn;
                     players[pl].isTapped = true;
                     players[pl].untappedCoin -= Integer.parseInt(parameter.get(1));
                     players[pl].abilityNoTarget();
                 } else if (fromServer.contains("$BLOCKER(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     if (pl == 0)
                         isMyTurn = playerStatus.EnemyTurn;
@@ -455,8 +455,8 @@ public class Main extends JFrame {
                     //$PLAYCARD(Jeremy,0,-1,Bob) - play 0 card to enemy.
                     //$PLAYCARD(Jeremy,2,-1,-1) - play 2th card to board.
                     //$PLAYCARD(Bob,1,1,Jeremy) - play 1th card to 1th creature of Jeremy
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     if (!parameter.get(2).equals("-1")) {//if card targets creature
                         if ((parameter.get(3).equals(players[apl].playerName)))
@@ -472,8 +472,8 @@ public class Main extends JFrame {
                             players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
                     }
                 } else if (fromServer.contains("$PLAYWITHX(")) {
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     int x = Integer.parseInt(parameter.get(4));
                     //visible off
@@ -494,14 +494,14 @@ public class Main extends JFrame {
                             players[pl].playCardX(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null, x);
                     }
                 } else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + players[apl].name);
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackPlayer(players[apl]);
                 } else if (fromServer.contains("$ATTACKCREATURE(")) {//$ATTACKREATURE(Player, Creature, TargetCreature)
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
                     printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))).name);
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
@@ -510,8 +510,8 @@ public class Main extends JFrame {
                     choiseXtype = 0;
                     choiseXcost = 0;
                     choiseXcreatureType = "";
-                    ArrayList<String> parameter = Card.getTextBetween(fromServer);
-                    int pl = Board.getPl(parameter.get(0));
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    int pl = Board.getPlayerNumByName(parameter.get(0));
                     if (parameter.get(1).equals("-1")) {
                         if (pl == 0) {
                             printToView(0,"Вы ищете в колоде, но ничего подходящего не находите.");
@@ -596,7 +596,7 @@ public class Main extends JFrame {
                         }
                     }
                     if ((players[0].name.equals("Тарна")) || (players[0].name.equals("Бьорнбон"))) {
-                        int cost = Card.getNumericAfterText(players[0].text, "ТАП:");
+                        int cost = MyFunction.getNumericAfterText(players[0].text, "ТАП:");
                         System.out.println("hero ability cost = " + cost);
                         if (players[0].untappedCoin >= cost) {
                             System.out.println("$HERONOTARGET(" + players[0].playerName + "," + cost + ")");
@@ -1000,11 +1000,11 @@ public class Main extends JFrame {
         menuClick.setSize(heroW, heroW * 149 / 283);
         //Heroes
         if (players[0].isTapped) {
-            g.drawImage(Card.tapImage(heroImage), main.getWidth() - heroH - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroH, heroW, null);
+            g.drawImage(MyFunction.tapImage(heroImage), main.getWidth() - heroH - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroH, heroW, null);
         } else
             g.drawImage(heroImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
         if (players[1].isTapped) {
-            g.drawImage(Card.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroH, heroW, null);
+            g.drawImage(MyFunction.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroH, heroW, null);
         } else g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
         //Heroes effects
         if (players[0].bbshield) {
@@ -1241,7 +1241,7 @@ public class Main extends JFrame {
         } else {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[p].equpiment[2].image));
             if (players[p].equpiment[2].isTapped)
-                g.drawImage(Card.tapImage(im), main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, h, smallCardH, smallCardW, null);
+                g.drawImage(MyFunction.tapImage(im), main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, h, smallCardH, smallCardW, null);
             else
                 g.drawImage(im, main.getWidth() - smallCardW * 3 - heroW - B0RDER_RIGHT, h, smallCardW, smallCardH, null);
         }
@@ -1282,7 +1282,7 @@ public class Main extends JFrame {
 //                            }
 //                        }
                         if (Board.creature.get(np).get(i).isTapped) {
-                            g.drawImage(Card.tapImage(im), crXt, ht, heroH, heroW, null);
+                            g.drawImage(MyFunction.tapImage(im), crXt, ht, heroH, heroW, null);
                             playerUnitClick[np][numUnit].setSize(heroH, heroW);
                             playerUnitClick[np][numUnit].setLocation(crXt, ht);//May be write not center?
                         } else {
@@ -1294,8 +1294,8 @@ public class Main extends JFrame {
                             im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + Board.creature.get(np).get(i).damage + ".png"));
                             g.drawImage(im, crX + heroW / 2 - heroH / 10, h + heroH / 2 - heroH / 10, heroH / 5, heroH / 5, null);
                         }
-                        if (Board.creature.get(np).get(i).poison != 0) {
-                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison" + Board.creature.get(np).get(i).poison + ".png"));
+                        if (Board.creature.get(np).get(i).effects.poison != 0) {
+                            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison" + Board.creature.get(np).get(i).effects.poison + ".png"));
                             g.drawImage(im, crX + heroW / 2 - heroH / 10 - heroH / 5, h + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
                             effects++;
                         }

@@ -3,7 +3,7 @@ package com.company;
 import java.util.ArrayList;
 
 /**
- * Created by samsung on 30.12.2016.
+ * Created by StudenetskiyA on 30.12.2016.
  */
 public class Player extends Card {
     public int numberPlayer;
@@ -18,7 +18,7 @@ public class Player extends Card {
     public ArrayList<Card> cardInHand;
     public ArrayList<Card> graveyard;
     public Equpiment equpiment[];//0-armor,1-amulet,2-weapon
-    public Boolean bbshield=false;
+    public Boolean bbshield=false;//Bjornbon shield
     private static int tempX;//For card with X, for correct minus cost
 
     public Player(Card _card, Deck _deck, String _playerName, int _n) {
@@ -84,8 +84,8 @@ public class Player extends Card {
             Board.creature.get(numberPlayer).get(i).isSummonedJust = false;
             Board.creature.get(numberPlayer).get(i).isTapped = false;
             //poison
-            if ((Board.creature.get(numberPlayer).get(i).poison != 0) && (!Board.creature.get(numberPlayer).get(i).text.contains("Защита от отравления.")))
-                Board.creature.get(numberPlayer).get(i).takeDamage(Board.creature.get(numberPlayer).get(i).poison, Creature.DamageSource.poison);
+            if ((Board.creature.get(numberPlayer).get(i).effects.poison != 0) && (!Board.creature.get(numberPlayer).get(i).text.contains("Защита от отравления.")))
+                Board.creature.get(numberPlayer).get(i).takeDamage(Board.creature.get(numberPlayer).get(i).effects.poison, Creature.DamageSource.poison);
             //armor
             Board.creature.get(numberPlayer).get(i).currentArmor = Board.creature.get(numberPlayer).get(i).maxArmor;
             //for rage
@@ -237,13 +237,4 @@ public class Player extends Card {
         Card.ability(this, this, _cr, _pl, txt);
     }
 
-    public String handToString() {
-        String tmp = "";
-        for (Card card : cardInHand
-                ) {
-            tmp += card.name;
-            tmp += ",";
-        }
-        return tmp;
-    }
 }

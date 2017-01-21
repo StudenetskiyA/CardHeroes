@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by samsung on 30.12.2016.
+ * Created by StudenetiskiyA on 30.12.2016.
  */
 public class Board {
     public static List<ArrayList<Creature>> creature;
@@ -15,28 +15,14 @@ public class Board {
     public Board() {
     }
 
-    public static int getPl(String _name) {
+    public static int getPlayerNumByName(String _name) {
         if (_name.equals(Main.players[0].playerName)) return 0;
         else if (_name.equals(Main.players[1].playerName)) return 1;
         else {
-            System.out.println("Error - Unknow player.");
+            System.out.println("Error - Unknown player.");
             return -1;
         }
     }
-
-    public static void battlecryNoTarget(Creature _card,Player _owner){
-        String txt = _card.text.substring(_card.text.indexOf("Найм:") + "Найм:".length() + 1, _card.text.indexOf(".", _card.text.indexOf("Найм:"))+1);
-        Card.ability(_card,_owner,_card,null,txt);//Only here 3th parametr=1th
-    }
-
-    public static void battlecryTarget(Creature _creature) {
-        Main.isMyTurn = Main.playerStatus.choiseTarget;
-        Main.activatedAbility.creature = _creature;
-        Main.activatedAbility.targetType= _creature.targetType;
-        Main.activatedAbility.tapTargetType= _creature.tapTargetType;
-        Main.activatedAbility.creatureTap=false;
-    }
-
 
     public static void addCreatureToBoard(Card _creature, Player _player) {
         Creature summonCreature = new Creature(_creature, _player);
@@ -53,11 +39,16 @@ public class Board {
         int np = _player.numberPlayer;
         creature.get(np).add(summonCreature);
         if (_creature.text.contains("Наймт:")) {
-            battlecryTarget(summonCreature);
+            //Begin choise target for battlecry
+            Main.isMyTurn = Main.playerStatus.choiseTarget;
+            Main.activatedAbility.creature = summonCreature;
+            Main.activatedAbility.targetType= summonCreature.targetType;
+            Main.activatedAbility.tapTargetType= summonCreature.tapTargetType;
+            Main.activatedAbility.creatureTap=false;
         }
         if (_creature.text.contains("Найм:")) {
-            battlecryNoTarget(summonCreature,_player);
-        }
+            summonCreature.battlecryNoTarget();
+            }
 
         if (summonCreature.getTougness()<=0){
             summonCreature.die();
@@ -78,12 +69,5 @@ public class Board {
         _owner.graveyard.add(_card);
     }
 
-    public static void removeCreatureFromPlayerBoard(Creature _creature) {
-        // int n=creature.get(_creature.owner.numberPlayer).indexOf(_creature);
-        //move
 
-        creature.get(_creature.owner.numberPlayer).remove(_creature);//TODO May be BUG!
-
-        _creature = null;
-    }
 }
