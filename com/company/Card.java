@@ -183,11 +183,11 @@ class Card {
             case "Вольный воитель":
                 return new Card(0, name, "", 6, 2, 0, 0, "Доплатите Х *. Найм: Получает к характеристикам + ХХХ.", 0, 0);
             case "Шар тины":
-                return new Card(2, name, "", 1, 1, 0, 0, "Поиск цвет 1", 0, 0);
+                return new Card(2, name, "", 1, 1, 0, 0, "Поиск цвет 1.", 0, 0);
             case "Шар молний":
-                return new Card(2, name, "", 3, 1, 0, 0, "Поиск цвет 3", 0, 0);
+                return new Card(2, name, "", 3, 1, 0, 0, "Поиск цвет 3.", 0, 0);
             case "Гном-кузнец":
-                return new Card(3, name, "Гном", 1, 2, 0, 0, "Найм: Поиск тип 3", 1, 4);
+                return new Card(3, name, "Гном", 1, 2, 0, 0, "Найм: Поиск тип 3.", 1, 4);
             case "Гном-кладоискатель":
                 return new Card(5, name, "Гном", 3, 2, 0, 0, "Броня 1. Найм: Поиск комбо+ 2 Гном 2.", 5, 4);
             case "Рунопевец":
@@ -203,7 +203,7 @@ class Card {
             case "Молот прародителя":
                 return new Card(2, name, "Оружие", 3, 3, 0, 1, "ТАПТ: Выбранное существо до конца хода получает к атаке + 2.", 0, 0);
             case "Аккения":
-                return new Card(4, name, "Событие", 2, 3, 0, 0, "Статичный эффект.", 0, 0);
+                return new Card(4, name, "Событие", 2, 4, 0, 0, "Статичный эффект.", 0, 0);
             default:
                 System.out.println("Ошибка - Неопознанная карта:" + name);
                 return null;
@@ -316,7 +316,7 @@ class Card {
                 _pl.heal(dmg);
             }
         }
-        if (txt.contains("Ранить на половину жизней выбранное существо.")) {
+        if (txt.contains("Ранить на половину жизней выбранное существо")) {
             if (_cr != null) {
                 int dmg=(_cr.getTougness()-_cr.damage)/2;
                 Main.printToView(0, _who.name + " ранит " + _cr.name + " на " + dmg + ".");

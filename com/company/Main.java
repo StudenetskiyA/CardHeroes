@@ -68,6 +68,7 @@ public class Main extends JFrame {
     private static BufferedImage heroImage;
     private static BufferedImage heroNoArmorImage;
     private static BufferedImage heroNoAmuletImage;
+    private static BufferedImage heroNoEventImage;
     private static BufferedImage heroNoWeaponImage;
     private static BufferedImage enemyImage;
     private static Image heroCoinImage;
@@ -232,13 +233,14 @@ public class Main extends JFrame {
                 fromServer = getNextReplayLine();
             }
             if (fromServer != null) {
+                if (!fromServer.equals("wait")){
                 writerToLog.println(fromServer);
-                System.out.println("Server: " + fromServer);
+                System.out.println("Server: " + fromServer);}
                 if (fromServer.contains("$DISCONNECT")) {
                     System.out.println("Disconnect");
                     printToView(0, "Разрыв соединения!");
                     writerToLog.close();
-                    printToView(0, "Opponent disconnected");
+                    printToView(1, "Opponent disconnected");
                     TimeUnit.SECONDS.sleep(5);
                     System.exit(1);
                     break;
@@ -252,6 +254,10 @@ public class Main extends JFrame {
                     sufflingConst = Integer.parseInt(parameter.get(0));
                     isMyTurn = playerStatus.waitOtherPlayer;
                     simpleDeck.suffleDeck(sufflingConst);
+                    while (true) {
+                        Client.writeLine("wait");
+                        if (!Client.readLine().equals("wait")) break;
+                    }
                     // main.repaint();
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -576,7 +582,7 @@ public class Main extends JFrame {
             } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.MyTurn)) {
                 //My hero ability
                 if (!players[0].isTapped) {
-                    if (players[0].name.equals("Тиша") || players[0].name.equals("Руах")) {
+                    if (players[0].name.equals("Тиша") || players[0].name.equals("Руах") || players[0].name.equals("Свирепый резак")) {
                         if ((Board.creature.get(0).size() > 0) || (Board.creature.get(1).size() > 0)) {
                             int cost = MyFunction.getNumericAfterText(players[0].text, "ТАПТ:");
                             System.out.println("hero ability cost = " + cost);
@@ -1171,6 +1177,7 @@ public class Main extends JFrame {
                 founded.remove(founded.get(i));
                 continue;
             }
+
             if (((!choiceXcreatureType.equals(founded.get(i).creatureType))) && (!choiceXcreatureType.equals(""))) {
                 founded.remove(founded.get(i));
                 continue;
@@ -1228,8 +1235,6 @@ public class Main extends JFrame {
         if (p == 0) h = main.getHeight() - smallCardH - B0RDER_BOTTOM;
         else h = B0RDER_TOP;
 
-        //TODO draw event
-
         if (players[p].equpiment[0] == null) {
             g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, h, smallCardW, smallCardH, null);
         } else {
@@ -1256,6 +1261,14 @@ public class Main extends JFrame {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[p].equpiment[1].image));
             g.drawImage(im, main.getWidth() - smallCardW * 2 - heroW - B0RDER_RIGHT, h, smallCardW, smallCardH, null);
         }
+        //event
+        if (players[p].equpiment[3] == null) {
+            g.drawImage(heroNoEventImage, main.getWidth() - smallCardW * 4 - heroW - B0RDER_RIGHT, h, smallCardW, smallCardH, null);
+        } else {
+            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[p].equpiment[3].image));
+            g.drawImage(im, main.getWidth() - smallCardW * 4 - heroW - B0RDER_RIGHT, h, smallCardW, smallCardH, null);
+        }
+
     }
 
     private static void drawPlayerCreature(Graphics g, int np) throws IOException {
@@ -1373,6 +1386,7 @@ public class Main extends JFrame {
             redcrossImage = ImageIO.read(Main.class.getResourceAsStream("icons/Bigredcross.png"));
             heroNoArmorImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noarmor.png"));
             heroNoAmuletImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noamulet.png"));
+            heroNoEventImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noevent.png"));
             heroNoWeaponImage = ImageIO.read(Main.class.getResourceAsStream("icons/Noweapon.png"));
         } catch (IOException e) {
             e.printStackTrace();

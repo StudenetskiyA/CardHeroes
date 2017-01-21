@@ -38,7 +38,10 @@ public class Creature extends Card {
         }
 
         boolean getVulnerability(){
-            if (Main.players[Board.opponentN(owner)].equpiment[3]!=null && Main.players[Board.opponentN(owner)].equpiment[3].name.equals("Аккения")) return true;
+            if (Main.players[Board.opponentN(owner)].equpiment[3]!=null && Main.players[Board.opponentN(owner)].equpiment[3].name.equals("Аккения")){
+                System.out.println("Аккения детектед");
+                return true;
+            }
             return vulnerability;
         }
     }
@@ -237,13 +240,13 @@ public class Creature extends Card {
                     dmg++;
                     System.out.println("RAGE!");
                 }
-                if ((effects.getVulnerability())) dmg++;
                 int tmp = dmg;
                 dmg -= currentArmor;
                 currentArmor -= tmp;
                 if (dmg < 0) dmg = 0;
                 if (currentArmor < 0) currentArmor = 0;
             }
+            if ((effects.getVulnerability())) dmg++;
             damage += dmg;
             takedDamageThisTurn = true;
             if (getTougness() <= damage) {
