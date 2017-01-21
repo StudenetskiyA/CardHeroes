@@ -82,6 +82,20 @@ public class Player extends Card {
             //untap
             Board.creature.get(numberPlayer).get(i).isSummonedJust = false;
             Board.creature.get(numberPlayer).get(i).isTapped = false;
+            //Creature ability at begin turn
+            if (Board.creature.get(numberPlayer).get(i).text.contains("В начале вашего хода: ") || Board.creature.get(numberPlayer).get(i).text.contains("В начале хода: "))
+            {
+                //Check of correct target
+                //TODO For Ambrador ok, when you add new card with on begin turn - fix here!
+                if (Board.creature.get(numberPlayer).size()>1) {
+                    //Begin choise target for ability
+                    Main.isMyTurn = Main.playerStatus.choiseTarget;
+                    Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
+                    Card.ActivatedAbility.targetType = Board.creature.get(numberPlayer).get(i).targetType;
+                    Card.ActivatedAbility.creatureTap = false;
+                    Main.printToView(0,"Амбрадор заставляет вернуть другое существо.");
+                }
+            }
             //poison
             if ((Board.creature.get(numberPlayer).get(i).effects.poison != 0) && (!Board.creature.get(numberPlayer).get(i).text.contains("Защита от отравления.")))
                 Board.creature.get(numberPlayer).get(i).takeDamage(Board.creature.get(numberPlayer).get(i).effects.poison, Creature.DamageSource.poison);

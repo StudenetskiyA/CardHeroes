@@ -29,7 +29,7 @@ public class MyFunction {
         }
         else if (target==Target.myPlayer.myCreature)
         {
-            if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 ) return true;
+            if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 || targetType==12 ) return true;
         }
         else if (target==Target.myPlayer.enemyPlayer)
         {
