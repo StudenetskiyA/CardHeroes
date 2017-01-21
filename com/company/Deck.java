@@ -32,6 +32,15 @@ public class Deck {
         if (cards.size()==0) return false;
         else return true;
     }
+
+    public Card topDeck(int depth){
+        return cards.get(cards.size()-depth);
+    }
+
+    public Card topDeck(){
+        return cards.get(cards.size()-1);
+    }
+
     public Card drawTopDeck(){
         Card tmp=cards.get(cards.size()-1);
         cards.remove(cards.size()-1);
@@ -42,14 +51,6 @@ public class Deck {
         cards.add(0,_card);
     }
 
-    class intI{
-        int n;
-        int index;
-        intI(int _n,int _index){
-            n=_n;
-            index=_index;
-        }
-    }
     public void suffleDeck(int n){
         //Until server know nothing
         for (int i=0;i<cards.size();i++){
