@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,30 +20,31 @@ import java.util.concurrent.TimeUnit;
 public class Main extends JFrame {
     private static final String CLIENT_VERSION = "0.01";
     private static ArrayList<String> replay;
-    public static int replayCounter = 0;
-    public static boolean connected = false;
+    static int replayCounter = 0;
+    static boolean connected = false;
     static Font font;
     static Graphics2D g1;
     static  FontMetrics metrics;
     private static String serverPort = "6666";
     private static final String address = "127.0.0.1";//"cardheroes.hldns.ru";
     private static PrintWriter writerToLog;
-    public static int sufflingConst = 21;
+    static int sufflingConst = 21;//By default 21, in normal - get from server
+    //View constant
     private static final int B0RDER_RIGHT = 10;
     private static final int B0RDER_LEFT = 10;
-    private static int B0RDER_BOTTOM = 40;
+    private static final int B0RDER_BOTTOM = 40;
     private static final int B0RDER_TOP = 10;
     private static final int B0RDER_BETWEEN = 5;
     private static final double CARD_SIZE_FROM_SCREEN = 0.09;
-    private static Main main = new Main();
-    private static int heroW;// = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
-    private static int heroH;// = (heroW * 400 / 283);
-    private static int smallCardW;// = (int) (heroW * 0.7);
-    private static int smallCardH;// = (int) (heroH * 0.7);
+    private static int heroW;
+    private static int heroH;
+    private static int smallCardW;
+    private static int smallCardH;
     private static int bigCardW;
     private static int bigCardH;
-    private static int cardX;// = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
-    public static Graphics gM;
+    private static int cardX;
+    //Elements of view
+    private static Main main = new Main();
     private static ViewField viewField = new ViewField();
     private static JLabel deckClick = new JLabel();
     private static JLabel menuClick = new JLabel();
@@ -62,7 +62,8 @@ public class Main extends JFrame {
     private static JLabel endTurnClick = new JLabel();
     private static JLabel choiceXLabel[] = new JLabel[9];
     private static JLabel searchXLabel[] = new JLabel[40];
-
+    private static JLabel message = new JLabel();
+    //Static image for button, background and etc.
     private static Image background;
     private static BufferedImage heroImage;
     private static BufferedImage heroNoArmorImage;
@@ -76,39 +77,38 @@ public class Main extends JFrame {
     private static Image redcrossImage;
     private static Image heroGraveyardImage;
 
-    public static Player[] players = new Player[2];
+    static Player[] players = new Player[2];
+    private static Deck simpleDeck;
+    private static Deck simpleEnemyDeck;
 
     private static Card cardMem;
     private static Creature creatureMem;
 
-    private static Deck simpleDeck;
-    private static Deck simpleEnemyDeck;
-
+  
     private static String whereMyMouse;
     private static int whereMyMouseNum;
-    private static int repainted;
-    public static ArrayList<Card> founded;
+    private static int repainted;//For test how many times called onRepaint
+    static ArrayList<Card> founded;
     private static int coinStart = 0;
-    //private static boolean isResized = true;
     private static MessageToShow messageToShow = new MessageToShow(" ", 0);
 
     enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget}
 
-    public static int choiseXcolor = 0;
-    public static int choiseXtype = 0;
-    public static String choiseXcreatureType = "";
-    public static int choiseXcost = 0;
-    public static String choiseXtext;
+      static int choiceXcolor = 0;
+      static int choiceXtype = 0;
+      static String choiceXcreatureType = "";
+      static int choiceXcost = 0;
+     static String choiceXtext;
 
-    public static Card.ActivatedAbility activatedAbility;
+   //  static Card.ActivatedAbility Card.ActivatedAbility;
 
-    public static playerStatus isMyTurn = playerStatus.waitingForConnection;
-    public static boolean wantToMulligan[] = new boolean[4];
+     static playerStatus isMyTurn = playerStatus.waitingForConnection;
+     static boolean wantToMulligan[] = new boolean[4];
     static int creatureWhoAttack;
     static int creatureWhoAttackTarget;
     static int hilightMyCreature = -1;
     static int hilightMyCard = -1;
-    static String replayDeck="";
+    private static String replayDeck="";
 
     public static void main(String[] args) throws IOException, InterruptedException {
         String replayName = "";
@@ -336,8 +336,8 @@ public class Main extends JFrame {
                     if (parameter.get(1).equals("-1")) {
                         //died creature ability.
                         death = true;
-                        cr = activatedAbility.creature;
-                        activatedAbility.creature = null;
+                        cr = Card.ActivatedAbility.creature;
+                        Card.ActivatedAbility.creature = null;
                     } else {
                         cr = Board.creature.get(pl).get(Integer.parseInt(parameter.get(1)));
                     }
@@ -506,10 +506,10 @@ public class Main extends JFrame {
                     printToView(0,Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))).name);
                     Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
                 } else if (fromServer.contains("$FOUND(")) {//$FOUND(Player, Card)
-                    choiseXcolor = 0;
-                    choiseXtype = 0;
-                    choiseXcost = 0;
-                    choiseXcreatureType = "";
+                    choiceXcolor = 0;
+                    choiceXtype = 0;
+                    choiceXcost = 0;
+                    choiceXcreatureType = "";
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     int pl = Board.getPlayerNumByName(parameter.get(0));
                     if (parameter.get(1).equals("-1")) {
@@ -583,10 +583,10 @@ public class Main extends JFrame {
                                 //players[0].isTapped = true;
                                 isMyTurn = playerStatus.choiseTarget;
                                 //change
-                                activatedAbility.targetType = players[0].targetType;
-                                activatedAbility.heroAbility = true;
-                                activatedAbility.heroAbilityCost = 2;
-                                activatedAbility.creature = null;
+                                Card.ActivatedAbility.targetType = players[0].targetType;
+                                Card.ActivatedAbility.heroAbility = true;
+                                Card.ActivatedAbility.heroAbilityCost = 2;
+                                Card.ActivatedAbility.creature = null;
                                 main.repaint();
                             } else {
                                 printToView(0,"Недостаточно монет.");
@@ -616,11 +616,11 @@ public class Main extends JFrame {
                 System.out.println("$MULLIGANEND(" + players[0].playerName + "," + boolToInt(wantToMulligan[0]) + "," + boolToInt(wantToMulligan[1]) + "," + boolToInt(wantToMulligan[2]) + "," + boolToInt(wantToMulligan[3]) + ")");
                 Client.writeLine("$MULLIGANEND(" + players[0].playerName + "," + boolToInt(wantToMulligan[0]) + "," + boolToInt(wantToMulligan[1]) + "," + boolToInt(wantToMulligan[2]) + "," + boolToInt(wantToMulligan[3]) + ")");
                 isMyTurn = playerStatus.waitingMulligan;
-            } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility)) {
+            } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on my hero
-                if ((activatedAbility.tapTargetType == 3) || (activatedAbility.tapTargetType == 2) || (activatedAbility.targetType == 2) || (activatedAbility.targetType == 3)) {
-                    int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
-                    if (activatedAbility.creatureTap) {
+                if ((Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.tapTargetType == 2) || (Card.ActivatedAbility.targetType == 2) || (Card.ActivatedAbility.targetType == 3)) {
+                    int nc = Board.creature.get(0).indexOf(Card.ActivatedAbility.creature);
+                    if (Card.ActivatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                         Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     } else {
@@ -628,19 +628,19 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                    // activatedAbility.creature = null;//Not safety. Do check.
-                    activatedAbility.creatureTap = false;
+                    // Card.ActivatedAbility.creature = null;//Not safety. Do check.
+                    Card.ActivatedAbility.creatureTap = false;
                 } else {
                     printToView(0,"Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility)) {
+            } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy hero
-                if ((activatedAbility.tapTargetType == 3) || (activatedAbility.tapTargetType == 2) || (activatedAbility.targetType == 2) || (activatedAbility.targetType == 3)) {
-                    if ((players[1].bbshield) && (activatedAbility.creature.text.contains("Выстрел"))) {
+                if ((Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.tapTargetType == 2) || (Card.ActivatedAbility.targetType == 2) || (Card.ActivatedAbility.targetType == 3)) {
+                    if ((players[1].bbshield) && (Card.ActivatedAbility.creature.text.contains("Выстрел"))) {
                         players[1].bbshield = false;
                     }
-                    int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
-                    if (activatedAbility.creatureTap) {
+                    int nc = Board.creature.get(0).indexOf(Card.ActivatedAbility.creature);
+                    if (Card.ActivatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                         Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                     } else {
@@ -648,16 +648,16 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                    // activatedAbility.creature = null;//Not safety. Do check.
-                    activatedAbility.creatureTap = false;
+                    // Card.ActivatedAbility.creature = null;//Not safety. Do check.
+                    Card.ActivatedAbility.creatureTap = false;
                 } else {
                     printToView(0,"Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility) && (!activatedAbility.weaponAbility)) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility) && (!Card.ActivatedAbility.weaponAbility)) {
                 //Battlecry or TAPT on my unit
-                if ((activatedAbility.tapTargetType == 1) || (activatedAbility.tapTargetType == 3) || (activatedAbility.targetType == 1) || (activatedAbility.targetType == 3)) {
-                    int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
-                    if (activatedAbility.creatureTap) {
+                if ((Card.ActivatedAbility.tapTargetType == 1) || (Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.targetType == 1) || (Card.ActivatedAbility.targetType == 3)) {
+                    int nc = Board.creature.get(0).indexOf(Card.ActivatedAbility.creature);
+                    if (Card.ActivatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                         Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                     } else {
@@ -665,22 +665,22 @@ public class Main extends JFrame {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                     }
                     isMyTurn = playerStatus.MyTurn;
-                    //  activatedAbility.creature = null;//Not safety. Do check.
-                    activatedAbility.creatureTap = false;
+                    //  Card.ActivatedAbility.creature = null;//Not safety. Do check.
+                    Card.ActivatedAbility.creatureTap = false;
                 } else {
                     printToView(0,"Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (!activatedAbility.heroAbility)) {
+            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {
                 //Battlecry or TAPT on enemy unit
-                if ((activatedAbility.tapTargetType == 1) || (activatedAbility.tapTargetType == 3) || (activatedAbility.targetType == 1) || (activatedAbility.targetType == 3)) {
+                if ((Card.ActivatedAbility.tapTargetType == 1) || (Card.ActivatedAbility.tapTargetType == 3) || (Card.ActivatedAbility.targetType == 1) || (Card.ActivatedAbility.targetType == 3)) {
                     //Bjornbon check attack or not this cry or tap.
-                    if ((players[1].bbshield) && (activatedAbility.creature.text.contains("Выстрел"))) {
+                    if ((players[1].bbshield) && (Card.ActivatedAbility.creature.text.contains("Выстрел"))) {
                         printToView(0,"Целью первой атаки должен быть Бьорнбон.");
                     } else {
-                        int nc = Board.creature.get(0).indexOf(activatedAbility.creature);
+                        int nc = Board.creature.get(0).indexOf(Card.ActivatedAbility.creature);
 
                         //Check correct target or it not able?
-                        if (activatedAbility.creatureTap) {
+                        if (Card.ActivatedAbility.creatureTap) {
                             System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
                             Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
                         } else {
@@ -688,39 +688,39 @@ public class Main extends JFrame {
                             Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
                         }
                         isMyTurn = playerStatus.MyTurn;
-                        //  activatedAbility.creature = null;//Not safety. Do check.
-                        activatedAbility.creatureTap = false;
+                        //  Card.ActivatedAbility.creature = null;//Not safety. Do check.
+                        Card.ActivatedAbility.creatureTap = false;
                     }
                 } else {
                     printToView(0,"Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (activatedAbility.heroAbility)) {
+            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == playerStatus.choiseTarget) && (Card.ActivatedAbility.heroAbility)) {
                 //Hero ability on enemy unit
                 if ((players[0].targetType == 1) || (players[0].targetType == 3)) {
-                    System.out.println("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + activatedAbility.heroAbilityCost + ")");
-                    Client.writeLine("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + activatedAbility.heroAbilityCost + ")");
+                    System.out.println("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + Card.ActivatedAbility.heroAbilityCost + ")");
+                    Client.writeLine("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + Card.ActivatedAbility.heroAbilityCost + ")");
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbility.heroAbility = false;
+                    Card.ActivatedAbility.heroAbility = false;
                 } else {
                     printToView(0,"Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (activatedAbility.heroAbility)) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (Card.ActivatedAbility.heroAbility)) {
                 //Hero ability on my unit
                 if ((players[0].targetType == 1) || (players[0].targetType == 3)) {
-                    System.out.println("$HEROTARGET(" + players[0].playerName + ",0," + num + "," + activatedAbility.heroAbilityCost + ")");
-                    Client.writeLine("$HEROTARGET(" + players[0].playerName + ",0," + num + "," + activatedAbility.heroAbilityCost + ")");
+                    System.out.println("$HEROTARGET(" + players[0].playerName + ",0," + num + "," + Card.ActivatedAbility.heroAbilityCost + ")");
+                    Client.writeLine("$HEROTARGET(" + players[0].playerName + ",0," + num + "," + Card.ActivatedAbility.heroAbilityCost + ")");
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbility.heroAbility = false;
+                    Card.ActivatedAbility.heroAbility = false;
                 } else {
                     printToView(0,"Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (activatedAbility.weaponAbility)) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == playerStatus.choiseTarget) && (Card.ActivatedAbility.weaponAbility)) {
                 //Weapon ability on my unit
                 if ((players[0].equpiment[2].tapTargetType == 1) || (players[0].equpiment[2].tapTargetType == 3)) {
                     System.out.println("$EQUIPTARGET(" + players[0].playerName + ",2,0," + num + ")");
                     Client.writeLine("$EQUIPTARGET(" + players[0].playerName + ",2,0," + num + ")");
                     isMyTurn = playerStatus.MyTurn;
-                    activatedAbility.weaponAbility = false;
+                    Card.ActivatedAbility.weaponAbility = false;
                 } else {
                     printToView(0,"Выберите корректную цель.");
                 }
@@ -730,10 +730,10 @@ public class Main extends JFrame {
                     if (!Board.creature.get(0).get(num).isTapped) {
                         System.out.println("tapt ability.");
                         isMyTurn = playerStatus.choiseTarget;
-                        activatedAbility.creature = Board.creature.get(0).get(num);
-                        activatedAbility.targetType = Board.creature.get(0).get(num).targetType;
-                        activatedAbility.tapTargetType = Board.creature.get(0).get(num).tapTargetType;
-                        activatedAbility.creatureTap = true;
+                        Card.ActivatedAbility.creature = Board.creature.get(0).get(num);
+                        Card.ActivatedAbility.targetType = Board.creature.get(0).get(num).targetType;
+                        Card.ActivatedAbility.tapTargetType = Board.creature.get(0).get(num).tapTargetType;
+                        Card.ActivatedAbility.creatureTap = true;
                         main.repaint();
                     } else {
                         printToView(0,"Повернутое существо не может это сделать.");
@@ -749,10 +749,10 @@ public class Main extends JFrame {
                         printToView(0,"Нет подходящей цели.");
                     } else {
                         isMyTurn = playerStatus.choiseTarget;
-                        activatedAbility.targetType = players[0].equpiment[2].targetType;
-                        activatedAbility.tapTargetType = players[0].equpiment[2].tapTargetType;
-                        activatedAbility.weaponAbility = true;
-                        activatedAbility.creature = null;
+                        Card.ActivatedAbility.targetType = players[0].equpiment[2].targetType;
+                        Card.ActivatedAbility.tapTargetType = players[0].equpiment[2].tapTargetType;
+                        Card.ActivatedAbility.weaponAbility = true;
+                        Card.ActivatedAbility.creature = null;
                         main.repaint();
                     }
                 } else {
@@ -839,7 +839,7 @@ public class Main extends JFrame {
                             //TODO If X==0
                             isMyTurn = playerStatus.choiseX;
                             //choiseXnum = num;
-                            choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + ",-1,-1";
+                            choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + ",-1,-1";
                             main.repaint();
                         } else {
                             System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
@@ -895,7 +895,7 @@ public class Main extends JFrame {
                                 //TODO If X==0
                                 isMyTurn = playerStatus.choiseX;
                                 //choiseXnum = num;
-                                choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
+                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
                                 main.repaint();
                             } else {
                                 System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
@@ -915,7 +915,7 @@ public class Main extends JFrame {
                                 //TODO If X==0
                                 isMyTurn = playerStatus.choiseX;
                                 //choiseXnum = num;
-                                choiseXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
+                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
                                 main.repaint();
                             } else {
                                 System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
@@ -1020,8 +1020,8 @@ public class Main extends JFrame {
         playerHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM);
         playerHeroClick.setSize(heroW, heroH);
         //Heroes equpiment
-        drawPlayerEqupiment(g, 0);
-        drawPlayerEqupiment(g, 1);
+        drawPlayerEquipment(g, 0);
+        drawPlayerEquipment(g, 1);
         //TODO Draw N not 4
         drawPlayerDamage(g, 0);
         drawPlayerDamage(g, 1);
@@ -1130,8 +1130,6 @@ public class Main extends JFrame {
 
         drawMessage(g);
     }
-
-    private static JLabel message = new JLabel();
     
     private static void drawMessage(Graphics g) {
         Calendar cal = Calendar.getInstance();
@@ -1161,19 +1159,19 @@ public class Main extends JFrame {
     private static void drawSearchInDeck(Graphics g) throws IOException {
         founded = new ArrayList<>(players[0].deck.cards);
         for (int i = founded.size() - 1; i >= 0; i--) {
-            if ((choiseXcolor != founded.get(i).color) && (choiseXcolor != 0)) {
+            if ((choiceXcolor != founded.get(i).color) && (choiceXcolor != 0)) {
                 founded.remove(founded.get(i));
                 continue;//Without it may be deleted twice one card
             }
-            if ((choiseXtype != founded.get(i).type) && (choiseXtype != 0)) {
+            if ((choiceXtype != founded.get(i).type) && (choiceXtype != 0)) {
                 founded.remove(founded.get(i));
                 continue;
             }
-            if (((!choiseXcreatureType.equals(founded.get(i).creatureType))) && (!choiseXcreatureType.equals(""))) {
+            if (((!choiceXcreatureType.equals(founded.get(i).creatureType))) && (!choiceXcreatureType.equals(""))) {
                 founded.remove(founded.get(i));
                 continue;
             }
-            if ((choiseXcost < founded.get(i).cost) && (choiseXcost != 0)) {
+            if ((choiceXcost < founded.get(i).cost) && (choiceXcost != 0)) {
                 founded.remove(founded.get(i));
                 continue;
             }
@@ -1183,8 +1181,8 @@ public class Main extends JFrame {
             System.out.println("$FOUND(" + players[0].playerName + ",-1)");
             Client.writeLine("$FOUND(" + players[0].playerName + ",-1)");
             isMyTurn = playerStatus.MyTurn;
-            choiseXcolor = 0;
-            choiseXtype = 0;
+            choiceXcolor = 0;
+            choiceXtype = 0;
             main.repaint();
         } else {
             //TODO If founded.size() small, draw bigger
@@ -1219,7 +1217,7 @@ public class Main extends JFrame {
         }
     }
 
-    private static void drawPlayerEqupiment(Graphics g, int p) throws IOException {
+    private static void drawPlayerEquipment(Graphics g, int p) throws IOException {
         BufferedImage im;
         //TODO durability of armor
         int h;
@@ -1354,8 +1352,8 @@ public class Main extends JFrame {
     }
 
     private static void releaseCardWithX(int x) {
-        System.out.println(choiseXtext + "," + x + ")");
-        Client.writeLine(choiseXtext + "," + x + ")");
+        System.out.println(choiceXtext + "," + x + ")");
+        Client.writeLine(choiceXtext + "," + x + ")");
     }
 
     private static void loadImage() {
@@ -1383,7 +1381,7 @@ public class Main extends JFrame {
     }
 
     private static void loadDeckFromFile(Deck deck, String deckName) throws IOException {
-        InputStream path = Main.class.getResourceAsStream(deckName + ".txt");
+        InputStream path = Main.class.getResourceAsStream("decks/"+deckName + ".txt");
         BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
         try {
             String line = "";
@@ -1418,8 +1416,12 @@ public class Main extends JFrame {
         Date date = new Date();
         System.out.println(dateFormat.format(date));
         String fname = dateFormat.format(date);
+        File folder = new File("logs");
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
 
-        File file = new File(fname + ".txt");
+        File file = new File("logs/"+fname + ".txt");
         FileWriter writer = new FileWriter(file, true);
         writerToLog = new PrintWriter(writer);
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -1565,8 +1567,6 @@ public class Main extends JFrame {
 
         main.setVisible(true);
     }
-
-    public static boolean needToRefreshMessage=false;
 
     private static class ViewField extends JPanel {
         @Override

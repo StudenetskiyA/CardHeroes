@@ -1,35 +1,30 @@
 package com.company;
 
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-
 /**
  * Created by StudenetskiyA on 30.12.2016.
  */
-public class Card {
-    public int cost;
-    public String name;
-    public String text;
-    public String image;
-    public String creatureType;
-    public int color;//1-swamp,2-field,3-mountain,4-forest,5-dark,6-neutral,7 and more - multicolor
-    public int type;//1 for spell, 2 for creature
-    public int targetType;//Battlecry 1 for creatures, 2 for heroes, 3 for heroes and creatures, 4 for only opponent creature
-    public int tapTargetType;//May exist cards with Battlecry and TAP. Today its only one)))
-    public int power;//only for creature, ignore for other
-    public int hp;//only for creature and hero, its maximum health, not current
-    public String hash;//for suffling
+class Card {
+     int cost;
+     String name;
+     String text;
+     String image;
+     String creatureType;
+     int color;//1-swamp,2-field,3-mountain,4-forest,5-dark,6-neutral,7 and more - multicolor
+     int type;//1 for spell, 2 for creature
+     int targetType;//Battlecry 1 for creatures, 2 for heroes, 3 for heroes and creatures, 4 for only opponent creature
+     int tapTargetType;//May exist cards with Battlecry and TAP. Today its only one)))
+     int power;//only for creature, ignore for other
+     int hp;//only for creature and hero, its maximum health, not current
+     String hash;//for suffling
 
-    public static class ActivatedAbility {
-        public static int targetType;
-        public static int tapTargetType;
-        public static Creature creature;
-        public static boolean creatureTap;
-        public static boolean heroAbility = false;
-        public static boolean weaponAbility = false;
-        public static int heroAbilityCost=0;
+     static class ActivatedAbility {
+         static int targetType;
+         static int tapTargetType;
+         static Creature creature;
+         static boolean creatureTap;
+         static boolean heroAbility = false;
+         static boolean weaponAbility = false;
+         static int heroAbilityCost=0;
     }
 
     public Card(Card _card) {
@@ -73,134 +68,135 @@ public class Card {
     }
 
     public static Card getCardByName(String name) {
-        //Here all cards!
-        if (name.equals("Тарна"))
-            return new Card(0, "Тарна","", 1, 0, 0, 0, "ТАП:4 Взять карт 1.", 0, 28);
-        else if (name.equals("Бьорнбон"))
-            return new Card(0, name,"", 3, 0, 0, 0, "ТАП:0 Получить щит ББ.", 0, 30);
-        else if (name.equals("Тиша"))
-            return new Card(0, "Тиша","", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
-        else if (name.equals("Раскат грома"))
-            return new Card(1, "Раскат грома","", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
-        else if (name.equals("Выброс силы"))
-            return new Card(2, name,"", 3, 1, 1, 0, "Ранить выбранное существо на 5.", 0, 0);
-        else if (name.equals("Гьерхор"))
-            return new Card(1, "Гьерхор","Йордлинг", 3, 2, 0, 0, "", 2, 2);
-        else if (name.equals("Найтин"))
-            return new Card(2, "Найтин", "",6, 2, 0, 0, "Направленный удар. Рывок.", 2, 2);
-        else if (name.equals("Кригторн"))
-            return new Card(2, "Кригторн", "",3, 2, 0, 0, "Первый удар. Рывок.", 2, 1);
-        else if (name.equals("Гном"))
-            return new Card(2, "Гном", "Гном",3, 2, 0, 0, "", 3, 3);
-        else if (name.equals("Гном-легионер"))
-            return new Card(4, name, "Гном",3, 2, 0, 0, "Направленный удар. Рывок.", 3, 5);
-        else if (name.equals("Гном-смертник"))
-            return new Card(3, name, "Гном",3, 2, 0, 0, "Защита от заклинаний. Рывок.", 3, 4);
-        else if (name.equals("Поглощение души"))
-            return new Card(3, "Поглощение душ","", 5, 1, 2, 0, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
-        else if (name.equals("Эльф-дозорный"))
-            return new Card(4, "Эльф-дозорный", "",4, 2, 0, 0, "Найм: Возьмите карт 1.", 2, 5);
-        else if (name.equals("Послушник"))
-            return new Card(5, "Послушник", "Лингунг",3, 2, 1, 0, "Наймт: Выстрел по существу на 4.", 2, 3);
-        else if (name.equals("Гном-лучник"))
-            return new Card(3, "Гном-лучник", "Гном",3, 2, 3, 0, "Защита от выстрелов. Наймт: Выстрел на 2.", 2, 3);
-        else if (name.equals("Лучник Захры"))
-            return new Card(4, "Лучник Захры","Орк", 2, 2, 3, 0, "Защита от заклинаний. Наймт: Выстрел на 2.", 4, 2);
-        else if (name.equals("Цверг-заклинатель"))
-            return new Card(3, name,"Гном", 3, 2, 0, 0, "Защита от заклинаний. Защита от выстрелов. Защита от отравления.", 3, 3);
-        else if (name.equals("Верцверг"))
-            return new Card(4, name,"Гном", 3, 2, 1, 0, "Направленный удар. Наймт: Получает к атаке + 3.", 2, 4);
-        else if (name.equals("Цепная молния"))
-            return new Card(6, "Цепная молния","", 3, 1, 0, 0, "Ранить каждое существо противника на 3.", 0, 0);
-        else if (name.equals("Волна огня"))
-            return new Card(3, "Волна огня", "",2, 1, 0, 0, "Ранить каждое существо на 2.", 0, 0);
-        else if (name.equals("Чешуя дракона"))
-            return new Card(2, "Чешуя дракона", "",4, 1, 0, 0, "Получите * 1.", 0, 0);
-        else if (name.equals("Выслеживание"))
-            return new Card(0, "Выслеживание", "",4, 1, 0, 0, "Получите до конца хода * 2.", 0, 0);
-        else if (name.equals("Фиал порчи"))
-            return new Card(2, "Фиал порчи", "",1, 1, 1, 0, "Отравить выбранное существо на 2.", 0, 0);
-        else if (name.equals("Глашатай пустоты"))
-            return new Card(1, "Глашатай пустоты","Пустой", 6, 2, 0, 0, "Уникальность. Не получает ран.", 0, 1);
-        else if (name.equals("Велит"))
-            return new Card(2, "Велит", "",2, 2, 0, 3, "ТАПТ: Выстрел на 1.", 1, 3);
-        else if (name.equals("Пуф"))
-            return new Card(2, name, "Гном",3, 2, 0, 3, "ТАПТ: Выстрел на 1.", 2, 3);
-        else if (name.equals("Кьелэрн"))
-            return new Card(1, "Кьелэрн", "",6, 2, 0, 0, "Уникальность. Рывок. ТАП: Получите до конца хода * 1.", 0, 1);
-        else if (name.equals("Агент Разана"))
-            return new Card(2, "Агент Разана", "",1, 2, 1, 0, "Наймт: Отравить выбранное существо на 1.", 1, 2);
-        else if (name.equals("Скованный еретик"))
-            return new Card(1, "Скованный еретик", "",5, 2, 0, 0, "Найм: Закрыться.", 3, 2);
-        else if (name.equals("Вэлла"))
-            return new Card(3, "Вэлла", "",4, 2, 3, 0, "Наймт: Излечить выбранное существо или героя на 2.", 3, 4);
-        else if (name.equals("Рыцарь Туллена"))
-            return new Card(6, "Рыцарь Туллена", "",2, 2, 0, 0, "Броня 3.", 6, 3);
-        else if (name.equals("Орк-лучник"))
-            return new Card(1, name, "",2, 2, 3, 0, "Гнев. Наймт: Выстрел на 1.", 1, 1);
-        else if (name.equals("Безумие"))
-            return new Card(3, name, "",1, 1, 1, 0, "Нанести урон выбранному существу, равный его удару.", 0, 0);
-        else if (name.equals("Зельеварение"))
-            return new Card(1, name, "",1, 1, 1, 0, "Верните выбранное существо в руку его владельца.", 0, 0);
-        else if (name.equals("Дахут"))
-            return new Card(3, name, "",1, 2, 1, 0, "Наймт: Верните выбранное существо в руку его владельца.", 2, 3);
-        else if (name.equals("Забира"))
-            return new Card(2, "Забира", "",1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 3, 4);
-        else if (name.equals("Волнорез"))
-            return new Card(3, name, "",1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 4, 5);
-        else if (name.equals("Десница Архааля"))
-            return new Card(4, name, "",1, 2, 1, 0, "Опыт в защите. Наймт: Уничтожьте отравленное существо.", 1, 4);
-        else if (name.equals("Нойта"))
-            return new Card(1, name, "Йордлинг",1, 2, 1, 0, "Наймт: Ранить существо без ран на 3.", 1, 1);
-        else if (name.equals("Орк-мародер"))
-            return new Card(5, name,"", 2, 2, 0, 0, "Опыт в атаке. Первый удар. Рывок.", 5, 2);
-        else if (name.equals("Менгир Каррефура"))
-            return new Card(3, name, "",1, 2, 0, 1, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 10);
-        else if (name.equals("Рыцарь реки"))
-            return new Card(5, name, "",1, 2, 1, 0, "Наймт: Выбранное существо не может атаковать и выступать защитником до конца следующего хода.", 4, 6);
-        else if (name.equals("Поиск кладов"))
-            return new Card(6, name, "",1, 1, 0, 0, "Взять карт 4.", 0, 0);
-        else if (name.equals("Прозрение"))
-            return new Card(2, name,"", 1, 1, 0, 0, "Взять карт 1. Если у соперника больше существ, чем у вас, взять еще карт 1.", 0, 0);
-        else if (name.equals("Плащ Исхара"))
-            return new Card(1, name, "Броня",1, 3, 0, 0, "", 0, 6);
-        else if (name.equals("Богарт"))
-            return new Card(4, name, "",6, 2, 0, 0, "Уникальность. Найм: Каждое другое существо погибает в конце хода противника.", 2, 7);
-        else if (name.equals("Полевица"))
-            return new Card(4, name, "",1, 2, 0, 0, "Гибель: Взять карт 2.", 2, 3);
-        else if (name.equals("Смайта"))
-            return new Card(4, name, "",6, 2, 3, 0, "Гибельт: Ранить выбранное существо или героя на 2.", 4, 3);
-        else if (name.equals("Ядовитое пламя"))
-            return new Card(0, name, "",1, 1, 1, 0, "Доплатите Х *. Ранить выбранное существо на ХХХ.", 0, 0);
-        else if (name.equals("Вольный воитель"))
-            return new Card(0, name, "",6, 2, 0, 0, "Доплатите Х *. Найм: Получает к характеристикам + ХХХ.", 0, 0);
-        else if (name.equals("Шар тины"))
-            return new Card(2, name, "",1, 1, 0, 0, "Поиск цвет 1", 0, 0);
-        else if (name.equals("Шар молний"))
-            return new Card(2, name, "",3, 1, 0, 0, "Поиск цвет 3", 0, 0);
-        else if (name.equals("Гном-кузнец"))
-            return new Card(3, name, "Гном",1, 2, 0, 0, "Найм: Поиск тип 3", 1, 4);
-        else if (name.equals("Гном-кладоискатель"))
-            return new Card(5, name, "Гном",3, 2, 0, 0, "Броня 1. Найм: Поиск комбо+ 2 Гном 2.", 5, 4);
-        else if (name.equals("Рунопевец"))
-            return new Card(3, name, "Гном",3, 2, 0, 0, "Статичный эффект.", 3, 3);
-        else if (name.equals("Гном-каратель"))
-            return new Card(4, name, "Гном",3, 2, 0, 3, "Броня 2. ТАПТ: Ранить выбранное существо или героя на 2.", 1, 3);
-        else if (name.equals("Тан гномов"))
-            return new Card(6, name, "Гном",3, 2, 0, 0, "Броня 2. Статичный эффект.", 5, 4);
-        else if (name.equals("Безумный охотник"))
-            return new Card(5, name, "",6, 2, 0, 0, "Найм: Получает +Х к удару и Броню Х, где Х - число других ваших существ.", 4, 4);
-        else if (name.equals("Браслет подчинения"))
-            return new Card(3, name, "Амулет",1, 3, 0, 0, "", 0, 0);
-        else if (name.equals("Молот прародителя"))
-            return new Card(2, name, "Оружие",3, 3, 0, 1, "ТАПТ: Выбранное существо до конца хода получает к атаке + 2.", 0, 0);
-        else {
-            System.out.println("Ошибка - Неопознанная карта:"+name);
-            return null;
+        //Here is all cards!
+        switch (name) {
+            case "Тарна":
+                return new Card(0, "Тарна", "", 1, 0, 0, 0, "ТАП:4 Взять карт 1.", 0, 28);
+            case "Бьорнбон":
+                return new Card(0, name, "", 3, 0, 0, 0, "ТАП:0 Получить щит ББ.", 0, 30);
+            case "Тиша":
+                return new Card(0, "Тиша", "", 1, 0, 1, 0, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 26);
+            case "Раскат грома":
+                return new Card(1, "Раскат грома", "", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
+            case "Выброс силы":
+                return new Card(2, name, "", 3, 1, 1, 0, "Ранить выбранное существо на 5.", 0, 0);
+            case "Гьерхор":
+                return new Card(1, "Гьерхор", "Йордлинг", 3, 2, 0, 0, "", 2, 2);
+            case "Найтин":
+                return new Card(2, "Найтин", "", 6, 2, 0, 0, "Направленный удар. Рывок.", 2, 2);
+            case "Кригторн":
+                return new Card(2, "Кригторн", "", 3, 2, 0, 0, "Первый удар. Рывок.", 2, 1);
+            case "Гном":
+                return new Card(2, "Гном", "Гном", 3, 2, 0, 0, "", 3, 3);
+            case "Гном-легионер":
+                return new Card(4, name, "Гном", 3, 2, 0, 0, "Направленный удар. Рывок.", 3, 5);
+            case "Гном-смертник":
+                return new Card(3, name, "Гном", 3, 2, 0, 0, "Защита от заклинаний. Рывок.", 3, 4);
+            case "Поглощение души":
+                return new Card(3, "Поглощение душ", "", 5, 1, 2, 0, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
+            case "Эльф-дозорный":
+                return new Card(4, "Эльф-дозорный", "", 4, 2, 0, 0, "Найм: Возьмите карт 1.", 2, 5);
+            case "Послушник":
+                return new Card(5, "Послушник", "Лингунг", 3, 2, 1, 0, "Наймт: Выстрел по существу на 4.", 2, 3);
+            case "Гном-лучник":
+                return new Card(3, "Гном-лучник", "Гном", 3, 2, 3, 0, "Защита от выстрелов. Наймт: Выстрел на 2.", 2, 3);
+            case "Лучник Захры":
+                return new Card(4, "Лучник Захры", "Орк", 2, 2, 3, 0, "Защита от заклинаний. Наймт: Выстрел на 2.", 4, 2);
+            case "Цверг-заклинатель":
+                return new Card(3, name, "Гном", 3, 2, 0, 0, "Защита от заклинаний. Защита от выстрелов. Защита от отравления.", 3, 3);
+            case "Верцверг":
+                return new Card(4, name, "Гном", 3, 2, 1, 0, "Направленный удар. Наймт: Получает к атаке + 3.", 2, 4);
+            case "Цепная молния":
+                return new Card(6, "Цепная молния", "", 3, 1, 0, 0, "Ранить каждое существо противника на 3.", 0, 0);
+            case "Волна огня":
+                return new Card(3, "Волна огня", "", 2, 1, 0, 0, "Ранить каждое существо на 2.", 0, 0);
+            case "Чешуя дракона":
+                return new Card(2, "Чешуя дракона", "", 4, 1, 0, 0, "Получите * 1.", 0, 0);
+            case "Выслеживание":
+                return new Card(0, "Выслеживание", "", 4, 1, 0, 0, "Получите до конца хода * 2.", 0, 0);
+            case "Фиал порчи":
+                return new Card(2, "Фиал порчи", "", 1, 1, 1, 0, "Отравить выбранное существо на 2.", 0, 0);
+            case "Глашатай пустоты":
+                return new Card(1, "Глашатай пустоты", "Пустой", 6, 2, 0, 0, "Уникальность. Не получает ран.", 0, 1);
+            case "Велит":
+                return new Card(2, "Велит", "", 2, 2, 0, 3, "ТАПТ: Выстрел на 1.", 1, 3);
+            case "Пуф":
+                return new Card(2, name, "Гном", 3, 2, 0, 3, "ТАПТ: Выстрел на 1.", 2, 3);
+            case "Кьелэрн":
+                return new Card(1, "Кьелэрн", "", 6, 2, 0, 0, "Уникальность. Рывок. ТАП: Получите до конца хода * 1.", 0, 1);
+            case "Агент Разана":
+                return new Card(2, "Агент Разана", "", 1, 2, 1, 0, "Наймт: Отравить выбранное существо на 1.", 1, 2);
+            case "Скованный еретик":
+                return new Card(1, "Скованный еретик", "", 5, 2, 0, 0, "Найм: Закрыться.", 3, 2);
+            case "Вэлла":
+                return new Card(3, "Вэлла", "", 4, 2, 3, 0, "Наймт: Излечить выбранное существо или героя на 2.", 3, 4);
+            case "Рыцарь Туллена":
+                return new Card(6, "Рыцарь Туллена", "", 2, 2, 0, 0, "Броня 3.", 6, 3);
+            case "Орк-лучник":
+                return new Card(1, name, "", 2, 2, 3, 0, "Гнев. Наймт: Выстрел на 1.", 1, 1);
+            case "Безумие":
+                return new Card(3, name, "", 1, 1, 1, 0, "Нанести урон выбранному существу, равный его удару.", 0, 0);
+            case "Зельеварение":
+                return new Card(1, name, "", 1, 1, 1, 0, "Верните выбранное существо в руку его владельца.", 0, 0);
+            case "Дахут":
+                return new Card(3, name, "", 1, 2, 1, 0, "Наймт: Верните выбранное существо в руку его владельца.", 2, 3);
+            case "Забира":
+                return new Card(2, "Забира", "", 1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 3, 4);
+            case "Волнорез":
+                return new Card(3, name, "", 1, 2, 0, 0, "Если выбрана целью заклинание - погибает.", 4, 5);
+            case "Десница Архааля":
+                return new Card(4, name, "", 1, 2, 1, 0, "Опыт в защите. Наймт: Уничтожьте отравленное существо.", 1, 4);
+            case "Нойта":
+                return new Card(1, name, "Йордлинг", 1, 2, 1, 0, "Наймт: Ранить существо без ран на 3.", 1, 1);
+            case "Орк-мародер":
+                return new Card(5, name, "", 2, 2, 0, 0, "Опыт в атаке. Первый удар. Рывок.", 5, 2);
+            case "Менгир Каррефура":
+                return new Card(3, name, "", 1, 2, 0, 1, "ТАПТ: Отравить+ выбранное существо на 1.", 0, 10);
+            case "Рыцарь реки":
+                return new Card(5, name, "", 1, 2, 1, 0, "Наймт: Выбранное существо не может атаковать и выступать защитником до конца следующего хода.", 4, 6);
+            case "Поиск кладов":
+                return new Card(6, name, "", 1, 1, 0, 0, "Взять карт 4.", 0, 0);
+            case "Прозрение":
+                return new Card(2, name, "", 1, 1, 0, 0, "Взять карт 1. Если у соперника больше существ, чем у вас, взять еще карт 1.", 0, 0);
+            case "Плащ Исхара":
+                return new Card(1, name, "Броня", 1, 3, 0, 0, "", 0, 6);
+            case "Богарт":
+                return new Card(4, name, "", 6, 2, 0, 0, "Уникальность. Найм: Каждое другое существо погибает в конце хода противника.", 2, 7);
+            case "Полевица":
+                return new Card(4, name, "", 1, 2, 0, 0, "Гибель: Взять карт 2.", 2, 3);
+            case "Смайта":
+                return new Card(4, name, "", 6, 2, 3, 0, "Гибельт: Ранить выбранное существо или героя на 2.", 4, 3);
+            case "Ядовитое пламя":
+                return new Card(0, name, "", 1, 1, 1, 0, "Доплатите Х *. Ранить выбранное существо на ХХХ.", 0, 0);
+            case "Вольный воитель":
+                return new Card(0, name, "", 6, 2, 0, 0, "Доплатите Х *. Найм: Получает к характеристикам + ХХХ.", 0, 0);
+            case "Шар тины":
+                return new Card(2, name, "", 1, 1, 0, 0, "Поиск цвет 1", 0, 0);
+            case "Шар молний":
+                return new Card(2, name, "", 3, 1, 0, 0, "Поиск цвет 3", 0, 0);
+            case "Гном-кузнец":
+                return new Card(3, name, "Гном", 1, 2, 0, 0, "Найм: Поиск тип 3", 1, 4);
+            case "Гном-кладоискатель":
+                return new Card(5, name, "Гном", 3, 2, 0, 0, "Броня 1. Найм: Поиск комбо+ 2 Гном 2.", 5, 4);
+            case "Рунопевец":
+                return new Card(3, name, "Гном", 3, 2, 0, 0, "Статичный эффект.", 3, 3);
+            case "Гном-каратель":
+                return new Card(4, name, "Гном", 3, 2, 0, 3, "Броня 2. ТАПТ: Ранить выбранное существо или героя на 2.", 1, 3);
+            case "Тан гномов":
+                return new Card(6, name, "Гном", 3, 2, 0, 0, "Броня 2. Статичный эффект.", 5, 4);
+            case "Безумный охотник":
+                return new Card(5, name, "", 6, 2, 0, 0, "Найм: Получает +Х к удару и Броню Х, где Х - число других ваших существ.", 4, 4);
+            case "Браслет подчинения":
+                return new Card(3, name, "Амулет", 1, 3, 0, 0, "", 0, 0);
+            case "Молот прародителя":
+                return new Card(2, name, "Оружие", 3, 3, 0, 1, "ТАПТ: Выбранное существо до конца хода получает к атаке + 2.", 0, 0);
+            default:
+                System.out.println("Ошибка - Неопознанная карта:" + name);
+                return null;
         }
     }
 
-    public static void ability(Card _who, Player _whis, Creature _cr, Player _pl, String txt) {
+    static void ability(Card _who, Player _whis, Creature _cr, Player _pl, String txt) {
         //Super function! Do all what do cards text!
         //Which Card player(_who), who player(_whis), on what creature(_cr, may null), on what player(_pl, may null), text to play(txt)
         if (txt.contains("Закрыться.")) {//Only here - _cr=_who to get access to creature
@@ -215,25 +211,25 @@ public class Card {
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int dmg = MyFunction.getNumericAfterText(txt, "Поиск цвет ");
                 Main.isMyTurn = Main.playerStatus.searchX;
-                Main.choiseXcolor = dmg;
+                Main.choiceXcolor = dmg;
             }
         }
         if (txt.contains("Поиск комбо+ ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int type = MyFunction.getNumericAfterText(txt, "Поиск комбо+ ");
                 Main.isMyTurn = Main.playerStatus.searchX;
-                Main.choiseXtype = type;
-                Main.choiseXcreatureType=txt.substring(txt.indexOf("Поиск комбо+ ")+"Поиск комбо+ ".length()+2,txt.indexOf(" ",txt.indexOf("Поиск комбо+ ")+"Поиск комбо+ ".length()+2));
-                System.out.println("search type = "+  Main.choiseXcreatureType);
-                Main.choiseXcost= MyFunction.getNumericAfterText(txt, "Поиск комбо+ "+type+ " "+ Main.choiseXcreatureType+" ");
-                System.out.println("search cost = "+  Main.choiseXcost);
+                Main.choiceXtype = type;
+                Main.choiceXcreatureType=txt.substring(txt.indexOf("Поиск комбо+ ")+"Поиск комбо+ ".length()+2,txt.indexOf(" ",txt.indexOf("Поиск комбо+ ")+"Поиск комбо+ ".length()+2));
+                System.out.println("search type = "+  Main.choiceXcreatureType);
+                Main.choiceXcost= MyFunction.getNumericAfterText(txt, "Поиск комбо+ "+type+ " "+ Main.choiceXcreatureType+" ");
+                System.out.println("search cost = "+  Main.choiceXcost);
             }
         }
         if (txt.contains("Поиск тип ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int dmg = MyFunction.getNumericAfterText(txt, "Поиск тип ");
                 Main.isMyTurn = Main.playerStatus.searchX;
-                Main.choiseXtype = dmg;
+                Main.choiceXtype = dmg;
             }
         }
         if (txt.contains("Получает к характеристикам + ")) {
@@ -298,8 +294,8 @@ public class Card {
         }
         if (txt.contains("Ранить существо без ран на ")) {
             int dmg = MyFunction.getNumericAfterText(txt, "Ранить существо без ран на ");
-            if (_cr.damage==0){
-                Main.printToView(0,_cr.name + " получил " + dmg + " урона.");
+            if (_cr != null && _cr.damage == 0) {
+                Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
                 _cr.takeDamage(dmg, Creature.DamageSource.ability);
             }
         }
@@ -428,7 +424,7 @@ public class Card {
         }
     }
 
-    public boolean haveRage() {
-        return (text.contains("Гнев.")) ? true : false;
+    boolean haveRage() {
+        return (text.contains("Гнев."));
     }
 }

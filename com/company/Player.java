@@ -6,27 +6,26 @@ import java.util.ArrayList;
  * Created by StudenetskiyA on 30.12.2016.
  */
 public class Player extends Card {
-    public int numberPlayer;
-    public int damage;
+    int numberPlayer;
+    int damage;
     String playerName;
-    public int totalCoin;
-    public int untappedCoin;
-    public int temporaryCoin = 0;
-    public boolean isTapped = false;
-    public boolean myTurn = false;//only for deathratle
+    int totalCoin;
+    int untappedCoin;
+    int temporaryCoin = 0;
+    boolean isTapped = false;
     public Deck deck;
-    public ArrayList<Card> cardInHand;
-    public ArrayList<Card> graveyard;
-    public Equpiment equpiment[];//0-armor,1-amulet,2-weapon
-    public Boolean bbshield=false;//Bjornbon shield
+    ArrayList<Card> cardInHand;
+    ArrayList<Card> graveyard;
+    Equpiment equpiment[];//0-armor,1-amulet,2-weapon
+    Boolean bbshield=false;//Bjornbon shield
     private static int tempX;//For card with X, for correct minus cost
 
-    public Player(Card _card, Deck _deck, String _playerName, int _n) {
+    Player(Card _card, Deck _deck, String _playerName, int _n) {
         super(0, _card.name, "", 1, 0, _card.targetType, 0, _card.text, 0, _card.hp);
         deck = _deck;
         playerName = _playerName;
-        cardInHand = new ArrayList<Card>();
-        graveyard = new ArrayList<Card>();
+        cardInHand = new ArrayList<>();
+        graveyard = new ArrayList<>();
         numberPlayer = _n;
         equpiment = new Equpiment[3];
         equpiment[0] = null;
@@ -34,7 +33,7 @@ public class Player extends Card {
         equpiment[2] = null;
     }
 
-    public Player(Deck _deck, String _heroName, String _playerName, int _n, int _hp) {
+    Player(Deck _deck, String _heroName, String _playerName, int _n, int _hp) {
         super(0, _heroName, "", 1, 0, 0, 0, "", 0, _hp);
         deck = _deck;
         playerName = _playerName;
@@ -47,7 +46,7 @@ public class Player extends Card {
         equpiment[2] = null;
     }
 
-    public void endTurn() {
+    void endTurn() {
         totalCoin -= temporaryCoin;
         bbshield=false;
         if (untappedCoin > totalCoin) untappedCoin = totalCoin;
@@ -61,13 +60,13 @@ public class Player extends Card {
             for (int i = Board.creature.get(1).size() - 1; i >= 0; i--)
                 Board.creature.get(1).get(i).effects.EOT();
         }
-        this.myTurn = false;
+      //  this.myTurn = false;
         Board.opponent(this).newTurn();
     }
 
-    public void newTurn() {
+    void newTurn() {
         Board.turnCount++;
-        this.myTurn = true;
+      //  this.myTurn = true;
         Main.printToView(1,"Ход номер " + Board.turnCount + ", игрок " + playerName);
         isTapped = false;
         //Get coin
@@ -177,7 +176,7 @@ public class Player extends Card {
         deck.suffleDeck(Main.sufflingConst);
     }
 
-    public void takeDamage(int dmg) {
+    void takeDamage(int dmg) {
         //equpiment[1]
         if (equpiment[1] != null) {
             if (equpiment[1].name.equals("Браслет подчинения")) {
@@ -214,7 +213,7 @@ public class Player extends Card {
         }
     }
 
-    public void heal(int dmg) {
+    void heal(int dmg) {
         if (equpiment[1].name.equals("Браслет подчинения")) {
             Main.printToView(0,name + " не может быть излечен.");
         } else {
@@ -223,14 +222,14 @@ public class Player extends Card {
         }
     }
 
-    public void abilityNoTarget() {
+    void abilityNoTarget() {
         String txt = this.text.substring(this.text.indexOf("ТАП:") + "ТАП:0".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАП:"))+1);
         System.out.println("ТАП HERO: " + txt);
         isTapped = true;
         Card.ability(this, this, null, null, txt);
     }
 
-    public void ability(Creature _cr, Player _pl) {
+    void ability(Creature _cr, Player _pl) {
         String txt = this.text.substring(this.text.indexOf("ТАПТ:") + "ТАПТ:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАПТ:") + 1));
         System.out.println("ТАПТ HERO: " + txt);
         isTapped = true;
