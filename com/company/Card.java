@@ -200,6 +200,8 @@ class Card {
                 return new Card(3, name, "Амулет", 1, 3, 0, 0, "", 0, 0);
             case "Молот прародителя":
                 return new Card(2, name, "Оружие", 3, 3, 0, 1, "ТАПТ: Выбранное существо до конца хода получает к атаке + 2.", 0, 0);
+            case "Аккения":
+                return new Card(4, name, "Событие", 2, 3, 0, 0, "Статичный эффект.", 0, 0);
             default:
                 System.out.println("Ошибка - Неопознанная карта:" + name);
                 return null;

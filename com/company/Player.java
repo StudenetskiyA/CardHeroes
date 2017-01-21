@@ -16,7 +16,8 @@ public class Player extends Card {
     public Deck deck;
     ArrayList<Card> cardInHand;
     ArrayList<Card> graveyard;
-    Equpiment equpiment[];//0-armor,1-amulet,2-weapon
+    Equpiment equpiment[];//0-armor,1-amulet,2-weapon,3-event
+
     Boolean bbshield=false;//Bjornbon shield
     private static int tempX;//For card with X, for correct minus cost
 
@@ -31,6 +32,7 @@ public class Player extends Card {
         equpiment[0] = null;
         equpiment[1] = null;
         equpiment[2] = null;
+        equpiment[3] = null;
     }
 
     Player(Deck _deck, String _heroName, String _playerName, int _n, int _hp) {
@@ -44,6 +46,7 @@ public class Player extends Card {
         equpiment[0] = null;
         equpiment[1] = null;
         equpiment[2] = null;
+        equpiment[3] = null;
     }
 
     void endTurn() {
@@ -157,7 +160,7 @@ public class Player extends Card {
                 //creature
                 Board.addCreatureToBoard(_card, this);
             } else if (_card.type == 3) {
-                Main.printToView(0,name + " экипировал " + _card.name + ".");
+                Main.printToView(0,name + " экипировал " + _card.name + ".");//for 3 another text
                 if (_card.creatureType.equals("Броня")) {
                     if (this.equpiment[0] != null) Board.putCardToGraveyard(this.equpiment[0], this);
                     this.equpiment[0] = new Equpiment(_card, this);
@@ -167,6 +170,9 @@ public class Player extends Card {
                 } else if (_card.creatureType.equals("Оружие")) {
                     if (this.equpiment[2] != null) Board.putCardToGraveyard(this.equpiment[2], this);
                     this.equpiment[2] = new Equpiment(_card, this);
+                } else if (_card.creatureType.equals("Событие")) {
+                    if (this.equpiment[3] != null) Board.putCardToGraveyard(this.equpiment[3], this);
+                    this.equpiment[3] = new Equpiment(_card, this);
                 }
             }
             //remove from hand

@@ -1228,6 +1228,8 @@ public class Main extends JFrame {
         if (p == 0) h = main.getHeight() - smallCardH - B0RDER_BOTTOM;
         else h = B0RDER_TOP;
 
+        //TODO draw event
+
         if (players[p].equpiment[0] == null) {
             g.drawImage(heroNoArmorImage, main.getWidth() - smallCardW - heroW - B0RDER_RIGHT, h, smallCardW, smallCardH, null);
         } else {

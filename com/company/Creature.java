@@ -28,13 +28,18 @@ public class Creature extends Card {
         public int bonusArmor = 0;
         public int cantAttackOrBlock = 0;
         public int turnToDie = 999;
-
+        boolean vulnerability=false;
         public void EOT() {
             cantAttackOrBlock--;
             turnToDie--;
             bonusPowerUEOT=0;
             if (cantAttackOrBlock < 0) cantAttackOrBlock = 0;
             if (turnToDie == 0) die();
+        }
+
+        boolean getVulnerability(){
+            if (Main.players[Board.opponentN(owner)].equpiment[3]!=null && Main.players[Board.opponentN(owner)].equpiment[3].name.equals("Аккения")) return true;
+            return vulnerability;
         }
     }
 
@@ -232,6 +237,7 @@ public class Creature extends Card {
                     dmg++;
                     System.out.println("RAGE!");
                 }
+                if ((effects.getVulnerability())) dmg++;
                 int tmp = dmg;
                 dmg -= currentArmor;
                 currentArmor -= tmp;
