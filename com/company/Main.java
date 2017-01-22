@@ -6,6 +6,8 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
@@ -79,6 +81,10 @@ public class Main extends JFrame {
     private static Image endTurnImage;
     private static Image redcrossImage;
     private static Image heroGraveyardImage;
+    //Chat
+    static JFrame frame = new JFrame("Chatter");
+    static JTextField textField = new JTextField(40);
+    static JTextArea messageArea = new JTextArea(8, 40);
 
     static Player[] players = new Player[2];
     private static Deck simpleDeck;
@@ -538,6 +544,10 @@ public class Main extends JFrame {
                             printToView(0, "Противник находит в колоде " + parameter.get(1) + ".");
                         }
                     }
+                } else
+                {
+                    if (fromServer.contains(":"))
+                    messageArea.append(fromServer + "\n");
                 }
                 main.repaint();
             }
@@ -995,9 +1005,9 @@ public class Main extends JFrame {
         menuClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN);
         menuClick.setSize(heroW, heroW * 149 / 283);
         //Game log
-        gameLog.setLocation(B0RDER_LEFT, B0RDER_TOP + smallCardH + B0RDER_BETWEEN);
-        gameLog.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2);
-        //Background
+//        gameLog.setLocation(B0RDER_LEFT, B0RDER_TOP + smallCardH + B0RDER_BETWEEN);
+//        gameLog.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2);
+//        //Background
         g.drawImage(background, 0, 0, main.getWidth(), main.getHeight(), null);
         //Battleground
         battlegroundClick.setLocation(cardX, B0RDER_TOP + B0RDER_BETWEEN + smallCardH);
@@ -1188,11 +1198,19 @@ public class Main extends JFrame {
             g2.setColor(Color.RED);
             g2.draw(new Line2D.Float(x1, y1, x2, y2));
         }
-
         drawMessage(g);
     }
 
     private static void drawMessage(Graphics g) {
+        //chat
+        gameLog.setLocation(B0RDER_LEFT, B0RDER_TOP + smallCardH + B0RDER_BETWEEN);
+        gameLog.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2-bigCardH-smallCardH);
+
+        textField.setLocation(B0RDER_LEFT,B0RDER_TOP + smallCardH + B0RDER_BETWEEN+main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2-smallCardH);
+        messageArea.setLocation(B0RDER_LEFT,B0RDER_TOP + smallCardH + B0RDER_BETWEEN+main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2-bigCardH-smallCardH);
+        textField.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT,smallCardH);
+        messageArea.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT,bigCardH);
+
         Calendar cal = Calendar.getInstance();
         long delta = cal.getTimeInMillis() - messageToShow.whenAdd;
         //  System.out.println("Delta="+delta);
@@ -1482,6 +1500,19 @@ public class Main extends JFrame {
                 }
             }
         });
+        textField.setEditable(true);
+        messageArea.setEditable(false);
+        viewField.add(textField, "North");
+        viewField.add(new JScrollPane(messageArea), "Center");
+
+        // Add Listeners
+        textField.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Client.writeLine(players[0].playerName+": "+textField.getText());
+                textField.setText("");
+            }
+        });
+
         DateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmss");
         Date date = new Date();
         System.out.println(dateFormat.format(date));
