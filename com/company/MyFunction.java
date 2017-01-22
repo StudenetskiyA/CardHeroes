@@ -60,6 +60,17 @@ public class MyFunction {
         return numdmg;
     }
 
+
+    public static BufferedImage tapImageOnAngle(BufferedImage src,int angle) {
+        double rotationRequired = angle;
+        AffineTransform tx = new AffineTransform();
+        tx.translate(0.5 * src.getHeight(), 0.5 * src.getWidth());
+        tx.rotate(rotationRequired);
+        tx.translate(-0.5 * src.getWidth(), -0.5 * src.getHeight());
+        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+        return op.filter(src, null);
+    }
+
     public static BufferedImage tapImage(BufferedImage src) {
         double rotationRequired = Math.toRadians(90);
         AffineTransform tx = new AffineTransform();

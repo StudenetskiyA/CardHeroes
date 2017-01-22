@@ -8,6 +8,7 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.text.DateFormat;
@@ -30,6 +31,7 @@ public class Main extends JFrame {
     private static PrintWriter writerToLog;
     static int sufflingConst = 21;//By default 21, in normal - get from server
     //View constant
+    static final int BORDER_CREATURE = 3;
     private static final int B0RDER_RIGHT = 10;
     private static final int B0RDER_LEFT = 10;
     private static final int B0RDER_BOTTOM = 40;
@@ -958,6 +960,7 @@ public class Main extends JFrame {
             }
             cardMem = null;
             creatureMem = null;
+            main.repaint();
         }
 
         public void mouseDragged(MouseEvent e) {
@@ -1123,6 +1126,8 @@ public class Main extends JFrame {
                                         }
                                     }
                                 }
+                                else { cardClick[i].setLocation(0,0);
+                                    cardClick[i].setSize(0, 0);}
                             }
                             numCardInHand++;
                     } catch (IOException e) {
@@ -1157,10 +1162,33 @@ public class Main extends JFrame {
             for (int i = 0; i < 40; i++)
                 searchXLabel[i].setVisible(false);
         }
+
+        //When you dragged card from hand
         if (isYouDraggedCard && cardMem != null) {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + cardMem.image));
             g.drawImage(im, (int) MouseInfo.getPointerInfo().getLocation().getX() - smallCardW / 2 - (int) main.getLocationOnScreen().getX(), (int) MouseInfo.getPointerInfo().getLocation().getY() - smallCardH - (int) main.getLocationOnScreen().getY(), smallCardW, smallCardH, null);
         }
+        //When you dragged creature to attack
+        if (isYouDraggedAttackCreature && creatureMem != null) {
+          //  im = ImageIO.read(Main.class.getResourceAsStream("icons/attacktarget.png"));
+            //center of creature
+            int x1 = battlegroundClick.getX() + Board.creature.get(0).indexOf(creatureMem) * (heroH + BORDER_CREATURE) + heroW / 2;
+            int y1 =  battlegroundClick.getY() + battlegroundClick.getHeight() - heroH/2;
+            //cursor
+            int x2=(int) MouseInfo.getPointerInfo().getLocation().getX() - (int) main.getLocationOnScreen().getX();
+            int y2=(int) MouseInfo.getPointerInfo().getLocation().getY() - (int) main.getLocationOnScreen().getY();
+            //size
+//            int w = Math.abs(x1-x2);
+//            int h = Math.abs(y1-y2);
+//            int tan = h/w;
+//            //tan a= y2-y1/x2-x1; a=
+//            g.drawImage(MyFunction.tapImageOnAngle(im,(int)Math.atan(tan)), x1, y2, w, h, null);
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setStroke(new BasicStroke(10));
+            g2.setColor(Color.RED);
+            g2.draw(new Line2D.Float(x1, y1, x2, y2));
+        }
+
         drawMessage(g);
     }
 
@@ -1294,7 +1322,7 @@ public class Main extends JFrame {
     }
 
     private static void drawPlayerCreature(Graphics g, int np) throws IOException {
-        final int BORDER_CREATURE = 3;
+
         int numUnit = 0;
         int h;
         BufferedImage im;
