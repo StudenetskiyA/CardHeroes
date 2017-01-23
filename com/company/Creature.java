@@ -30,8 +30,10 @@ public class Creature extends Card {
         public int cantAttackOrBlock = 0;
         public int turnToDie = 999;
         boolean vulnerability=false;
+        public boolean upkeepPlayed=false;
         public void EOT() {
             cantAttackOrBlock--;
+            upkeepPlayed=false;
             turnToDie--;
             bonusPowerUEOT=0;
             if (cantAttackOrBlock < 0) cantAttackOrBlock = 0;

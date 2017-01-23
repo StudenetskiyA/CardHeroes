@@ -27,6 +27,7 @@ class Card {
         static boolean heroAbility = false;
         static boolean weaponAbility = false;
         static int heroAbilityCost = 0;
+        static boolean onUpkeepPlayed=false;
     }
 
     public Card(Card _card) {

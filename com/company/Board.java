@@ -8,6 +8,7 @@ import java.util.List;
  */
 public class Board {
     static List<ArrayList<Creature>> creature;
+    public static NewTurnQueue newTurnQueue = new NewTurnQueue();
 
     static int turnCount = 0;
 

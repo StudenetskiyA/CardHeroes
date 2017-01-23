@@ -1,5 +1,7 @@
 package com.company;
 
+import javax.swing.*;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -60,7 +62,6 @@ public class MyFunction {
         return numdmg;
     }
 
-
     public static BufferedImage tapImageOnAngle(BufferedImage src,int angle) {
         double rotationRequired = angle;
         AffineTransform tx = new AffineTransform();
@@ -79,5 +80,39 @@ public class MyFunction {
         tx.translate(-0.5 * src.getWidth(), -0.5 * src.getHeight());
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
         return op.filter(src, null);
+    }
+
+    public static class ClickImage extends JLabel{
+        public BufferedImage image;
+
+        ClickImage(){
+            super();
+        }
+
+        void drawImage(Graphics g){
+            if (isVisible())
+            g.drawImage(image,getX(),getY(),getWidth(),getHeight(),null);
+        }
+
+        void LSD(Graphics g, int x,int y, int w, int h){//Location, Size, Draw! )))
+            setLocation(x,y);
+            setSize(w,h);
+            drawImage(g);
+        }
+
+        void LSDtap(Graphics g, int x,int y, int w, int h){//Location, Size, Draw! )))
+            setLocation(x,y);
+            setSize(w,h);
+            drawTapped(g);
+        }
+
+        void LSDiftap(Graphics g,boolean t, int x,int y, int w, int h){
+            if (t) LSDtap(g,x,y,w,h);
+            else LSD(g,x,y,w,h);
+        }
+        void drawTapped(Graphics g){
+            if (isVisible())
+                g.drawImage(tapImage(image),getX(),getY()+getHeight()/2-getWidth()/2, getHeight(),getWidth(),null);
+        }
     }
 }

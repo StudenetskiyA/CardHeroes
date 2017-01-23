@@ -41,7 +41,9 @@ public class Client {
         return null;
     }
     static void writeLine(String line){
-        if (Main.connected)
-        out.println(line);
+        if (Main.connected) {
+            out.println(line);
+            //System.out.println("I send "+line);
+        }
     }
 }
