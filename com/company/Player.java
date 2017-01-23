@@ -24,6 +24,7 @@ public class Player extends Card {
     Player(Card _card, Deck _deck, String _playerName, int _n) {
         super(0, _card.name, "", 1, 0, _card.targetType, 0, _card.text, 0, _card.hp);
         deck = _deck;
+        isTapped=false;
         playerName = _playerName;
         cardInHand = new ArrayList<>();
         graveyard = new ArrayList<>();
@@ -38,6 +39,7 @@ public class Player extends Card {
     Player(Deck _deck, String _heroName, String _playerName, int _n, int _hp) {
         super(0, _heroName, "", 1, 0, 0, 0, "", 0, _hp);
         deck = _deck;
+        isTapped=false;
         playerName = _playerName;
         cardInHand = new ArrayList<>();
         graveyard = new ArrayList<>();

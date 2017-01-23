@@ -5,14 +5,18 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.MouseInputAdapter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,14 +26,14 @@ import java.util.concurrent.TimeUnit;
 
 public class Main extends JFrame {
     private static final String CLIENT_VERSION = "0.01";
-    private static ArrayList<String> replay;
+    private static ArrayList<String> replay = new ArrayList<>();
     static int replayCounter = 0;
     static boolean connected = false;
     static Font font;
     static Graphics2D g1;
     static FontMetrics metrics;
-    private static String serverPort = "6666";
-    private static final String address = "test1.uralgufk.ru";// "127.0.0.1";//"cardheroes.hldns.ru";
+    private static String serverPort = "8901";
+    private static final String address = "127.0.0.1"; //"test1.uralgufk.ru";// //"cardheroes.hldns.ru";
     private static PrintWriter writerToLog;
     static int sufflingConst = 21;//By default 21, in normal - get from server
     //View constant
@@ -54,6 +58,7 @@ public class Main extends JFrame {
     private static JLabel menuClick = new JLabel();
     private static JLabel weaponClick = new JLabel();
     private static JLabel cardClick[] = new JLabel[9];
+    private static JLabel deckChoiseClick[] = new JLabel[9];
     private static JLabel playerUnitClick[][] = new JLabel[2][9];
     private static JLabel battlegroundClick = new JLabel();
     private static JLabel enemyHeroClick = new JLabel();
@@ -83,8 +88,8 @@ public class Main extends JFrame {
     private static Image heroGraveyardImage;
     //Chat
     static JFrame frame = new JFrame("Chatter");
-    static JTextField textField = new JTextField(40);
-    static JTextArea messageArea = new JTextArea(8, 40);
+    static JTextField textField = new JTextField();
+    static JTextArea messageArea = new JTextArea();
 
     static Player[] players = new Player[2];
     private static Deck simpleDeck;
@@ -94,6 +99,10 @@ public class Main extends JFrame {
     private static Creature creatureMem;
 
 
+    static ArrayList<String> decksChoice = new ArrayList<>();
+    static ArrayList<String> decksChoiceHeroes = new ArrayList<>();
+    static JScrollPane scrollPane;
+
     private static String whereMyMouse;
     private static int whereMyMouseNum;
     private static int repainted;//For test how many times called onRepaint
@@ -101,7 +110,7 @@ public class Main extends JFrame {
     private static int coinStart = 0;
     private static MessageToShow messageToShow = new MessageToShow(" ", 0);
 
-    enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget}
+    enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget, prepareForBattle}
 
     static int choiceXcolor = 0;
     static int choiceXtype = 0;
@@ -109,9 +118,7 @@ public class Main extends JFrame {
     static int choiceXcost = 0;
     static String choiceXtext;
 
-    //  static Card.ActivatedAbility Card.ActivatedAbility;
-
-    static playerStatus isMyTurn = playerStatus.waitingForConnection;
+    static playerStatus isMyTurn = playerStatus.prepareForBattle;
     static boolean wantToMulligan[] = new boolean[4];
     static int creatureWhoAttack;
     static int creatureWhoAttackTarget;
@@ -121,30 +128,12 @@ public class Main extends JFrame {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         String replayName = "";
-
-        loadImage();
-        setInitialProperties();
-
-        String par1 = "PlayerName";
+        String par1 = "defaultName";
         String par2 = "defaultDeck";
 
-        for (int i = 0; i < args.length; i++) {
-            if (i == 1) par1 = args[i];
-            if (i == 2) par2 = args[i];
-            if (i == 0) serverPort = args[i];
-            if (i == 3) coinStart = Integer.parseInt(args[i]);
-            if (i == 4) replayName = args[i];
-            if (i == 5) replayDeck = args[i];
-        }
-
-        simpleDeck = new Deck(par2);
-        simpleEnemyDeck = new Deck("defaultDeck");
-        loadDeckFromFile(simpleDeck, par2);
-        Card c = new Card(simpleDeck.cards.get(0));
-        simpleDeck.cards.remove(0);
-        heroImage = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
-        players[0] = new Player(c, simpleDeck, par1, 0);
-        players[1] = new Player(simpleDeck, "", par1, 0, 30);
+        prepareListOfDeck();
+        loadImage();
+        setInitialProperties();
 
         main.setLocation(477, 0);
         main.setSize(890, 688);
@@ -164,16 +153,50 @@ public class Main extends JFrame {
         //
         viewField.setVisible(true);
 
-        replay = new ArrayList<>();
-        if (serverPort.equals("replay")) {
+        try {
+            //TODO while connect
+            Client.connect(Integer.parseInt(serverPort), address);
+        } catch (Exception x) {
+            System.out.println("Cloud not connect to server.");
+        }
 
+
+        if (args.length == 0) {
+            coinStart = 0;
+            cycleServerRead(false);
+        } else {
+            coinStart = Integer.parseInt(args[2]);
+            if (args.length > 3) {
+                replayDeck = args[4];
+                runGame(args[0], args[1], args[3]);
+            } else {
+                runGame(args[0], args[1], null);
+                cycleServerRead(false);
+                main.repaint();
+            }
+        }
+    }
+
+    private static void runGame(String playerName, String deckName, String replayName) throws IOException, InterruptedException {
+        System.out.println("Game runs " + playerName + " " + deckName);
+        simpleDeck = new Deck(deckName);
+        simpleEnemyDeck = new Deck("defaultDeck");
+        loadDeckFromFile(simpleDeck, deckName);
+        Card c = new Card(simpleDeck.cards.get(0));
+        players[0] = new Player(c, simpleDeck, playerName, 0);
+        players[1] = new Player(simpleDeck, "", playerName, 0, 30);
+        textField.setVisible(true);
+        scrollPane.setVisible(true);
+        enterNameFieled.setVisible(false);
+        simpleDeck.cards.remove(0);
+        heroImage = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
+
+        if (playerName.equals("replay")) {
             InputStream path = Main.class.getResourceAsStream("replays/" + replayName + ".txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
-
             try {
                 String line;
                 while ((line = br.readLine()) != null) {
-                    // process the line.
                     replay.add(line);
                     System.out.println(line);
                 }
@@ -183,19 +206,12 @@ public class Main extends JFrame {
             Main.gameLog.setText("<html>");
             printToView(0, "Player=" + players[0].playerName + ",port=" + serverPort);
             isMyTurn = playerStatus.waitOtherPlayer;
-            cycleServerRead(true);
         } else {
-            try {
-                //TODO while connect
-                Client.connect(Integer.parseInt(serverPort), address);
-            } catch (Exception x) {
-                System.out.println("Cloud not connect to server.");
-            }
-
             Main.gameLog.setText("<html>");
             printToView(0, "Player=" + players[0].playerName + ",port=" + serverPort);
 
             if (connected) {
+                isMyTurn = playerStatus.waitOtherPlayer;
                 System.out.println("$IAM(" + players[0].playerName + "," + players[0].deck.name + "," + CLIENT_VERSION + ")");
                 Client.writeLine("$IAM(" + players[0].playerName + "," + players[0].deck.name + "," + CLIENT_VERSION + ")");
                 //Send deck
@@ -204,16 +220,6 @@ public class Main extends JFrame {
                     Client.writeLine(card.name);
                 }
                 Client.writeLine("$ENDDECK");
-//
-//                heroW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN);
-//                heroH = (heroW * 400 / 283);
-//                 cardX = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
-//                 Graphics g=main.getGraphics();
-//                g.drawImage(menuImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN, heroW, heroW * 149 / 283, null);
-//               // menuClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN);
-                //menuClick.setSize(heroW, heroW * 149 / 283);
-
-                cycleServerRead(false);
             }
         }
     }
@@ -232,19 +238,17 @@ public class Main extends JFrame {
 
     private static void cycleServerRead(boolean isReplay) throws IOException, InterruptedException {
         while (true) {
-
             String fromServer;
             if (!isReplay)
                 fromServer = Client.readLine();
             else {
-                main.repaint();
                 fromServer = getNextReplayLine();
             }
             if (fromServer != null) {
-                if (!fromServer.equals("wait")) {
-                    writerToLog.println(fromServer);
-                    System.out.println("Server: " + fromServer);
-                }
+                 if (!fromServer.equals("wait") && !fromServer.equals("")) {
+                     writerToLog.println(fromServer);
+                     System.out.println("Server: " + fromServer);
+                 }
                 if (fromServer.contains("$DISCONNECT")) {
                     System.out.println("Disconnect");
                     printToView(0, "Разрыв соединения!");
@@ -265,9 +269,10 @@ public class Main extends JFrame {
                     simpleDeck.suffleDeck(sufflingConst);
                     while (true) {
                         Client.writeLine("wait");
-                        if (!Client.readLine().equals("wait")) break;
+                        String a=Client.readLine();
+                      //  System.out.println(a);
+                        if (!a.equals("wait")) break;
                     }
-                    // main.repaint();
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//All player connected
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     if (replayCounter == 0)
@@ -292,7 +297,7 @@ public class Main extends JFrame {
                             players[1].drawCard();
                         }
                         isMyTurn = playerStatus.MuliganPhase;
-                        //   main.repaint();
+                        main.repaint();
                     }
                 } else if (fromServer.contains("$MULLIGANEND(")) {
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -544,10 +549,11 @@ public class Main extends JFrame {
                             printToView(0, "Противник находит в колоде " + parameter.get(1) + ".");
                         }
                     }
-                } else
-                {
-                    if (fromServer.contains(":"))
-                    messageArea.append(fromServer + "\n");
+                } else {
+                    if (fromServer.contains(":")) {
+                        messageArea.append(fromServer + "\n");
+                        scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
+                    }
                 }
                 main.repaint();
             }
@@ -568,7 +574,7 @@ public class Main extends JFrame {
     static boolean isYouDraggedAttackCreature = false;
 
     private static class MyListener extends MouseInputAdapter {
-        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton}
+        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton, DeckChoice}
 
         Compo onWhat;
         int num;
@@ -589,6 +595,14 @@ public class Main extends JFrame {
             if (onWhat == Compo.Deck) {
                 //    System.out.println("$DRAWCARD(" + players[0].playerName + ")");
                 //    Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
+            } else if (onWhat == Compo.DeckChoice && isMyTurn == playerStatus.prepareForBattle) {
+                try {
+                    runGame(enterNameFieled.getText(), decksChoice.get(num).substring(0, decksChoice.get(num).length() - 4), null);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
             } else if (onWhat == Compo.Menu) {
                 System.out.println("$DISCONNECT");
                 Client.writeLine("$DISCONNECT");
@@ -990,7 +1004,7 @@ public class Main extends JFrame {
 
     private static void onRepaint(Graphics g) throws IOException {
         //setLocation and setSize to other block?
-        // System.out.println("onRepaint " + repainted);
+       // System.out.println("onRepaint " + repainted);
         repainted++;
         bigCardW = (int) (main.getWidth() * CARD_SIZE_FROM_SCREEN * 1.9);
         bigCardH = (bigCardW * 400 / 283);
@@ -999,116 +1013,117 @@ public class Main extends JFrame {
         smallCardW = (int) (heroW * 0.7);
         smallCardH = (int) (heroH * 0.7);
         cardX = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
-        BufferedImage im;
-        int numCardInHand = 0;
-        g.drawImage(menuImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN, heroW, heroW * 149 / 283, null);
-        menuClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN);
-        menuClick.setSize(heroW, heroW * 149 / 283);
+
+
         //Game log
 //        gameLog.setLocation(B0RDER_LEFT, B0RDER_TOP + smallCardH + B0RDER_BETWEEN);
 //        gameLog.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2);
 //        //Background
         g.drawImage(background, 0, 0, main.getWidth(), main.getHeight(), null);
-        //Battleground
-        battlegroundClick.setLocation(cardX, B0RDER_TOP + B0RDER_BETWEEN + smallCardH);
-        battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - cardX - heroW - B0RDER_BETWEEN, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2);
-        g.drawRect(battlegroundClick.getX(), battlegroundClick.getY(), battlegroundClick.getWidth(), battlegroundClick.getHeight());//TODO Image of battleground
-        //End turn button
-        if (isMyTurn == playerStatus.MyTurn) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Endturn.png"));
-        } else if (isMyTurn == playerStatus.IChoiseBlocker) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Blockturn.png"));
-        } else if (isMyTurn == playerStatus.EnemyChoiseBlocker) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Blockenemyturn.png"));
-        } else if (isMyTurn == playerStatus.MuliganPhase) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Mulliganturn.png"));
-        } else if (isMyTurn == playerStatus.EnemyTurn) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Enemyturn.png"));
-        } else if (isMyTurn == playerStatus.waitingMulligan) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waitmulliganturn.png"));
-        } else if (isMyTurn == playerStatus.waitingForConnection) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Connectionturn.png"));
-        } else if (isMyTurn == playerStatus.choiseTarget) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waittarget.png"));
-        } else if (isMyTurn == playerStatus.waitOtherPlayer) {
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waitotherconnectionturn.png"));
-        }
-        g.drawImage(endTurnImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283, heroW, heroW * 149 / 283, null);
-        endTurnClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283);
-        endTurnClick.setSize(heroW, heroW * 149 / 283);
         g.drawImage(menuImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN, heroW, heroW * 149 / 283, null);
         menuClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283 - heroW * 150 / 283 - B0RDER_BETWEEN);
         menuClick.setSize(heroW, heroW * 149 / 283);
-        //Heroes
-        if (players[0].isTapped) {
-            g.drawImage(MyFunction.tapImage(heroImage), main.getWidth() - heroH - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroH, heroW, null);
-        } else
-            g.drawImage(heroImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
-        if (players[1].isTapped) {
-            g.drawImage(MyFunction.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroH, heroW, null);
-        } else g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
-        //Heroes effects
-        if (players[0].bbshield) {
-            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
-            g.drawImage(im, main.getWidth() - heroW - B0RDER_RIGHT + heroW / 2 - heroH / 10 - heroH / 5, main.getHeight() - heroH - B0RDER_BOTTOM + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
-        }
-        if (players[1].bbshield) {
-            im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
-            g.drawImage(im, main.getWidth() - heroW - B0RDER_RIGHT + heroW / 2 - heroH / 10 - heroH / 5, B0RDER_TOP + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
-        }
-        enemyHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP);
-        enemyHeroClick.setSize(heroW, heroH);
-        playerHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM);
-        playerHeroClick.setSize(heroW, heroH);
-        //Heroes equpiment
-        drawPlayerEquipment(g, 0);
-        drawPlayerEquipment(g, 1);
-        //TODO Draw N not 4
-        drawPlayerDamage(g, 0);
-        drawPlayerDamage(g, 1);
-        //Decks
-        g.drawImage(heroDeckImage, B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
-        deckClick.setLocation(B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM);
-        deckClick.setSize(smallCardW, smallCardH);
 
-        g.drawImage(heroDeckImage, B0RDER_LEFT, B0RDER_TOP, smallCardW, smallCardH, null);
-        //Hero graveyard
-        playerGraveyardClick.setLocation(deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM);
-        playerGraveyardClick.setSize(smallCardW, smallCardH);
-        if (players[0].graveyard.size() == 0) {
-            g.drawImage(heroGraveyardImage, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
-        } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].graveyard.get(players[0].graveyard.size() - 1).image));
-            g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
-        }
-        //Enemy graveyard
-        enemyGraveyardClick.setLocation(deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM);
-        enemyGraveyardClick.setSize(smallCardW, smallCardH);
-        if (players[1].graveyard.size() == 0) {
-            g.drawImage(heroGraveyardImage, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
-        } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].graveyard.get(players[1].graveyard.size() - 1).image));
-            g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
-        }
-        //Hero&enemy coin
-        g.drawImage(heroCoinImage, playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
-        playerCoinLabel.setLocation(playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN + (int) (smallCardW * 0.5), main.getHeight() - smallCardH - B0RDER_BOTTOM + (int) (smallCardH * 0.8));
-        playerCoinLabel.setText(players[0].untappedCoin + "/" + players[0].totalCoin);
-        g.drawImage(heroCoinImage, playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
-        enemyCoinLabel.setLocation(playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN + (int) (smallCardW * 0.5), B0RDER_TOP + (int) (smallCardH * 0.8));
-        enemyCoinLabel.setText(players[1].untappedCoin + "/" + players[1].totalCoin);
-        //Creatures
-        drawPlayerCreature(g, 0);
-        drawPlayerCreature(g, 1);
-        //Hero card in hand
-        if (!players[0].cardInHand.isEmpty()) {
-            //for (int i = 0; i < players[0].cardInHand.size(); i++)
-            for (int i = players[0].cardInHand.size() - 1; i >= 0; i--)
-            //for (Card card : player.cardInHand)   // I don't know why, but it create ConcurrentModificationException
-            {
-                Card card = players[0].cardInHand.get(i);
-                if (card.image != null) {
-                    try {
+        if (isMyTurn != playerStatus.prepareForBattle) {
+            BufferedImage im;
+            int numCardInHand = 0;
+            //Battleground
+            battlegroundClick.setLocation(cardX, B0RDER_TOP + B0RDER_BETWEEN + smallCardH);
+            battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - cardX - heroW - B0RDER_BETWEEN, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2);
+            g.drawRect(battlegroundClick.getX(), battlegroundClick.getY(), battlegroundClick.getWidth(), battlegroundClick.getHeight());//TODO Image of battleground
+            //End turn button
+            if (isMyTurn == playerStatus.MyTurn) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Endturn.png"));
+            } else if (isMyTurn == playerStatus.IChoiseBlocker) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Blockturn.png"));
+            } else if (isMyTurn == playerStatus.EnemyChoiseBlocker) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Blockenemyturn.png"));
+            } else if (isMyTurn == playerStatus.MuliganPhase) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Mulliganturn.png"));
+            } else if (isMyTurn == playerStatus.EnemyTurn) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Enemyturn.png"));
+            } else if (isMyTurn == playerStatus.waitingMulligan) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waitmulliganturn.png"));
+            } else if (isMyTurn == playerStatus.waitingForConnection) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Connectionturn.png"));
+            } else if (isMyTurn == playerStatus.choiseTarget) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waittarget.png"));
+            } else if (isMyTurn == playerStatus.waitOtherPlayer) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waitotherconnectionturn.png"));
+            }
+            g.drawImage(endTurnImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283, heroW, heroW * 149 / 283, null);
+            endTurnClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283);
+            endTurnClick.setSize(heroW, heroW * 149 / 283);
+            //Heroes
+            if (players[0].isTapped) {
+                g.drawImage(MyFunction.tapImage(heroImage), main.getWidth() - heroH - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroH, heroW, null);
+            } else
+                g.drawImage(heroImage, main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM, heroW, heroH, null);
+            if (players[1].isTapped) {
+                g.drawImage(MyFunction.tapImage(enemyImage), main.getWidth() - heroH - B0RDER_RIGHT, B0RDER_TOP, heroH, heroW, null);
+            } else g.drawImage(enemyImage, main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP, heroW, heroH, null);
+            //Heroes effects
+            if (players[0].bbshield) {
+                im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
+                g.drawImage(im, main.getWidth() - heroW - B0RDER_RIGHT + heroW / 2 - heroH / 10 - heroH / 5, main.getHeight() - heroH - B0RDER_BOTTOM + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+            }
+            if (players[1].bbshield) {
+                im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
+                g.drawImage(im, main.getWidth() - heroW - B0RDER_RIGHT + heroW / 2 - heroH / 10 - heroH / 5, B0RDER_TOP + heroH / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+            }
+            enemyHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, B0RDER_TOP);
+            enemyHeroClick.setSize(heroW, heroH);
+            playerHeroClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() - heroH - B0RDER_BOTTOM);
+            playerHeroClick.setSize(heroW, heroH);
+            //Heroes equpiment
+            drawPlayerEquipment(g, 0);
+            drawPlayerEquipment(g, 1);
+            //TODO Draw N not 4
+            drawPlayerDamage(g, 0);
+            drawPlayerDamage(g, 1);
+            //Decks
+            g.drawImage(heroDeckImage, B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            deckClick.setLocation(B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM);
+            deckClick.setSize(smallCardW, smallCardH);
+
+            g.drawImage(heroDeckImage, B0RDER_LEFT, B0RDER_TOP, smallCardW, smallCardH, null);
+            //Hero graveyard
+            playerGraveyardClick.setLocation(deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM);
+            playerGraveyardClick.setSize(smallCardW, smallCardH);
+            if (players[0].graveyard.size() == 0) {
+                g.drawImage(heroGraveyardImage, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            } else {
+                im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].graveyard.get(players[0].graveyard.size() - 1).image));
+                g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            }
+            //Enemy graveyard
+            enemyGraveyardClick.setLocation(deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM);
+            enemyGraveyardClick.setSize(smallCardW, smallCardH);
+            if (players[1].graveyard.size() == 0) {
+                g.drawImage(heroGraveyardImage, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
+            } else {
+                im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].graveyard.get(players[1].graveyard.size() - 1).image));
+                g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
+            }
+            //Hero&enemy coin
+            g.drawImage(heroCoinImage, playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
+            playerCoinLabel.setLocation(playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN + (int) (smallCardW * 0.5), main.getHeight() - smallCardH - B0RDER_BOTTOM + (int) (smallCardH * 0.8));
+            playerCoinLabel.setText(players[0].untappedCoin + "/" + players[0].totalCoin);
+            g.drawImage(heroCoinImage, playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
+            enemyCoinLabel.setLocation(playerGraveyardClick.getX() + playerGraveyardClick.getWidth() + B0RDER_BETWEEN + (int) (smallCardW * 0.5), B0RDER_TOP + (int) (smallCardH * 0.8));
+            enemyCoinLabel.setText(players[1].untappedCoin + "/" + players[1].totalCoin);
+            //Creatures
+            drawPlayerCreature(g, 0);
+            drawPlayerCreature(g, 1);
+            //Hero card in hand
+            if (!players[0].cardInHand.isEmpty()) {
+                //for (int i = 0; i < players[0].cardInHand.size(); i++)
+                for (int i = players[0].cardInHand.size() - 1; i >= 0; i--)
+                //for (Card card : player.cardInHand)   // I don't know why, but it create ConcurrentModificationException
+                {
+                    Card card = players[0].cardInHand.get(i);
+                    if (card.image != null) {
+                        try {
                             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + card.image));
                             if (isMyTurn == playerStatus.MuliganPhase) {
                                 int tmp = (battlegroundClick.getWidth() - bigCardW * 4) / 5;
@@ -1135,81 +1150,88 @@ public class Main extends JFrame {
                                             cardClick[i].setSize(smallCardW, smallCardH);
                                         }
                                     }
+                                } else {
+                                    cardClick[i].setLocation(0, 0);
+                                    cardClick[i].setSize(0, 0);
                                 }
-                                else { cardClick[i].setLocation(0,0);
-                                    cardClick[i].setSize(0, 0);}
                             }
                             numCardInHand++;
-                    } catch (IOException e) {
-                        System.out.println("Can't load image " + card.image);
+                        } catch (IOException e) {
+                            System.out.println("Can't load image " + card.image);
+                        }
                     }
                 }
             }
-        }
-        //Enemy cards
-        im = ImageIO.read(Main.class.getResourceAsStream("icons/Deck.png"));//His card deck up
-        if (!players[1].cardInHand.isEmpty()) {
-            for (int i = 0; i < players[1].cardInHand.size(); i++) {
-                g.drawImage(im, cardX + smallCardW + (int) (i * smallCardW * 0.5), B0RDER_TOP, smallCardW, smallCardH, null);
+            //Enemy cards
+            im = ImageIO.read(Main.class.getResourceAsStream("icons/Deck.png"));//His card deck up
+            if (!players[1].cardInHand.isEmpty()) {
+                for (int i = 0; i < players[1].cardInHand.size(); i++) {
+                    g.drawImage(im, cardX + smallCardW + (int) (i * smallCardW * 0.5), B0RDER_TOP, smallCardW, smallCardH, null);
+                }
             }
-        }
 
-        //Choise X
-        if (isMyTurn == playerStatus.choiseX) {
-            //Work too slow!
-            System.out.println("choiseX");
-            for (int i = 0; i <= players[0].untappedCoin; i++) {
-                g.drawImage(heroCoinImage, cardX + B0RDER_BETWEEN * i + smallCardW * i, main.getHeight() / 2 - smallCardH / 2, smallCardW, smallCardH, null);
-                choiceXLabel[i].setLocation(cardX + B0RDER_BETWEEN * i + smallCardW * i, main.getHeight() / 2 - smallCardH / 2);
-                choiceXLabel[i].setSize(smallCardW, smallCardH);
-                choiceXLabel[i].setVisible(true);
+            //Choise X
+            if (isMyTurn == playerStatus.choiseX) {
+                //Work too slow!
+                System.out.println("choiseX");
+                for (int i = 0; i <= players[0].untappedCoin; i++) {
+                    g.drawImage(heroCoinImage, cardX + B0RDER_BETWEEN * i + smallCardW * i, main.getHeight() / 2 - smallCardH / 2, smallCardW, smallCardH, null);
+                    choiceXLabel[i].setLocation(cardX + B0RDER_BETWEEN * i + smallCardW * i, main.getHeight() / 2 - smallCardH / 2);
+                    choiceXLabel[i].setSize(smallCardW, smallCardH);
+                    choiceXLabel[i].setVisible(true);
+                }
             }
-        }
-        //Search in deck
-        if (isMyTurn == playerStatus.searchX) {
-            drawSearchInDeck(g);
-        } else {
-            for (int i = 0; i < 40; i++)
-                searchXLabel[i].setVisible(false);
-        }
+            //Search in deck
+            if (isMyTurn == playerStatus.searchX) {
+                drawSearchInDeck(g);
+            } else {
+                for (int i = 0; i < 40; i++)
+                    searchXLabel[i].setVisible(false);
+            }
 
-        //When you dragged card from hand
-        if (isYouDraggedCard && cardMem != null) {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + cardMem.image));
-            g.drawImage(im, (int) MouseInfo.getPointerInfo().getLocation().getX() - smallCardW / 2 - (int) main.getLocationOnScreen().getX(), (int) MouseInfo.getPointerInfo().getLocation().getY() - smallCardH - (int) main.getLocationOnScreen().getY(), smallCardW, smallCardH, null);
-        }
-        //When you dragged creature to attack
-        if (isYouDraggedAttackCreature && creatureMem != null) {
-          //  im = ImageIO.read(Main.class.getResourceAsStream("icons/attacktarget.png"));
-            //center of creature
-            int x1 = battlegroundClick.getX() + Board.creature.get(0).indexOf(creatureMem) * (heroH + BORDER_CREATURE) + heroW / 2;
-            int y1 =  battlegroundClick.getY() + battlegroundClick.getHeight() - heroH/2;
-            //cursor
-            int x2=(int) MouseInfo.getPointerInfo().getLocation().getX() - (int) main.getLocationOnScreen().getX();
-            int y2=(int) MouseInfo.getPointerInfo().getLocation().getY() - (int) main.getLocationOnScreen().getY();
-            //size
+            //When you dragged card from hand
+            if (isYouDraggedCard && cardMem != null) {
+                im = ImageIO.read(Main.class.getResourceAsStream("cards/" + cardMem.image));
+                g.drawImage(im, (int) MouseInfo.getPointerInfo().getLocation().getX() - smallCardW / 2 - (int) main.getLocationOnScreen().getX(), (int) MouseInfo.getPointerInfo().getLocation().getY() - smallCardH - (int) main.getLocationOnScreen().getY(), smallCardW, smallCardH, null);
+            }
+            //When you dragged creature to attack
+            if (isYouDraggedAttackCreature && creatureMem != null) {
+                //  im = ImageIO.read(Main.class.getResourceAsStream("icons/attacktarget.png"));
+                //center of creature
+                int x1 = battlegroundClick.getX() + Board.creature.get(0).indexOf(creatureMem) * (heroH + BORDER_CREATURE) + heroW / 2;
+                int y1 = battlegroundClick.getY() + battlegroundClick.getHeight() - heroH / 2;
+                //cursor
+                int x2 = (int) MouseInfo.getPointerInfo().getLocation().getX() - (int) main.getLocationOnScreen().getX();
+                int y2 = (int) MouseInfo.getPointerInfo().getLocation().getY() - (int) main.getLocationOnScreen().getY();
+                //size
 //            int w = Math.abs(x1-x2);
 //            int h = Math.abs(y1-y2);
 //            int tan = h/w;
 //            //tan a= y2-y1/x2-x1; a=
 //            g.drawImage(MyFunction.tapImageOnAngle(im,(int)Math.atan(tan)), x1, y2, w, h, null);
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setStroke(new BasicStroke(10));
-            g2.setColor(Color.RED);
-            g2.draw(new Line2D.Float(x1, y1, x2, y2));
-        }
-        drawMessage(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setStroke(new BasicStroke(10));
+                g2.setColor(Color.RED);
+                g2.draw(new Line2D.Float(x1, y1, x2, y2));
+            }
+            drawMessage(g);
+        } else if (isMyTurn==playerStatus.prepareForBattle) drawAvalaibleDeck(g);
     }
 
     private static void drawMessage(Graphics g) {
         //chat
+        // cardX = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
         gameLog.setLocation(B0RDER_LEFT, B0RDER_TOP + smallCardH + B0RDER_BETWEEN);
-        gameLog.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2-bigCardH-smallCardH);
+        gameLog.setSize(battlegroundClick.getX() - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_TOP - B0RDER_BETWEEN * 2 - smallCardH * 2 - heroH - smallCardH / 5);
 
-        textField.setLocation(B0RDER_LEFT,B0RDER_TOP + smallCardH + B0RDER_BETWEEN+main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2-smallCardH);
-        messageArea.setLocation(B0RDER_LEFT,B0RDER_TOP + smallCardH + B0RDER_BETWEEN+main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - smallCardH * 2-bigCardH-smallCardH);
-        textField.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT,smallCardH);
-        messageArea.setSize(cardX - B0RDER_BETWEEN - B0RDER_LEFT,bigCardH);
+        scrollPane.setLocation(B0RDER_LEFT, gameLog.getY() + gameLog.getHeight());
+        //
+        scrollPane.setSize(battlegroundClick.getX() - B0RDER_BETWEEN - B0RDER_LEFT, heroH);
+
+        textField.setLocation(B0RDER_LEFT, scrollPane.getY() + scrollPane.getHeight());
+        textField.setSize(battlegroundClick.getX() - B0RDER_BETWEEN - B0RDER_LEFT, smallCardH / 5);
+
+        //JTextField textField = new JTextField(40);
 
         Calendar cal = Calendar.getInstance();
         long delta = cal.getTimeInMillis() - messageToShow.whenAdd;
@@ -1438,6 +1460,63 @@ public class Main extends JFrame {
 
     }
 
+    private static void prepareListOfDeck() {
+        final InputStream is = Main.class.getResourceAsStream("decks");
+        final InputStreamReader isr = new InputStreamReader(is);
+        final BufferedReader br = new BufferedReader(isr);
+
+        br.lines().forEach(decksChoice::add);
+        br.lines().forEach(System.out::println);
+
+        BufferedReader brIn = null;
+        for (String deck : decksChoice) {
+            try {
+                InputStream path = Main.class.getResourceAsStream("decks/" + deck);
+                brIn = new BufferedReader(new InputStreamReader(path, "windows-1251"));
+                String a = brIn.readLine();
+                decksChoiceHeroes.add(a);
+                System.out.println(a);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (brIn != null) brIn.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    static JTextField enterNameFieled = new JTextField(40);
+
+    private static void drawAvalaibleDeck(Graphics g) throws UnsupportedEncodingException {
+        int deckShown = 0;
+        System.out.println("Draw avalaible deck.");
+        g.setFont(new Font("Georgia", Font.BOLD, 30));
+        g.setColor(Color.BLACK);
+        g.drawString("Введите имя и выберите колоду.", B0RDER_LEFT * 5, B0RDER_TOP * 5 + B0RDER_BETWEEN);
+        enterNameFieled.setLocation(B0RDER_LEFT * 5, B0RDER_TOP * 5 + B0RDER_BETWEEN * 3);
+        enterNameFieled.setSize(main.getWidth() / 3, B0RDER_BETWEEN * 4);
+       // enterNameFieled.setVisible(true);
+
+        for (String deck : decksChoice) {
+            //System.out.println("deckchoice");
+            BufferedImage im;
+            try {
+                im = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + decksChoiceHeroes.get(deckShown) + ".jpg"));
+                g.drawImage(im, B0RDER_LEFT * 5 + heroW * deckShown + B0RDER_BETWEEN * deckShown * 2, main.getHeight() / 2, heroW, heroH, null);
+                deckChoiseClick[deckShown].setLocation(B0RDER_LEFT * 5 + heroW * deckShown + B0RDER_BETWEEN * deckShown * 2, main.getHeight() / 2);
+                deckChoiseClick[deckShown].setSize(heroW, heroH);
+                g.setFont(new Font("Georgia", Font.BOLD, 15));
+                g.drawString(deck.substring(0, deck.length() - 4), B0RDER_LEFT * 5 + heroW * deckShown + B0RDER_BETWEEN * deckShown * 2 + B0RDER_BETWEEN, main.getHeight() / 2 - B0RDER_BETWEEN);
+                deckShown++;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private static void releaseCardWithX(int x) {
         System.out.println(choiceXtext + "," + x + ")");
         Client.writeLine(choiceXtext + "," + x + ")");
@@ -1464,7 +1543,8 @@ public class Main extends JFrame {
     private static void loadDeckFromServer(Deck deck) throws IOException {
         String card;
         while (!(card = Client.readLine()).equals("$ENDDECK")) {
-            deck.cards.add(new Card(Card.getCardByName(card)));
+            if (!card.contains("wait"))
+                deck.cards.add(new Card(Card.getCardByName(card)));
         }
     }
 
@@ -1500,15 +1580,22 @@ public class Main extends JFrame {
                 }
             }
         });
+        viewField.add(enterNameFieled);
+
         textField.setEditable(true);
         messageArea.setEditable(false);
-        viewField.add(textField, "North");
-        viewField.add(new JScrollPane(messageArea), "Center");
+        messageArea.setLineWrap(true);
+        textField.setVisible(false);
+        scrollPane = new JScrollPane(messageArea);
+        scrollPane.setVisible(false);
 
+        // scrollPane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        viewField.add(scrollPane, "North");
+        viewField.add(textField, "North");
         // Add Listeners
         textField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Client.writeLine(players[0].playerName+": "+textField.getText());
+                Client.writeLine(players[0].playerName + ": " + textField.getText());
                 textField.setText("");
             }
         });
@@ -1572,6 +1659,14 @@ public class Main extends JFrame {
 
         viewField.setVisible(false);
         viewField.setLocation(0, 0);
+
+
+        // deckChoiceLabel.add(j);
+        for (int i = 0; i < deckChoiseClick.length; i++) {
+            deckChoiseClick[i]= new JLabel();
+            viewField.add(deckChoiseClick[i]);
+            deckChoiseClick[i].addMouseListener(new MyListener(MyListener.Compo.DeckChoice, i));
+        }
         for (int i = 0; i < cardClick.length; i++) {
             cardClick[i] = new JLabel();
             viewField.add(cardClick[i]);

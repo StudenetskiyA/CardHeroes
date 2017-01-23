@@ -36,7 +36,9 @@ public class Client {
     }
 
     static String readLine() throws IOException {
+        if (Main.connected)
         return in.readLine();
+        return null;
     }
     static void writeLine(String line){
         if (Main.connected)
