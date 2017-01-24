@@ -38,11 +38,7 @@ public class Board {
         creature.get(np).add(summonCreature);
         if (_creature.text.contains("Наймт:")) {
             //Begin choise target for battlecry
-            Main.isMyTurn = Main.playerStatus.choiseTarget;
-            Card.ActivatedAbility.creature = summonCreature;
-            Card.ActivatedAbility.targetType= summonCreature.targetType;
-            Card.ActivatedAbility.tapTargetType= summonCreature.tapTargetType;
-            Card.ActivatedAbility.creatureTap=false;
+              _player.massSummon();
         }
         if (_creature.text.contains("Найм:")) {
             summonCreature.battlecryNoTarget();

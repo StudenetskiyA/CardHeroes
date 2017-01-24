@@ -31,6 +31,7 @@ public class Creature extends Card {
         public int turnToDie = 999;
         boolean vulnerability=false;
         public boolean upkeepPlayed=false;
+        public boolean battlecryPlayed=false;
         public void EOT() {
             cantAttackOrBlock--;
             upkeepPlayed=false;

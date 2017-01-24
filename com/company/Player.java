@@ -72,6 +72,36 @@ public class Player extends Card {
         Board.opponent(this).newTurn();
     }
 
+    boolean massSummon() {//Return true if someone wants to choise target at mass summon
+        boolean someFounded = false;
+        if (numberPlayer == 0) {//Until not have ability mass summon with target at opponent turn!
+            // System.out.println("Upkeep2");
+            while (true) {
+                for (int i = Board.creature.get(numberPlayer).size() - 1; i >= 0; i--) {
+                    //Creature ability at begin turn
+                    if (Board.creature.get(numberPlayer).get(i).text.contains("Наймт:")) {
+                        //Check of correct target
+                        if (!Board.creature.get(numberPlayer).get(i).effects.battlecryPlayed) {
+                            //Begin choise target for ability
+                          //  Main.printToView(0,"begin target creature n="+i);
+                            Main.isMyTurn = Main.playerStatus.choiseTarget;
+                            Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
+                            Card.ActivatedAbility.targetType = Board.creature.get(numberPlayer).get(i).targetType;
+                            Card.ActivatedAbility.creatureTap = false;
+                            ActivatedAbility.onUpkeepPlayed = false;
+                            someFounded = true;
+                          //  Main.printToView(0, "Амбрадор заставляет вернуть другое существо.");
+                            break;
+                        }
+                    }
+                }
+                return someFounded;
+            }
+        }
+        return false;
+    }
+
+
     boolean upkeep() {//Return true if someone wants to choise target at begin turn
         boolean someFounded = false;
         if (numberPlayer == 0) {//Until not have ability at begin of opponent turn!
@@ -84,7 +114,7 @@ public class Player extends Card {
                             //TODO For Ambrador ok, when you add new card with on begin turn - fix here!
                             if ((Board.creature.get(numberPlayer).size() > 1) && (!Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed)) {
                                 //Begin choise target for ability
-                                Main.printToView(0,"begin target creature n="+i);
+                            //    Main.printToView(0,"begin target creature n="+i);
                                 Main.isMyTurn = Main.playerStatus.choiseTarget;
                                 Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
                                 Card.ActivatedAbility.targetType = Board.creature.get(numberPlayer).get(i).targetType;

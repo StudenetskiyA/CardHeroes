@@ -244,6 +244,7 @@ class Card {
                 Main.printToView(0,"Лики показывают "+Main.players[0].deck.topDeck(2).name);
                 a.add(Main.players[0].deck.topDeck(3));
                 Main.printToView(0,"Лики показывают "+Main.players[0].deck.topDeck(3).name);
+
                 for (Card c : a) {
                     if (c.cost <= 1) {
                         Board.addCreatureToBoard(new Creature(c, Main.players[0]), Main.players[0]);
@@ -251,6 +252,7 @@ class Card {
                     }
                 }
                 Main.players[0].deck.suffleDeck(Main.sufflingConst);
+                _whis.massSummon();
             } else {
                 ArrayList<Card> a = new ArrayList<>();
                 a.add(Main.players[1].deck.topDeck());
