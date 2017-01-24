@@ -213,6 +213,10 @@ class Card {
         }
     }
 
+    static void abilityFromUnknow(Player _whis, Creature _cr, Player _pl, String txt){
+        ability(new Card(0,"неизвестный","",0,0,0,0,"",0,0),_whis,_cr,_pl,txt);
+    }
+
     static void ability(Card _who, Player _whis, Creature _cr, Player _pl, String txt) {
         //Super function! Do all what do cards text!
         //Which Card player(_who), who player(_whis), on what creature(_cr, may null), on what player(_pl, may null), text to play(txt)

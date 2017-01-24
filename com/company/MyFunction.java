@@ -25,6 +25,8 @@ public class MyFunction {
     enum Target {myPlayer,myCreature,enemyPlayer,enemyCreature}
 
     public static boolean canTarget(Target target,int targetType){
+        //10 my hero or my creature, not self
+        //12 my creature, not self
         if (target==Target.myPlayer)
         {
             if (targetType==2 || targetType==3 || targetType==9 || targetType==10 ) return true;

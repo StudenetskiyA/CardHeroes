@@ -72,64 +72,38 @@ public class Player extends Card {
         Board.opponent(this).newTurn();
     }
 
-    void upkeep(){
-        boolean someFounded=false;
-        if (numberPlayer==0) {//Until not have ability at begin of opponent turn!
+    boolean upkeep() {
+        boolean someFounded = false;
+        if (numberPlayer == 0) {//Until not have ability at begin of opponent turn!
             System.out.println("Upkeep");
-            for (int i = Board.creature.get(numberPlayer).size() - 1; i >= 0; i--) {
-                //Creature ability at begin turn
-                if (Board.creature.get(numberPlayer).get(i).text.contains("В начале вашего хода: ") || Board.creature.get(numberPlayer).get(i).text.contains("В начале хода: ")) {
-                    //Check of correct target
-                    //TODO For Ambrador ok, when you add new card with on begin turn - fix here!
-                    if ((Board.creature.get(numberPlayer).size() > 1) && (!Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed)) {
-                        //Begin choise target for ability
-                        Main.isMyTurn = Main.playerStatus.choiseTarget;
-                        Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
-                        Card.ActivatedAbility.targetType = Board.creature.get(numberPlayer).get(i).targetType;
-                        Card.ActivatedAbility.creatureTap = false;
-                        ActivatedAbility.onUpkeepPlayed = true;
-                        Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed = true;
-                        someFounded = true;
-                        Main.printToView(0, "Амбрадор заставляет вернуть другое существо.");
-                        break;
-                    }
-                }
-            }
-
-            if (!someFounded) {
-                //queue realize
-                System.out.println("Queue size= " + Board.newTurnQueue.size());
-
-                while (Board.newTurnQueue.size() > 0) {
-                    if (Main.iUndestand) {
-                        NewTurnQueue.QueueEvent s = Board.newTurnQueue.pull();
-
-                        if (s.whatToDo.contains("poison")) {
-                          //  int dmg = MyFunction.getNumericAfterText(s.whatToDo, "poison");
-                            if (Board.creature.get(numberPlayer).contains(s.whoCalled)) {
-                                int nc = Board.creature.get(numberPlayer).indexOf(s.whoCalled);
-                                int dmg=s.whoCalled.effects.poison;
-                                //s.whoCalled.takeDamage(s.whoCalled.effects.poison, Creature.DamageSource.poison, false);
-                                System.out.println("$TAKEPOISONDAMAGE(" + playerName + "," + nc + ","+dmg+")");
-                                Client.writeLine("$TAKEPOISONDAMAGE(" + playerName + "," + nc + ","+dmg+")");
-                            }
-                        }
-                        if (s.whatToDo.contains("target")) {
-                            if (Board.creature.get(numberPlayer).contains(s.targetCr)) {
-                                //it may be die! nc=-1
-                                int nc = Board.creature.get(numberPlayer).indexOf(s.whoCalled);
-                                int tr= Board.creature.get(numberPlayer).indexOf(s.targetCr);
-                                System.out.println("$CRYTARGET(" + playerName + "," + nc + ",0," + tr + ")");
-                                Client.writeLine("$CRYTARGET(" + playerName + "," + nc + ",0," + tr + ")");
-                                //here must be wait for client write and undestand command.
-                                Main.iUndestand = false;
+            while (true) {
+                if (Main.iUndestand) {
+                    for (int i = Board.creature.get(numberPlayer).size() - 1; i >= 0; i--) {
+                        //Creature ability at begin turn
+                        if (Board.creature.get(numberPlayer).get(i).text.contains("В начале вашего хода: ") || Board.creature.get(numberPlayer).get(i).text.contains("В начале хода: ")) {
+                            //Check of correct target
+                            //TODO For Ambrador ok, when you add new card with on begin turn - fix here!
+                            if ((Board.creature.get(numberPlayer).size() > 1) && (!Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed)) {
+                                //Begin choise target for ability
+                                Main.printToView(0,"begin target creature n="+i);
+                                Main.isMyTurn = Main.playerStatus.choiseTarget;
+                                Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
+                                Card.ActivatedAbility.targetType = Board.creature.get(numberPlayer).get(i).targetType;
+                                Card.ActivatedAbility.creatureTap = false;
+                                ActivatedAbility.onUpkeepPlayed = true;
+                                Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed = true;
+                                someFounded = true;
+                                Main.printToView(0, "Амбрадор заставляет вернуть другое существо.");
+                                break;
                             }
                         }
                     }
+                    return someFounded;
                 }
-                Main.isMyTurn = Main.playerStatus.MyTurn;
+                // if (!someFounded) Main.isMyTurn = Main.playerStatus.MyTurn;
             }
         }
+        return false;
     }
 
     void newTurn() {
@@ -161,8 +135,8 @@ public class Player extends Card {
             Board.creature.get(numberPlayer).get(i).blockThisTurn = false;
             //poison, here creature may die, check it for after.
             if ((Board.creature.get(numberPlayer).get(i).effects.poison != 0) && (!Board.creature.get(numberPlayer).get(i).text.contains("Защита от отравления.")))
-                Board.newTurnQueue.push(new NewTurnQueue.QueueEvent(Board.creature.get(numberPlayer).get(i),"poison",Board.creature.get(numberPlayer).get(i)));
-               // Board.creature.get(numberPlayer).get(i).takeDamage(Board.creature.get(numberPlayer).get(i).effects.poison, Creature.DamageSource.poison);
+                // Board.newTurnQueue.push(new NewTurnQueue.QueueEvent(Board.creature.get(numberPlayer).get(i),"poison",Board.creature.get(numberPlayer).get(i)));
+                Board.creature.get(numberPlayer).get(i).takeDamage(Board.creature.get(numberPlayer).get(i).effects.poison, Creature.DamageSource.poison);
         }
 
         //Upkeep

@@ -126,7 +126,7 @@ public class Main extends JFrame {
     static String choiceXcreatureType = "";
     static int choiceXcost = 0;
     static String choiceXtext;
-    static boolean iUndestand=true;
+    static boolean iUndestand = true;
 
     static playerStatus isMyTurn = playerStatus.prepareForBattle;
     static boolean wantToMulligan[] = new boolean[4];
@@ -250,9 +250,9 @@ public class Main extends JFrame {
     private static void cycleServerRead(boolean isReplay) throws IOException, InterruptedException {
         while (true) {
             String fromServer;
-            if (!isReplay){
-                fromServer = Client.readLine();}
-            else {
+            if (!isReplay) {
+                fromServer = Client.readLine();
+            } else {
                 fromServer = getNextReplayLine();
             }
             if (fromServer != null) {
@@ -280,11 +280,11 @@ public class Main extends JFrame {
                     simpleDeck.suffleDeck(sufflingConst);
                     while (true) {
                         Client.writeLine("wait");
-                        String a="";
+                        String a = "";
                         a = Client.readLine();
-                       // System.out.println(a);
-                        if (!a.equals("wait")){
-                 //           System.out.println("Server said NO WAIT");
+                        // System.out.println(a);
+                        if (!a.equals("wait")) {
+                            //           System.out.println("Server said NO WAIT");
                             break;
                         }
                     }
@@ -317,15 +317,15 @@ public class Main extends JFrame {
                 } else if (fromServer.contains("$MULLIGANEND(")) {
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     int pl = Board.getPlayerNumByName(parameter.get(0));
-                    int nc=0;
+                    int nc = 0;
                     for (int i = 3; i >= 0; i--) {
                         if (Integer.parseInt(parameter.get(i + 1)) == 1) {
                             players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
                             players[pl].cardInHand.remove(i);
                             nc++;
                         }
-                       }
-                    for (int i=0;i<nc;i++) players[pl].drawCard();
+                    }
+                    for (int i = 0; i < nc; i++) players[pl].drawCard();
 
                     // main.repaint();
                 } else if (fromServer.contains("$DRAWCARD(")) {
@@ -366,13 +366,17 @@ public class Main extends JFrame {
                     int pl = Board.getPlayerNumByName(parameter.get(0));
                     int cr = Integer.parseInt(parameter.get(1));
                     int dmg = Integer.parseInt(parameter.get(2));
-                    Board.creature.get(pl).get(cr).takeDamage(dmg, Creature.DamageSource.poison,false);
-                } else  if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
+                    Board.creature.get(pl).get(cr).takeDamage(dmg, Creature.DamageSource.poison, false);
+                } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
                     // CRYTARGET also for DeathratleTarget
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     int pl = Board.getPlayerNumByName(parameter.get(0));
                     int apl = (pl == 0) ? 1 : 0;
-                    isMyTurn = playerStatus.MyTurn;
+//                    if (players[0].playerName.equals(parameter.get(0))) {
+//                        isMyTurn = playerStatus.MyTurn;
+//                    } else if (players[1].playerName.equals(parameter.get(0))) {
+//                        isMyTurn = playerStatus.EnemyTurn;
+//                    }
                     Creature cr;
                     boolean death = false;
                     if (parameter.get(1).equals("-1")) {
@@ -383,30 +387,15 @@ public class Main extends JFrame {
                     } else {
                         cr = Board.creature.get(pl).get(Integer.parseInt(parameter.get(1)));
                     }
-                    if (parameter.get(2).equals("1")) {
-                        if (parameter.get(3).equals("-1")) {
-                            if (fromServer.contains("$CRYTARGET("))
-                                if (death) cr.deathratle(null, players[apl]);
-                                else cr.battlecryTarget(null, players[apl]);
-                            else
-                                cr.tapTargetAbility(null, players[apl]);
-                        } else {
-                            if (fromServer.contains("$CRYTARGET("))
-                                if (death)
-                                    cr.deathratle(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
-                                else
-                                    cr.battlecryTarget(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
-                            else
-                                cr.tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
-                        }
+                    if (parameter.get(2).equals("1")) pl = apl;
+                    if (parameter.get(3).equals("-1")) {
+                        if (fromServer.contains("$CRYTARGET("))
+                            if (death) cr.deathratle(null, players[pl]);
+                            else cr.battlecryTarget(null, players[pl]);
+                        else
+                            cr.tapTargetAbility(null, players[pl]);
                     } else {
-                        if (parameter.get(3).equals("-1")) {
-                            if (fromServer.contains("$CRYTARGET("))
-                                if (death) cr.deathratle(null, players[pl]);
-                                else cr.battlecryTarget(null, players[pl]);
-                            else
-                                cr.tapTargetAbility(null, players[pl]);
-                        } else {
+                        if (Board.creature.get(pl).size() - 1 >= Integer.parseInt(parameter.get(3))) {
                             if (fromServer.contains("$CRYTARGET("))
                                 if (death)
                                     cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
@@ -416,6 +405,7 @@ public class Main extends JFrame {
                                 cr.tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
                         }
                     }
+                    System.out.println("I undestand.");
                     iUndestand=true;
                 } else if (fromServer.contains("$EQUIPTARGET(")) {
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -765,7 +755,7 @@ public class Main extends JFrame {
                 //Battlecry or TAPT on my unit
                 if (MyFunction.canTarget(MyFunction.Target.myCreature, Card.ActivatedAbility.targetType) || MyFunction.canTarget(MyFunction.Target.myCreature, Card.ActivatedAbility.tapTargetType)) {
                     int nc = Board.creature.get(0).indexOf(Card.ActivatedAbility.creature);
-                    if (Card.ActivatedAbility.targetType == 10 && nc == num) {
+                    if (Card.ActivatedAbility.targetType == 10 || Card.ActivatedAbility.targetType == 12 && nc == num) {
                         printToView(0, "Существо не может целить само себя.");
                     } else {
                         if (Card.ActivatedAbility.creatureTap) {
@@ -773,11 +763,27 @@ public class Main extends JFrame {
                             Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                             isMyTurn = playerStatus.MyTurn;
                         } else {
-                            if (Card.ActivatedAbility.onUpkeepPlayed){
-                                Board.newTurnQueue.push(new NewTurnQueue.QueueEvent(Card.ActivatedAbility.creature,"target",Board.creature.get(0).get(num)));
-                                players[0].upkeep();
-                            }
-                            else {
+                            if (Card.ActivatedAbility.onUpkeepPlayed) {
+                               // System.out.println("onUpkeepPlayer in Main");
+                                System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                                Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                                // String ab = Card.ActivatedAbility.creature.text;
+                                // Board.newTurnQueue.push(new NewTurnQueue.QueueEvent(Card.ActivatedAbility.creature, "target", Board.creature.get(0).get(num)));
+                                //iUndestand=false;
+//                                try {
+//                                    players[0].upkeep.wait();
+//                                } catch (InterruptedException e1) {
+//                                    e1.printStackTrace();
+//                                }
+                                System.out.println("main paused");
+                                try {
+                                    main.wait();
+                                } catch (InterruptedException e1) {
+                                    e1.printStackTrace();
+                                }
+                               // System.out.println("i not undestand yet");
+                                if (!players[0].upkeep()) isMyTurn=playerStatus.MyTurn;
+                            } else {
                                 System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                                 Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                                 isMyTurn = playerStatus.MyTurn;
@@ -1368,7 +1374,7 @@ public class Main extends JFrame {
     private static void drawPlayerDamageEffects(Graphics g, int p) throws IOException {
         BufferedImage im;
         int h;
-        int effectsFounded=0;
+        int effectsFounded = 0;
         int heroCenterX = playerHeroClick[0].getX() + playerHeroClick[0].getWidth() / 2 - heroH / 10;
         if (p == 0) h = playerHeroClick[0].getY() + playerHeroClick[0].getHeight() / 2 - heroH / 10;
         else h = playerHeroClick[1].getY() + playerHeroClick[0].getHeight() / 2 - heroH / 10;
@@ -1388,11 +1394,11 @@ public class Main extends JFrame {
 
         if (players[0].bbshield) {
             im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
-            g.drawImage(im, heroCenterX - heroH *effectsFounded/ 5, playerHeroClick[0].getY() + playerHeroClick[0].getHeight() / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+            g.drawImage(im, heroCenterX - heroH * effectsFounded / 5, playerHeroClick[0].getY() + playerHeroClick[0].getHeight() / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
         }
         if (players[1].bbshield) {
             im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
-            g.drawImage(im, heroCenterX - heroH *effectsFounded/ 5, playerHeroClick[1].getY() + playerHeroClick[0].getHeight() / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
+            g.drawImage(im, heroCenterX - heroH * effectsFounded / 5, playerHeroClick[1].getY() + playerHeroClick[0].getHeight() / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
         }
     }
 
@@ -1410,11 +1416,11 @@ public class Main extends JFrame {
         } else {
             im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[p].equpiment[0].image));
             g.drawImage(im, x, h, smallCardW, smallCardH, null);
-            if (players[p].equpiment[0].hp!=0){
-                int a=6-players[p].equpiment[0].hp;
-                if (a!=0) {
-                    im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + a+".png"));
-                    g.drawImage(im, x+smallCardW/2-heroH/10, h+smallCardH/2-heroH/10, heroH/5, heroH/5, null);
+            if (players[p].equpiment[0].hp != 0) {
+                int a = 6 - players[p].equpiment[0].hp;
+                if (a != 0) {
+                    im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + a + ".png"));
+                    g.drawImage(im, x + smallCardW / 2 - heroH / 10, h + smallCardH / 2 - heroH / 10, heroH / 5, heroH / 5, null);
                 }
             }
             found++;
@@ -1560,7 +1566,7 @@ public class Main extends JFrame {
                 brIn = new BufferedReader(new InputStreamReader(path, "windows-1251"));
                 String a = brIn.readLine();
                 decksChoiceHeroes.add(a);
-               // System.out.println(a);
+                // System.out.println(a);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
