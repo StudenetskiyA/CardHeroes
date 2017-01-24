@@ -136,6 +136,7 @@ public class Main extends JFrame {
     static int hilightMyCreature = -1;
     static int hilightMyCard = -1;
     private static String replayDeck = "";
+    private static boolean ready = true;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         String replayName = "";
@@ -438,6 +439,7 @@ public class Main extends JFrame {
                         }
                     }
                     synchronized (monitor) {
+                        ready = true;
                         monitor.notifyAll();
                     }
                 } else if (fromServer.contains("$EQUIPTARGET(")) {
@@ -805,16 +807,18 @@ public class Main extends JFrame {
                                     // System.out.println("onUpkeepPlayer in Main");
                                     System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                                     Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
-                                    System.out.println("main paused");
+                                    //System.out.println("main paused");
+                                    ready=false;
                                     synchronized (monitor) {
-                                        System.out.println("Waiting for data...");
-                                        try {
-                                            monitor.wait();
-                                        } catch (InterruptedException e2) {
-                                            e2.printStackTrace();
+                                        while (!ready) {
+                                            try {
+                                                monitor.wait();
+                                            } catch (InterruptedException e2) {
+                                                e2.printStackTrace();
+                                            }
                                         }
                                     }
-                                    System.out.println("main resume");
+                                   // System.out.println("main resume");
                                     if (!players[0].upkeep()) isMyTurn = playerStatus.MyTurn;
                                 } else {
                                     System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
