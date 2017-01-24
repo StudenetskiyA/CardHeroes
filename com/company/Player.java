@@ -72,12 +72,11 @@ public class Player extends Card {
         Board.opponent(this).newTurn();
     }
 
-    boolean upkeep() {
+    boolean upkeep() {//Return true if someone wants to choise target at begin turn
         boolean someFounded = false;
         if (numberPlayer == 0) {//Until not have ability at begin of opponent turn!
-            System.out.println("Upkeep");
+           // System.out.println("Upkeep");
             while (true) {
-                if (Main.iUndestand) {
                     for (int i = Board.creature.get(numberPlayer).size() - 1; i >= 0; i--) {
                         //Creature ability at begin turn
                         if (Board.creature.get(numberPlayer).get(i).text.contains("В начале вашего хода: ") || Board.creature.get(numberPlayer).get(i).text.contains("В начале хода: ")) {
@@ -100,9 +99,7 @@ public class Player extends Card {
                     }
                     return someFounded;
                 }
-                // if (!someFounded) Main.isMyTurn = Main.playerStatus.MyTurn;
             }
-        }
         return false;
     }
 
