@@ -1,6 +1,7 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 /**
  * Created by StudenetskiyA on 30.12.2016.
@@ -20,14 +21,15 @@ class Card {
     String hash;//for suffling
 
     static class ActivatedAbility {
-        static int targetType;
-        static int tapTargetType;
+      //  static int targetType;
+      //  static int tapTargetType;
         static Creature creature;
         static boolean creatureTap;
         static boolean heroAbility = false;
         static boolean weaponAbility = false;
         static int heroAbilityCost = 0;
         static boolean onUpkeepPlayed=false;
+        static boolean onDeathPlayed=false;
     }
 
     public Card(Card _card) {
@@ -78,11 +80,13 @@ class Card {
             case "Бьорнбон":
                 return new Card(0, name, "", 3, 0, 0, 0, "ТАП:0 Получить щит ББ.", 0, 30);
             case "Тиша":
-                return new Card(0, "Тиша", "", 1, 0, 1, 0, "ТАПТ:2 Отравить+ выбранное существо на 1.", 0, 26);
+                return new Card(0, "Тиша", "", 1, 0, 0, 1, "ТАПТ:2 Отравить+ выбранное существо на 1.", 0, 26);
             case "Свирепый резак":
-                return new Card(0, name, "", 2, 0, 1, 0, "ТАПТ:2 Выбранное существо получает 'Опыт в атаке. Рывок.'.", 0, 28);
+                return new Card(0, name, "", 2, 0, 0, 1, "ТАПТ:2 Выбранное существо получает 'Опыт в атаке, Рывок'.", 0, 28);
+            case "Эндор Флем":
+                return new Card(0, name, "", 2, 0, 0, 7, "ТАПТ:3 Ранить выбранное существо на 1, Взять карт 1.", 0, 26);
             case "Руах":
-                return new Card(0, name, "", 2, 0, 1, 0, "ТАПТ:1 Ранить на половину жизней выбранное существо.", 0, 25);
+                return new Card(0, name, "", 2, 0, 0, 1, "ТАПТ:1 Ранить на половину жизней выбранное существо.", 0, 25);
             case "Раскат грома":
                 return new Card(1, "Раскат грома", "", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
             case "Выброс силы":
@@ -117,14 +121,20 @@ class Card {
                 return new Card(3, "Гном-лучник", "Гном", 3, 2, 3, 0, "Защита от выстрелов. Наймт: Выстрел на 2.", 2, 3);
             case "Лучник Захры":
                 return new Card(4, "Лучник Захры", "Орк", 2, 2, 3, 0, "Защита от заклинаний. Наймт: Выстрел на 2.", 4, 2);
+            case "Жрец клана":
+                return new Card(2, name, "Орк", 2, 2, 0, 0, "Рывок.", 3, 2);
+            case "Молодой орк":
+                return new Card(1, name, "Орк", 2, 2, 0, 0, "", 3, 1);
+            case "Орк-провокатор":
+                return new Card(1, name, "Орк", 2, 2, 0, 0, "Рывок.", 2, 1);
             case "Цверг-заклинатель":
                 return new Card(3, name, "Гном", 3, 2, 0, 0, "Защита от заклинаний. Защита от выстрелов. Защита от отравления.", 3, 3);
             case "Верцверг":
                 return new Card(4, name, "Гном", 3, 2, 1, 0, "Направленный удар. Наймт: Получает к атаке + 3.", 2, 4);
             case "Цепная молния":
                 return new Card(6, "Цепная молния", "", 3, 1, 0, 0, "Ранить каждое существо противника на 3.", 0, 0);
-            case "Волна огня":
-                return new Card(3, "Волна огня", "", 2, 1, 0, 0, "Ранить каждое существо на 2.", 0, 0);
+            case "Волна огня"://Fix it
+                return new Card(3, "Волна огня", "", 2, 1, 0, 0, "Ранить каждое существо на 5.", 0, 0);
             case "Чешуя дракона":
                 return new Card(2, "Чешуя дракона", "", 4, 1, 0, 0, "Получите * 1.", 0, 0);
             case "Выслеживание":
@@ -133,6 +143,8 @@ class Card {
                 return new Card(2, "Фиал порчи", "", 1, 1, 1, 0, "Отравить выбранное существо на 2.", 0, 0);
             case "Глашатай пустоты":
                 return new Card(1, "Глашатай пустоты", "Пустой", 6, 2, 0, 0, "Уникальность. Не получает ран.", 0, 1);
+            case "Мастер теней":
+                return new Card(1, name, "Наемник", 6, 2, 0, 0, "Найм: Посмотрите топдек противника, можете положить его на кладбище.", 2, 1);
             case "Велит":
                 return new Card(2, "Велит", "", 2, 2, 0, 3, "ТАПТ: Выстрел на 1.", 1, 3);
             case "Пуф":
@@ -187,12 +199,18 @@ class Card {
                 return new Card(0, name, "", 6, 2, 0, 0, "Доплатите Х *. Найм: Получает к характеристикам + ХХХ.", 0, 0);
             case "Шар тины":
                 return new Card(2, name, "", 1, 1, 0, 0, "Поиск цвет 1.", 0, 0);
+            case "Карта сокровищ":
+                return new Card(2, name, "", 6, 1, 0, 0, "Поиск цвет 6.", 0, 0);
             case "Шар молний":
                 return new Card(2, name, "", 3, 1, 0, 0, "Поиск цвет 3.", 0, 0);
             case "Гном-кузнец":
                 return new Card(3, name, "Гном", 1, 2, 0, 0, "Найм: Поиск тип 3.", 1, 4);
             case "Гном-кладоискатель":
                 return new Card(5, name, "Гном", 3, 2, 0, 0, "Броня 1. Найм: Поиск комбо+ 2 Гном 2.", 5, 4);
+            case "Шаман племени ворона":
+                return new Card(1, name, "Наемник", 6, 2, 0, 0, "Найм: Поиск ТС 2 2.", 1, 1);
+            case "Дух Эллиона":
+                return new Card(1, name, "Дух", 6, 2, 0, 0, "Найм: Потеряйте * 1.", 3, 4);
             case "Рунопевец":
                 return new Card(3, name, "Гном", 3, 2, 0, 0, "Статичный эффект.", 3, 3);
             case "Гном-каратель":
@@ -223,6 +241,12 @@ class Card {
         if (txt.contains("Закрыться.")) {//Only here - _cr=_who to get access to creature
             _cr.tapCreature();
             Main.printToView(0, _cr + " закрывается.");
+        }
+        if (txt.contains("Посмотрите топдек противника, можете положить его на кладбище")) {
+            //Card c = new Card(Board.opponent(_whis).deck.topDeck());
+            Board.opponent(_whis).graveyard.add(Board.opponent(_whis).deck.topDeck());
+            Board.opponent(_whis).deck.removeTopDeck();
+            Main.printToView(0, _cr + " сбрасывает верхнюю карту с колоды "+ Board.opponent(_whis).playerName);
         }
         if (txt.contains("Получить щит ББ.")) {//Only here - _cr=_who to get access to creature
             _whis.bbshield = true;
@@ -276,7 +300,18 @@ class Card {
                 Main.choiceXcreatureType = txt.substring(txt.indexOf("Поиск комбо+ ") + "Поиск комбо+ ".length() + 2, txt.indexOf(" ", txt.indexOf("Поиск комбо+ ") + "Поиск комбо+ ".length() + 2));
                 System.out.println("search type = " + Main.choiceXcreatureType);
                 Main.choiceXcost = MyFunction.getNumericAfterText(txt, "Поиск комбо+ " + type + " " + Main.choiceXcreatureType + " ");
+                Main.choiceXcostExactly=0;
                 System.out.println("search cost = " + Main.choiceXcost);
+            }
+        }
+        if (txt.contains("Поиск ТС ")) {//Only for player, who called it.
+            if (_whis.playerName.equals(Main.players[0].playerName)) {
+                int type = MyFunction.getNumericAfterText(txt, "Поиск ТС ");
+                Main.isMyTurn = Main.playerStatus.searchX;
+                Main.choiceXtype = type;
+                Main.choiceXcost=0;
+                Main.choiceXcostExactly = MyFunction.getNumericAfterText(txt, "Поиск ТС " + type + " ");
+                System.out.println("search cost = " + Main.choiceXcostExactly);
             }
         }
         if (txt.contains("Поиск тип ")) {//Only for player, who called it.
@@ -385,7 +420,7 @@ class Card {
             Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
             _cr.takeDamage(dmg, Creature.DamageSource.spell);
         }
-        if (txt.contains("Выбранное существо получает 'Опыт в атаке. Рывок.'")) {
+        if (txt.contains("Выбранное существо получает 'Опыт в атаке, Рывок'")) {
             Main.printToView(0, _whis.name+" дает " + _cr.name + " опыт в атаке и рывок.");
             _cr.effects.additionalText+="Опыт в атаке. Рывок.";
         }
@@ -421,6 +456,17 @@ class Card {
             _whis.totalCoin += dmg;
             Main.printToView(0, _whis.playerName + " получил " + dmg + " монет.");
         }
+        if (txt.contains(("Потеряйте * "))) {
+            int dmg = MyFunction.getNumericAfterText(txt, "Потеряйте * ");
+            int tmp = dmg;
+            dmg -= _whis.temporaryCoin;
+            _whis.temporaryCoin -= tmp;
+            if (dmg < 0) dmg = 0;
+            if (_whis.temporaryCoin< 0) _whis.temporaryCoin = 0;
+            _whis.totalCoin -= dmg;
+            if (_whis.untappedCoin > _whis.totalCoin) _whis.untappedCoin = _whis.totalCoin;
+            Main.printToView(0, _whis.playerName + " потерял " + dmg + " монет.");
+        }
         if (txt.contains(("Получите до конца хода * "))) {
             int dmg = MyFunction.getNumericAfterText(txt, "Получите до конца хода * ");
             _whis.untappedCoin += dmg;
@@ -431,12 +477,47 @@ class Card {
         if (txt.contains(("Ранить каждое существо противника на "))) {
             int dmg = MyFunction.getNumericAfterText(txt, "Ранить каждое существо противника на ");
             int op = Board.opponentN(_whis);
-            for (int i = Board.creature.get(op).size() - 1; i >= 0; i--) {
-                Board.creature.get(op).get(i).takeDamage(dmg, Creature.DamageSource.ability);
+
+            ListIterator<Creature> temp = Board.creature.get(op).listIterator();
+            while (temp.hasNext()) {
+                Creature tmp = temp.next();
+                tmp.takeDamageWithoutDie(dmg, Creature.DamageSource.ability);
             }
+            Main.readyDied=false;
+            Board.opponent(_whis).doAllDiedCreature();
+
             Main.printToView(0, _who.name + " ранит всех существ противника на " + dmg + ".");
         }
-        if (txt.contains(("Каждое другое существо погибает в конце хода противника."))) {
+        if (txt.contains(("Ранить каждое существо на "))) {
+            int dmg = MyFunction.getNumericAfterText(txt, "Ранить каждое существо на ");
+            int op = Board.opponentN(_whis);
+
+            ListIterator<Creature> temp = Board.creature.get(op).listIterator();
+            while (temp.hasNext()) {
+                Creature tmp = temp.next();
+                tmp.takeDamageWithoutDie(dmg, Creature.DamageSource.ability);
+            }
+            ListIterator<Creature> temp2 = Board.creature.get(_whis.numberPlayer).listIterator();
+            while (temp2.hasNext()) {
+                Creature tmp = temp2.next();
+                tmp.takeDamageWithoutDie(dmg, Creature.DamageSource.ability);
+            }
+            Main.readyDied=false;
+            Board.opponent(_whis).doAllDiedCreature();
+            //wait response FREE
+            synchronized (Main.monitor) {
+                    try {
+                        Main.monitor.wait();
+                    } catch (InterruptedException e2) {
+                        e2.printStackTrace();
+                    }
+            }
+            Main.readyDied=false;
+            _whis.doAllDiedCreature();
+
+            Main.printToView(0, _who.name + " ранит всех существ на " + dmg + ".");
+        }
+        if (txt.contains(("Каждое другое существо погибает в конце хода противника."))) {//TODO Fix it with deathrattle
             int op = Board.opponentN(_whis);
             for (int i = Board.creature.get(op).size() - 1; i >= 0; i--) {
                 Board.creature.get(op).get(i).effects.turnToDie = 2;
@@ -446,17 +527,6 @@ class Card {
                     Board.creature.get(_whis.numberPlayer).get(i).effects.turnToDie = 2;
             }
             Main.printToView(0, _who.name + " чумит весь стол!");
-        }
-        if (txt.contains(("Ранить каждое существо на "))) {
-            int dmg = MyFunction.getNumericAfterText(txt, "Ранить каждое существо на ");
-            int op = Board.opponentN(_whis);
-            for (int i = Board.creature.get(op).size() - 1; i >= 0; i--) {
-                Board.creature.get(op).get(i).takeDamage(dmg, Creature.DamageSource.ability);
-            }
-            for (int i = Board.creature.get(_whis.numberPlayer).size() - 1; i >= 0; i--) {
-                Board.creature.get(_whis.numberPlayer).get(i).takeDamage(dmg, Creature.DamageSource.ability);
-            }
-            Main.printToView(0, _who.name + " ранит всех существ на " + dmg + ".");
         }
         if (txt.contains("Взять карт ")) {
             int dmg = MyFunction.getNumericAfterText(txt, "Взять карт ");
@@ -502,5 +572,23 @@ class Card {
 
     boolean haveRage() {
         return (text.contains("Гнев."));
+    }
+
+    int getCost(Card c, Player pl){
+        int effectiveCost = c.cost;
+        //Gnome cost less
+        if (c.creatureType.equals("Гном")) {
+            int runopevecFounded = 0;
+            for (int i = 0; i < Board.creature.get(pl.numberPlayer).size(); i++) {
+                if (Board.creature.get(pl.numberPlayer).get(i).name.equals("Рунопевец")) runopevecFounded++;
+            }
+            effectiveCost -= runopevecFounded;
+        }
+
+        if (c.name.equals("Трюкач")){
+            effectiveCost+=pl.cardInHand.size()-1;
+        }
+
+        return effectiveCost;
     }
 }

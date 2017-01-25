@@ -47,6 +47,11 @@ public class Deck {
         return tmp;
     }
 
+    public void removeTopDeck(){
+        if (haveTopDeck())
+        cards.remove(cards.size()-1);
+    }
+
     public void putOnBottomDeck(Card _card){
         cards.add(0,_card);
     }

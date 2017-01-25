@@ -31,15 +31,15 @@ public class MyFunction {
         {
             if (targetType==2 || targetType==3 || targetType==9 || targetType==10 ) return true;
         }
-        else if (target==Target.myPlayer.myCreature)
+        else if (target==Target.myCreature)
         {
             if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 || targetType==12 ) return true;
         }
-        else if (target==Target.myPlayer.enemyPlayer)
+        else if (target==Target.enemyPlayer)
         {
             if (targetType==2 || targetType==3 || targetType==5 || targetType==6) return true;
         }
-        else if (target==Target.myPlayer.enemyCreature)
+        else if (target==Target.enemyCreature)
         {
             if (targetType==1 || targetType==3 || targetType==4 || targetType==6) return true;
         }
@@ -52,7 +52,10 @@ public class MyFunction {
         if (end1 == -1) end1 = 1000;
         int end2 = fromText.indexOf(".", begin + afterText.length() + 1);
         if (end2 == -1) end2 = 1000;
+        int end3 = fromText.indexOf(",", begin + afterText.length() + 1);
+        if (end3 == -1) end3 = 1000;
         int end = Math.min(end1, end2);
+        end = Math.min(end, end3);
         if (end == 1000) end = fromText.length();
         String dmg = fromText.substring(begin + afterText.length(), end);
         int numdmg = 0;

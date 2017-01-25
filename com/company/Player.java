@@ -2,11 +2,13 @@ package com.company;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 /**
  * Created by StudenetskiyA on 30.12.2016.
  */
 public class Player extends Card {
+
     int numberPlayer;
     int damage;
     String playerName;
@@ -23,7 +25,7 @@ public class Player extends Card {
     private static int tempX;//For card with X, for correct minus cost
 
     Player(Card _card, Deck _deck, String _playerName, int _n) {
-        super(0, _card.name, "", 1, 0, _card.targetType, 0, _card.text, 0, _card.hp);
+        super(0, _card.name, _card.creatureType, 1, 0, _card.targetType, _card.tapTargetType, _card.text, 0, _card.hp);
         deck = _deck;
         isTapped = false;
         playerName = _playerName;
@@ -72,6 +74,73 @@ public class Player extends Card {
         Board.opponent(this).newTurn();
     }
 
+    public ArrayList<Creature> crDied;
+
+    ArrayList<Creature> diedCreatureOnBoard(){
+        ArrayList<Creature> r = new ArrayList<>();
+        for (Creature c:Board.creature.get(this.numberPlayer)){
+            if (c.getTougness() <= c.damage) {
+                //Or other method for die!
+                if (!c.effects.deathPlayed)
+                r.add(c);
+            }
+        }
+        return r;
+    }
+
+    boolean massDie() {//Return true if someone wants to choise target at mass die
+        boolean someFounded = false;
+        crDied = new ArrayList<>(diedCreatureOnBoard());
+
+        System.out.println("massDie!");
+            while (true) {
+                ListIterator<Creature> temp = crDied.listIterator();
+                while (temp.hasNext()) {
+                    Creature tmp = temp.next();
+                      //Creature ability at death
+                    if (tmp.text.contains("При гибелит:")) {
+                        //TODO Check of correct target
+//                        if (!Board.creature.get(numberPlayer).get(i).effects.battlecryPlayed) {
+//                            Main.isMyTurn = Main.playerStatus.choiseTarget;
+//                            Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
+//                            Card.ActivatedAbility.targetType = Board.creature.get(numberPlayer).get(i).targetType;
+//                            Card.ActivatedAbility.creatureTap = false;
+//                            ActivatedAbility.onUpkeepPlayed = false;
+//                            someFounded = true;
+//                            break;
+//                        }
+                    }
+                    if (tmp.text.contains("Гибельт:")) {
+                        //Check of correct target
+                        if (!tmp.effects.deathPlayed) {
+                            Main.printToView(0,tmp.name+" просит выбрать цель.");
+
+                            if (numberPlayer == 0) {
+                                Main.isMyTurn = Main.playerStatus.choiseTarget;
+                            }
+                            else  Main.isMyTurn = Main.playerStatus.EnemyTurn;//Enemy choise target
+
+                            Card.ActivatedAbility.creature = new Creature(tmp);
+                            ActivatedAbility.onUpkeepPlayed = false;
+                            ActivatedAbility.onDeathPlayed = true;
+                            someFounded = true;
+                            break;
+                        }
+                        //else {temp.remove();}
+                    }
+
+                }
+                if (!someFounded){
+                    Client.writeLine("$FREE");
+//                    synchronized (cretureDiedMonitor) {
+//                        Main.readyDied=true;
+//                        cretureDiedMonitor.notifyAll();
+//                    }
+                }
+                return someFounded;
+            }
+    }
+
     boolean massSummon() {//Return true if someone wants to choise target at mass summon
         boolean someFounded = false;
         if (numberPlayer == 0) {//Until not have ability mass summon with target at opponent turn!
@@ -86,9 +155,9 @@ public class Player extends Card {
                           //  Main.printToView(0,"begin target creature n="+i);
                             Main.isMyTurn = Main.playerStatus.choiseTarget;
                             Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
-                            Card.ActivatedAbility.targetType = Board.creature.get(numberPlayer).get(i).targetType;
                             Card.ActivatedAbility.creatureTap = false;
                             ActivatedAbility.onUpkeepPlayed = false;
+                            ActivatedAbility.onDeathPlayed = false;
                             someFounded = true;
                           //  Main.printToView(0, "Амбрадор заставляет вернуть другое существо.");
                             break;
@@ -100,7 +169,6 @@ public class Player extends Card {
         }
         return false;
     }
-
 
     boolean upkeep() {//Return true if someone wants to choise target at begin turn
         boolean someFounded = false;
@@ -117,7 +185,6 @@ public class Player extends Card {
                             //    Main.printToView(0,"begin target creature n="+i);
                                 Main.isMyTurn = Main.playerStatus.choiseTarget;
                                 Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
-                                Card.ActivatedAbility.targetType = Board.creature.get(numberPlayer).get(i).targetType;
                                 Card.ActivatedAbility.creatureTap = false;
                                 ActivatedAbility.onUpkeepPlayed = true;
                                 Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed = true;
@@ -186,16 +253,8 @@ public class Player extends Card {
     void playCard(Card _card, Creature _targetCreature, Player _targetPlayer) {
         int num = cardInHand.indexOf(_card);
         if (num == -1) return;
-        int effectiveCost = _card.cost;
+        int effectiveCost= _card.getCost(_card,this);
         if (tempX != 0) effectiveCost += tempX;
-        //Gnome cost less
-        if (_card.creatureType.equals("Гном")) {
-            int runopevecFounded = 0;
-            for (int i = 0; i < Board.creature.get(numberPlayer).size(); i++) {
-                if (Board.creature.get(numberPlayer).get(i).name.equals("Рунопевец")) runopevecFounded++;
-            }
-            effectiveCost -= runopevecFounded;
-        }
 
         if (untappedCoin >= effectiveCost) {
             untappedCoin -= effectiveCost;
@@ -249,7 +308,6 @@ public class Player extends Card {
             Main.printToView(0, "Deck of " + playerName + " is empty.");
         }
     }
-
 
     void drawSpecialCard(Card c) {
         cardInHand.add(c);
@@ -308,6 +366,34 @@ public class Player extends Card {
         System.out.println("ТАП HERO: " + txt);
         isTapped = true;
         Card.ability(this, this, null, null, txt);
+    }
+
+    void removeAllDiedCreature(){
+        for (int i = Board.creature.get(this.numberPlayer).size() - 1; i >= 0; i--) {
+            if (Board.creature.get(this.numberPlayer).get(i).getTougness() <= Board.creature.get(this.numberPlayer).get(i).damage) {
+                //Or other method for die!
+                System.out.println("Die, "+i+", "+Board.creature.get(this.numberPlayer).get(i).name);
+                Board.putCardToGraveyard(Board.creature.get(this.numberPlayer).get(i), Board.creature.get(this.numberPlayer).get(i).owner);
+                Board.creature.get(this.numberPlayer).get(i).removeCreatureFromPlayerBoard();
+            }
+        }
+    }
+
+    void doAllDiedCreature(){
+        ListIterator<Creature> temp = Board.creature.get(this.numberPlayer).listIterator();
+       // if (numberPlayer == 0) {
+        Main.memPlayerStatus=Main.isMyTurn;
+
+            while (temp.hasNext()) {
+            Creature tmp = temp.next();
+            if (tmp.isDie()) {
+                //Or other method for die!
+                System.out.println("Die(doAll) " + tmp.name);
+                tmp.dieWithList(temp);
+            }
+        }
+    //    System.out.println("After all dieWithList "+ Main.memPlayerStatus.toString());
+        Main.isMyTurn=Main.memPlayerStatus;
     }
 
     void ability(Creature _cr, Player _pl) {

@@ -1,6 +1,9 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.ListIterator;
+
+import static com.company.Main.readyDied;
 
 /**
  * Created by StudenetskiyA on 30.12.2016.
@@ -32,6 +35,7 @@ public class Creature extends Card {
         boolean vulnerability=false;
         public boolean upkeepPlayed=false;
         public boolean battlecryPlayed=false;
+        public boolean deathPlayed=false;
         public void EOT() {
             cantAttackOrBlock--;
             upkeepPlayed=false;
@@ -51,8 +55,8 @@ public class Creature extends Card {
     }
 
     boolean getIsSummonedJust(){
-        if (text.contains("Рывок.")) return false;
-        if (effects.additionalText.contains("Рывок.")) return false;
+        if (text.contains("Рывок")) return false;
+        if (effects.additionalText.contains("Рывок")) return false;
         //Chain dog take charge
         if ((name.equals("Цепной пес"))) {
             int houndFounded = 0;
@@ -195,11 +199,11 @@ public class Creature extends Card {
     }
 
     void attackCreature(Creature target) {
-        if (!text.contains("Опыт в атаке.") || !effects.additionalText.contains("Опыт в атаке."))
+        if (!text.contains("Опыт в атаке") || !effects.additionalText.contains("Опыт в атаке"))
             tapCreature();
         attackThisTurn = true;
 
-        if (this.text.contains("Направленный удар.")) {
+        if (this.text.contains("Направленный удар")) {
             fightCreature(target);
         } else {
             ArrayList<Creature> blocker;
@@ -267,6 +271,28 @@ public class Creature extends Card {
         }
     }
 
+    void takeDamageWithoutDie(int dmg, DamageSource dmgsrc, Boolean... rage) {
+        if (!this.text.contains("Не получает ран.")) {
+            if ((dmgsrc == DamageSource.scoot) || (dmgsrc == DamageSource.fight)) {
+                if ((takedDamageThisTurn) && (rage[0])) {
+                    dmg++;
+                    System.out.println("RAGE!");
+                }
+                int tmp = dmg;
+                dmg -= currentArmor;
+                currentArmor -= tmp;
+                if (dmg < 0) dmg = 0;
+                if (currentArmor < 0) currentArmor = 0;
+            }
+            if ((effects.getVulnerability())) dmg++;
+            damage += dmg;
+            takedDamageThisTurn = true;
+//            if (getTougness() <= damage) {
+//                die();
+//            }
+        }
+    }
+
     void tapNoTargetAbility() {
         String txt = this.text.substring(this.text.indexOf("ТАП:") + "ТАП:".length() + 1, this.text.indexOf(".", this.text.indexOf("ТАП:")) + 1);
         System.out.println("ТАПТ: " + txt);
@@ -303,35 +329,57 @@ public class Creature extends Card {
         Card.ability(_card, _owner, _card, null, txt);//Only here 3th parametr=1th
     }
 
-    private void deathratleTarget(Creature _creature) {
-        if (owner == Main.players[0]) {
-            Main.isMyTurn = Main.playerStatus.choiseTarget;
-        }
-        //TODO Not my creature
-        else {
-            Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
-        }
-        Card.ActivatedAbility.creature = new Creature(_creature);
-        Card.ActivatedAbility.targetType = _creature.targetType;
-        Card.ActivatedAbility.tapTargetType = 0;
-        Card.ActivatedAbility.creatureTap = false;
-    }
-
     void die() {
-        //May be wannts to free exemplar of creature, if you do this, change 'fight' method
-//        this.isTapped=false;
-//        this.damage=0;
-        //And may be other
-        // Or not?
         Main.printToView(0,this.name + " умирает.");
         if (this.text.contains("Гибельт:")) {
-            deathratleTarget(this);
+           // owner.crDied = new ArrayList<>(diedCreatureOnBoard(owner.numberPlayer));
+            owner.massDie();
         }
         if (this.text.contains("Гибель:")) {
             deathratleNoTarget(this, owner);
         }
-        removeCreatureFromPlayerBoard();
-        Board.putCardToGraveyard(this, this.owner);
+        //pause until all deathrattle played
+
+        //if (owner == Main.players[0]) {
+            synchronized (Main.cretureDiedMonitor) {
+                try {
+                    Main.cretureDiedMonitor.wait();
+                } catch (InterruptedException e2) {
+                    e2.printStackTrace();
+                }
+            }
+       // }
+
+        owner.removeAllDiedCreature();
+
+       // removeCreatureFromPlayerBoard();
+       // Board.putCardToGraveyard(this, this.owner);
+    }
+
+    boolean isDie(){
+        return (getTougness() <= damage);//And other method to die!
+    }
+
+    void dieWithList(ListIterator l) {
+        Main.printToView(0,this.name + " умирает.");
+        if (this.text.contains("Гибельт:")) {
+            owner.massDie();
+        }
+        if (this.text.contains("Гибель:")) {
+            deathratleNoTarget(this, owner);
+        }
+        //pause until all deathrattle played
+        //readyDied = false;
+        synchronized (Main.cretureDiedMonitor) {
+            while (!Main.readyDied) {
+                try {
+                    Main.cretureDiedMonitor.wait();
+                } catch (InterruptedException e2) {
+                    e2.printStackTrace();
+                }
+            }
+        }
+        l.remove();
     }
 
     void returnToHand() {
@@ -340,7 +388,7 @@ public class Creature extends Card {
         // Board.putCardToGraveyard(this, this.owner);
     }
 
-    private void removeCreatureFromPlayerBoard() {
+     void removeCreatureFromPlayerBoard() {
         Board.creature.get(owner.numberPlayer).remove(this);
     }
 }
