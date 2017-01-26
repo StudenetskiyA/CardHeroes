@@ -110,8 +110,8 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
             int apl = (pl == 0) ? 1 : 0;
-            if (pl == 0) isMyTurn = Main.playerStatus.MyTurn;
-            else isMyTurn = Main.playerStatus.EnemyTurn;
+           // if (pl == 0) isMyTurn = Main.playerStatus.MyTurn;
+           // else isMyTurn = Main.playerStatus.EnemyTurn;
             players[pl].isTapped = true;
             players[pl].untappedCoin -= Integer.parseInt(parameter.get(3));
             if (parameter.get(1).equals("1")) {
@@ -124,8 +124,8 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("$HERONOTARGET(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
-            if (pl == 0) isMyTurn = Main.playerStatus.MyTurn;
-            else isMyTurn = Main.playerStatus.EnemyTurn;
+            //if (pl == 0) isMyTurn = Main.playerStatus.MyTurn;
+            //else isMyTurn = Main.playerStatus.EnemyTurn;
             players[pl].isTapped = true;
             players[pl].untappedCoin -= Integer.parseInt(parameter.get(1));
             players[pl].abilityNoTarget();
@@ -133,10 +133,8 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
             int apl = (pl == 0) ? 1 : 0;
-            if (pl == 0)
-                isMyTurn = Main.playerStatus.EnemyTurn;
-            else
-                isMyTurn = Main.playerStatus.MyTurn;
+            if (pl == 0) isMyTurn = Main.playerStatus.EnemyTurn;
+            else isMyTurn = Main.playerStatus.MyTurn;
 
             Creature cr = Board.creature.get(apl).get(Integer.parseInt(parameter.get(1)));
             if (Integer.parseInt(parameter.get(2)) == -1) {

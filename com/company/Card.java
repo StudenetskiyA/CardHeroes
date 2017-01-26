@@ -30,6 +30,7 @@ class Card {
         static int heroAbilityCost = 0;
         static boolean onUpkeepPlayed=false;
         static boolean onDeathPlayed=false;
+        public static boolean onOtherDeathPlayed=false;
     }
 
     public Card(Card _card) {
@@ -102,7 +103,7 @@ class Card {
             case "Кригторн":
                 return new Card(2, "Кригторн", "", 3, 2, 0, 0, "Первый удар. Рывок.", 2, 1);
             case "Гном":
-                return new Card(2, "Гном", "Гном", 3, 2, 0, 0, "", 3, 3);
+                return new Card(2, "Гном", "Гном", 3, 2, 0, 0, "Рывок. Направленный удар.", 3, 3);
             case "Гном-легионер":
                 return new Card(4, name, "Гном", 3, 2, 0, 0, "Направленный удар. Рывок.", 3, 5);
             case "Гном-смертник":
@@ -193,6 +194,10 @@ class Card {
                 return new Card(4, name, "", 1, 2, 0, 0, "Гибель: Взять карт 2.", 2, 3);
             case "Смайта":
                 return new Card(4, name, "", 6, 2, 3, 0, "Гибельт: Ранить выбранное существо или героя на 2.", 4, 3);
+        //    case "Вестник смерти":
+         //       return new Card(1, name, "Слуа", 5, 2, 3, 0, "Гибельт: Сбросьте карту.", 3, 3);
+            case "Падальщик пустоши"://fix
+                return new Card(1, name, "Зверь", 6, 2, 4, 0, "При гибели другого вашего существа: Ранить выбранное существо на 2.", 1, 2);
             case "Ядовитое пламя":
                 return new Card(0, name, "", 1, 1, 1, 0, "Доплатите Х *. Ранить выбранное существо на ХХХ.", 0, 0);
             case "Вольный воитель":
@@ -407,6 +412,7 @@ class Card {
             }
         }
         if (txt.contains("Ранить выбранное существо на ")) {
+            System.out.println("ranit");
             int dmg = MyFunction.getNumericAfterText(txt, "Ранить выбранное существо на ");
             Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
             _cr.takeDamage(dmg, Creature.DamageSource.ability);
@@ -505,13 +511,13 @@ class Card {
             Main.readyDied=false;
             Board.opponent(_whis).doAllDiedCreature();
             //wait response FREE
-            synchronized (Main.monitor) {
-                    try {
-                        Main.monitor.wait();
-                    } catch (InterruptedException e2) {
-                        e2.printStackTrace();
-                    }
-            }
+//            synchronized (Main.monitor) {
+//                    try {
+//                        Main.monitor.wait();
+//                    } catch (InterruptedException e2) {
+//                        e2.printStackTrace();
+//                    }
+//            }
             Main.readyDied=false;
             _whis.doAllDiedCreature();
 

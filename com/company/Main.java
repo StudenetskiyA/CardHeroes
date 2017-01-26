@@ -120,7 +120,7 @@ public class Main extends JFrame {
      static int coinStart = 0;
     private static MessageToShow messageToShow = new MessageToShow(" ", 0);
 
-    enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget, prepareForBattle}
+    enum playerStatus {MyTurn, EnemyTurn, IChoiseBlocker, EnemyChoiseBlocker, EnemyChoiceTarget, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiseTarget, prepareForBattle}
 
     static boolean isYouDraggedCard = false;
     static boolean isYouDraggedAttackCreature = false;
@@ -494,7 +494,7 @@ public class Main extends JFrame {
                                     isMyTurn = playerStatus.choiseTarget;
                                     Card.ActivatedAbility.heroAbility = true;
                                     Card.ActivatedAbility.heroAbilityCost = cost;
-                                    Card.ActivatedAbility.creature = null;
+                                   // Card.ActivatedAbility.creature = null;
                                     main.repaint();
                                 } else {
                                     printToView(0, "Недостаточно монет.");
@@ -836,7 +836,7 @@ public class Main extends JFrame {
                 }
             }
         } else {
-            if (isMyTurn == playerStatus.EnemyTurn) {
+            if (isMyTurn == playerStatus.EnemyTurn || isMyTurn==playerStatus.EnemyChoiseBlocker || isMyTurn==playerStatus.EnemyChoiceTarget) {
                 printToView(0, "Сейчас идет не ваш ход.");
             }
             main.repaint();
@@ -907,6 +907,8 @@ public class Main extends JFrame {
                 endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Blockturn.png"));
             } else if (isMyTurn == playerStatus.EnemyChoiseBlocker) {
                 endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Blockenemyturn.png"));
+            } else if (isMyTurn == playerStatus.EnemyChoiceTarget) {
+                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Enemychoicetarget.png"));
             } else if (isMyTurn == playerStatus.MuliganPhase) {
                 endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Mulliganturn.png"));
             } else if (isMyTurn == playerStatus.EnemyTurn) {
@@ -1692,19 +1694,23 @@ private static class MessageToShow {
     private static void massCryCheckAndSetPlayerStatus(int nc){
         //ready = false;
         synchronized (monitor) {
-         //   while (!ready) {
+            while (!ready) {
                 try {
                     monitor.wait();
                 } catch (InterruptedException e2) {
                     e2.printStackTrace();
                 }
-          //  }
+            }
         }
         if (Card.ActivatedAbility.onUpkeepPlayed) {
             Board.creature.get(0).get(nc).effects.upkeepPlayed = true;
             if (!players[0].upkeep()) isMyTurn = playerStatus.MyTurn;
         } else if (Card.ActivatedAbility.onDeathPlayed) {
             players[0].crDied.get(0).effects.deathPlayed=true;
+            //Card.ActivatedAbility.creature.activatedAbilityPlayed=true;
+            players[0].massDie();
+        } else if (Card.ActivatedAbility.onOtherDeathPlayed){
+            Card.ActivatedAbility.creature.activatedAbilityPlayed=true;
             players[0].massDie();
         } else {
             Board.creature.get(0).get(nc).effects.battlecryPlayed = true;

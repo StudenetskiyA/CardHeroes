@@ -11,6 +11,7 @@ import static com.company.Main.readyDied;
 public class Creature extends Card {
     boolean isTapped;
     boolean isSummonedJust;
+    boolean activatedAbilityPlayed=false;
     boolean takedDamageThisTurn = false;
     boolean attackThisTurn = false;
     boolean blockThisTurn = false;
@@ -43,6 +44,7 @@ public class Creature extends Card {
             bonusPowerUEOT=0;
             if (cantAttackOrBlock < 0) cantAttackOrBlock = 0;
             if (turnToDie == 0) die();
+            activatedAbilityPlayed=false;
         }
 
         boolean getVulnerability(){
@@ -168,25 +170,32 @@ public class Creature extends Card {
         if (!second.isTapped) {
             Main.printToView(0, this.name + " сражается с " + second.name + ".");
             if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
-                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
-                if (this.damage < this.hp) second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+                this.takeDamageWithoutDie(second.getPower(), DamageSource.fight, second.haveRage());
+                if (this.damage < this.hp) second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
             } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
-                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+                second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
                 if (second.damage < second.hp)
-                    this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+                    this.takeDamageWithoutDie(second.getPower(), DamageSource.fight, second.haveRage());
             } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
-                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
-                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+                this.takeDamageWithoutDie(second.getPower(), DamageSource.fight, second.haveRage());
+                second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
             } else {
-                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
-                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+                this.takeDamageWithoutDie(second.getPower(), DamageSource.fight, second.haveRage());
+                second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
             }
         }
         else
         {
             Main.printToView(0, this.name + " ударяет " + second.name + ".");
-            second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+            second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
         }
+
+        Main.readyDied=false;
+        Board.opponent(owner).doAllDiedCreature();
+        Main.readyDied=false;
+        System.out.println("Second doAllDied at Fight");
+        this.owner.doAllDiedCreature();
+
     }
 
     void heal(int dmg) {
@@ -250,25 +259,11 @@ public class Creature extends Card {
     }
 
     void takeDamage(int dmg, DamageSource dmgsrc, Boolean... rage) {
-        if (!this.text.contains("Не получает ран.")) {
-            if ((dmgsrc == DamageSource.scoot) || (dmgsrc == DamageSource.fight)) {
-                if ((takedDamageThisTurn) && (rage[0])) {
-                    dmg++;
-                    System.out.println("RAGE!");
-                }
-                int tmp = dmg;
-                dmg -= currentArmor;
-                currentArmor -= tmp;
-                if (dmg < 0) dmg = 0;
-                if (currentArmor < 0) currentArmor = 0;
-            }
-            if ((effects.getVulnerability())) dmg++;
-            damage += dmg;
-            takedDamageThisTurn = true;
-            if (getTougness() <= damage) {
-                die();
-            }
-        }
+        takeDamageWithoutDie(dmg,dmgsrc,rage);
+        Main.readyDied=false;
+        Board.opponent(owner).doAllDiedCreature();
+        Main.readyDied=false;
+        owner.doAllDiedCreature();
     }
 
     void takeDamageWithoutDie(int dmg, DamageSource dmgsrc, Boolean... rage) {
@@ -330,30 +325,8 @@ public class Creature extends Card {
     }
 
     void die() {
+        damage=getTougness();
         Main.printToView(0,this.name + " умирает.");
-        if (this.text.contains("Гибельт:")) {
-           // owner.crDied = new ArrayList<>(diedCreatureOnBoard(owner.numberPlayer));
-            owner.massDie();
-        }
-        if (this.text.contains("Гибель:")) {
-            deathratleNoTarget(this, owner);
-        }
-        //pause until all deathrattle played
-
-        //if (owner == Main.players[0]) {
-            synchronized (Main.cretureDiedMonitor) {
-                try {
-                    Main.cretureDiedMonitor.wait();
-                } catch (InterruptedException e2) {
-                    e2.printStackTrace();
-                }
-            }
-       // }
-
-        owner.removeAllDiedCreature();
-
-       // removeCreatureFromPlayerBoard();
-       // Board.putCardToGraveyard(this, this.owner);
     }
 
     boolean isDie(){
@@ -362,14 +335,13 @@ public class Creature extends Card {
 
     void dieWithList(ListIterator l) {
         Main.printToView(0,this.name + " умирает.");
-        if (this.text.contains("Гибельт:")) {
-            owner.massDie();
-        }
+        //if (this.text.contains("Гибельт:")) {
+//            owner.massDie();
+        //}
         if (this.text.contains("Гибель:")) {
             deathratleNoTarget(this, owner);
         }
         //pause until all deathrattle played
-        //readyDied = false;
         synchronized (Main.cretureDiedMonitor) {
             while (!Main.readyDied) {
                 try {
@@ -377,8 +349,9 @@ public class Creature extends Card {
                 } catch (InterruptedException e2) {
                     e2.printStackTrace();
                 }
-            }
+               }
         }
+        System.out.println(this.name + " удален.");
         l.remove();
     }
 
