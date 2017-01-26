@@ -99,7 +99,7 @@ public class Player extends Card {
         boolean someFounded = false;
         crDied = new ArrayList<>(diedCreatureOnBoard());
         ListIterator<Creature> temp = crDied.listIterator();
-        System.out.println("massDie, pl="+this.name+", found "+crDied.size());
+        System.out.println("massDie, pl="+playerName+", found died "+crDied.size());
 
         while (temp.hasNext()) {
             Creature tmp = temp.next();
@@ -161,7 +161,9 @@ public class Player extends Card {
                     }
             }
         }
-        if (!someFounded) Client.writeLine("$FREE");
+        if (!someFounded){
+            System.out.println("FREE for "+playerName);
+            Client.writeLine("$FREE");}
         return someFounded;
     }
 
@@ -419,7 +421,7 @@ public class Player extends Card {
             Creature tmp = temp.next();
             if (tmp.isDie()) {
                 //Or other method for die!
-                System.out.println("Die(doAll) " + tmp.name + "/" + tmp.owner.playerName);
+               // System.out.println("Die(doAll) " + tmp.name + "/" + tmp.owner.playerName);
                 tmp.dieWithList(temp);
             }
         }

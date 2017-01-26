@@ -368,7 +368,6 @@ public class Main extends JFrame {
                         }
                     }
                     for (int i = 0; i < nc; i++) players[pl].drawCard();
-
                     // main.repaint();
                 } else {
                 responseServerMessage=new ResponseServerMessage(fromServer);
@@ -521,7 +520,6 @@ public class Main extends JFrame {
                     //TODO when remake server
                     //You know nothing, Server!!!
                     //I must remake server. It(not client) must hold deck, card and other.
-                    System.out.println("$MULLIGANEND(" + players[0].playerName + "," + boolToInt(wantToMulligan[0]) + "," + boolToInt(wantToMulligan[1]) + "," + boolToInt(wantToMulligan[2]) + "," + boolToInt(wantToMulligan[3]) + ")");
                     Client.writeLine("$MULLIGANEND(" + players[0].playerName + "," + boolToInt(wantToMulligan[0]) + "," + boolToInt(wantToMulligan[1]) + "," + boolToInt(wantToMulligan[2]) + "," + boolToInt(wantToMulligan[3]) + ")");
                     isMyTurn = playerStatus.waitingMulligan;
                 } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == playerStatus.choiseTarget) && (!Card.ActivatedAbility.heroAbility)) {

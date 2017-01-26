@@ -195,6 +195,7 @@ public class Creature extends Card {
         Main.readyDied=false;
         System.out.println("Second doAllDied at Fight");
         this.owner.doAllDiedCreature();
+        System.out.println("doAllDied at Fight complite");
 
     }
 
@@ -342,6 +343,7 @@ public class Creature extends Card {
             deathratleNoTarget(this, owner);
         }
         //pause until all deathrattle played
+        System.out.println("Pause at "+name+"/"+owner.name);
         synchronized (Main.cretureDiedMonitor) {
             while (!Main.readyDied) {
                 try {
@@ -351,7 +353,7 @@ public class Creature extends Card {
                 }
                }
         }
-        System.out.println(this.name + " удален.");
+        System.out.println(this.name + " удален/"+this.owner.playerName);
         l.remove();
     }
 

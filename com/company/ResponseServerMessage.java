@@ -41,6 +41,9 @@ public class ResponseServerMessage extends Thread {
             if (players[0].playerName.equals(parameter.get(0))) {
                 isMyTurn = Main.playerStatus.MyTurn;
                 players[0].newTurn();
+
+                //TODO remove it
+                Client.writeLine("$PLAYCARD(" + players[0].playerName + ",0,-1,-1)");
             } else if (players[1].playerName.equals(parameter.get(0))) {
                 isMyTurn = Main.playerStatus.EnemyTurn;
                 players[1].newTurn();
