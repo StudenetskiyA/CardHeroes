@@ -87,6 +87,8 @@ class Card {
         switch (name) {
             case "Тарна":
                 return new Card(0, "Тарна", "", 1, 0, 0, 0, "ТАП:4 Взять карт 1.", 0, 28);
+            case "Рэйвенкар":
+                return new Card(0, name, "", 5, 0, 0, 0, "ТАП:4 Ранить героя противника на 2. Излечить вашего героя на 2.", 0, 24);
             case "Бьорнбон":
                 return new Card(0, name, "", 3, 0, 0, 0, "ТАП:0 Получить щит ББ.", 0, 30);
             case "Тиша":
@@ -101,6 +103,8 @@ class Card {
                 return new Card(1, "Раскат грома", "", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
             case "Выброс силы":
                 return new Card(2, name, "", 3, 1, 1, 0, "Ранить выбранное существо на 5.", 0, 0);
+            case "Неудача":
+                return new Card(2, name, "", 5, 1, 1, 0, "Ранить на остаток выбранное существо и своего героя на столько же.", 0, 0);
             case "Возрождение":
                 return new Card(1, name, "", 5, 1, 0, 0, "Раскопать тип 2.", 0, 0);
             case "Гьерхор":
@@ -419,6 +423,12 @@ class Card {
             _pl.takeDamage(dmg);
 
         }
+        if (txt.contains("Ранить героя противника на ")) {
+            int dmg = MyFunction.getNumericAfterText(txt, "Ранить выбранного героя на ");
+            Main.printToView(0, _pl.playerName + " получил " + dmg + " урона.");
+            _pl.takeDamage(dmg);
+
+        }
         if (txt.contains("Уничтожьте отравленное существо.")) {
             if (_cr.effects.poison > 0) {
                 Main.printToView(0, _who.name + " уничтожает " + _cr.name + ".");
@@ -436,6 +446,13 @@ class Card {
             int dmg = MyFunction.getNumericAfterText(txt, "Ранить выбранное существо на ");
             Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
             _cr.takeDamage(dmg, Creature.DamageSource.ability);
+        }
+        else if (txt.contains("Ранить на остаток выбранное существо и своего героя на столько же")) {
+            int dmg = _cr.getTougness()-_cr.damage;
+            Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
+            Main.printToView(0, _whis.name + " получил " + dmg + " урона.");
+            _cr.takeDamage(dmg, Creature.DamageSource.ability);
+            _whis.takeDamage(dmg);
         }
         if (txt.contains("Выбранное существо не может атаковать и выступать защитником до конца следующего хода.")) {
             _cr.effects.cantAttackOrBlock = 2;
