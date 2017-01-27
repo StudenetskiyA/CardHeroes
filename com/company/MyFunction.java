@@ -67,6 +67,15 @@ public class MyFunction {
         return numdmg;
     }
 
+    public static boolean canTargetComplex(Creature cr){
+        boolean canTarget=false;
+        if (Board.creature.get(0).size() > 0 && MyFunction.canTarget(MyFunction.Target.myCreature,cr.targetType)) canTarget=true;
+        if (Board.creature.get(1).size() > 0 && MyFunction.canTarget(MyFunction.Target.enemyCreature,cr.targetType)) canTarget=true;
+        if (MyFunction.canTarget(MyFunction.Target.enemyPlayer,cr.targetType)) canTarget=true;//Both players always stay on board
+        if (MyFunction.canTarget(MyFunction.Target.myPlayer,cr.targetType)) canTarget=true;
+        return canTarget;
+    }
+
     public static BufferedImage tapImageOnAngle(BufferedImage src,int angle) {
         double rotationRequired = angle;
         AffineTransform tx = new AffineTransform();

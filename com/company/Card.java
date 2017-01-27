@@ -412,7 +412,6 @@ class Card {
             }
         }
         if (txt.contains("Ранить выбранное существо на ")) {
-            System.out.println("ranit");
             int dmg = MyFunction.getNumericAfterText(txt, "Ранить выбранное существо на ");
             Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
             _cr.takeDamage(dmg, Creature.DamageSource.ability);

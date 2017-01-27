@@ -1,23 +1,20 @@
 package com.company;
 
 /**
- * Created by samsung on 23.01.2017.
+ * Created by StudenetskiyA on 23.01.2017.
  */
 
-/**
- * Created by samsung on 23.01.2017.
- */
-public class NewTurnQueue
+public class GameQueue
 {
     static class QueueEvent {
-        Creature whoCalled;
         String whatToDo;
         Creature targetCr;
+        int howMany;
 
-        public QueueEvent(Creature _who, String _what, Creature _tc) {
-            whoCalled = _who;
+        public QueueEvent(String _what, Creature _tc,int _howMany) {
             whatToDo = _what;
             targetCr=_tc;
+            howMany=_howMany;
         }
     }
 

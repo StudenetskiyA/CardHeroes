@@ -42,6 +42,7 @@ public class Client {
     }
     static void writeLine(String line){
         if (Main.connected) {
+            Main.ready=false;
             out.println(line);
             //System.out.println("I send "+line);
         }

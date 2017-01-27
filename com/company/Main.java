@@ -5,8 +5,6 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.MouseInputAdapter;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +27,8 @@ public class Main extends JFrame {
     static boolean firstResponse=true;
      static final Object monitor = new Object();
     public static final Object cretureDiedMonitor = new Object();
+
+    public static GameQueue gameQueue = new GameQueue();
 
     //static final Object firstMonitor = new Object();
     private static final String CLIENT_VERSION = "0.01";
@@ -1249,7 +1249,7 @@ public class Main extends JFrame {
             // for (Creature creature : Board.creature.get(np))//Sometimes it make exception after any creature die(((
             for (int i = 0; i < Board.creature.get(np).size(); i++)//{
             {
-                if (Board.creature.get(np).get(i)!=null && Board.creature.get(np).get(i).image != null && !Board.creature.get(np).get(i).isDie()) {
+                if (Board.creature.get(np).get(i)!=null && Board.creature.get(np).get(i).image != null && Board.creature.get(np).get(i).avalaible) {
                     try {
                         int effects = 0;
                         int crX = battlegroundClick.getX() + numUnit * (heroH + BORDER_CREATURE) + (heroH - heroW) / 2;
@@ -1700,16 +1700,16 @@ private static class MessageToShow {
                 }
             }
         }
+
         if (Card.ActivatedAbility.onUpkeepPlayed) {
             Board.creature.get(0).get(nc).effects.upkeepPlayed = true;
             if (!players[0].upkeep()) isMyTurn = playerStatus.MyTurn;
         } else if (Card.ActivatedAbility.onDeathPlayed) {
             players[0].crDied.get(0).effects.deathPlayed=true;
-            //Card.ActivatedAbility.creature.activatedAbilityPlayed=true;
-            players[0].massDie();
+            Client.writeLine("$FREE");
         } else if (Card.ActivatedAbility.onOtherDeathPlayed){
             Card.ActivatedAbility.creature.activatedAbilityPlayed=true;
-            players[0].massDie();
+            Client.writeLine("$FREE");
         } else {
             Board.creature.get(0).get(nc).effects.battlecryPlayed = true;
             if (!players[0].massSummon()) isMyTurn = playerStatus.MyTurn;

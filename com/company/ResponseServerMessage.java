@@ -251,7 +251,7 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("$FREE")) {
              synchronized (Main.cretureDiedMonitor) {
                         Main.readyDied=true;
-                        Main.cretureDiedMonitor.notifyAll();
+                        Main.cretureDiedMonitor.notify();
                     }
          } else {
             if (fromServer.contains(":")) {
