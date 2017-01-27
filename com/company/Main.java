@@ -1094,7 +1094,11 @@ public class Main extends JFrame {
                     //    Client.writeLine("$DRAWCARD(" + players[0].playerName + ")");
                 } else if (onWhat == Compo.DeckChoice && isMyTurn == playerStatus.prepareForBattle) {
                     try {
+                        if (!enterNameFieled.getText().equals("") && !enterNameFieled.getText().equals(" "))
                         runGame(enterNameFieled.getText(), decksChoice.get(num).substring(0, decksChoice.get(num).length() - 4), null);
+                        else {
+                          //TODO Show message
+                        }
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     } catch (InterruptedException e1) {

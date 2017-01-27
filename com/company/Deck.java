@@ -34,11 +34,16 @@ public class Deck {
     }
 
     public Card topDeck(int depth){
+        if (cards.size()>=depth)
         return cards.get(cards.size()-depth);
+        else {
+            Main.printToView(0,"Закончилась колода");
+        }
+        return null;
     }
 
     public Card topDeck(){
-        return cards.get(cards.size()-1);
+        return topDeck(1);
     }
 
     public Card drawTopDeck(){

@@ -3,6 +3,8 @@ package com.company;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
+import static com.company.Main.main;
+
 /**
  * Created by StudenetskiyA on 30.12.2016.
  */
@@ -112,6 +114,8 @@ class Card {
                 return new Card(1, name, "Зверь", 2, 2, 0, 0, "Орда. Статичный эффект. Получает за каждого другого Цепного пса рывок и +1 к удару.", 1, 2);
             case "Амбрадор":
                 return new Card(1, name, "Зверь", 6, 2, 12, 0, "В начале вашего хода: Верните выбранное существо в руку его владельца.", 4, 3);
+            case "Трюкач":
+                return new Card(1, name, "", 6, 2, 0, 0, "", 4, 5);
             case "Поглощение души":
                 return new Card(3, "Поглощение душ", "", 5, 1, 2, 0, "Ранить выбранного героя на 3. Излечить вашего героя на 3.", 0, 0);
             case "Эльф-дозорный":
@@ -267,26 +271,27 @@ class Card {
         if (txt.contains("Лики-абилка.")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 ArrayList<Card> a = new ArrayList<>();
-                a.add(Main.players[0].deck.topDeck());
-                Main.printToView(0,"Лики показывают "+Main.players[0].deck.topDeck().name);
-                a.add(Main.players[0].deck.topDeck(2));
-                Main.printToView(0,"Лики показывают "+Main.players[0].deck.topDeck(2).name);
-                a.add(Main.players[0].deck.topDeck(3));
-                Main.printToView(0,"Лики показывают "+Main.players[0].deck.topDeck(3).name);
+                if (Main.players[0].deck.topDeck()!=null ) a.add(Main.players[0].deck.topDeck());
+                if (Main.players[0].deck.topDeck(2)!=null ) a.add(Main.players[0].deck.topDeck(2));
+                if (Main.players[0].deck.topDeck(3)!=null ) a.add(Main.players[0].deck.topDeck(3));
+
 
                 for (Card c : a) {
+                    Main.printToView(0,"Лики показывают "+c.name);
+
                     if (c.cost <= 1) {
                         Board.addCreatureToBoard(new Creature(c, Main.players[0]), Main.players[0]);
                         Main.players[0].deck.cards.remove(c);
                     }
                 }
                 Main.players[0].deck.suffleDeck(Main.sufflingConst);
+                main.repaint();
                 _whis.massSummon();
             } else {
                 ArrayList<Card> a = new ArrayList<>();
-                a.add(Main.players[1].deck.topDeck());
-                a.add(Main.players[1].deck.topDeck(2));
-                 a.add(Main.players[1].deck.topDeck(3));
+                if (Main.players[1].deck.topDeck()!=null ) a.add(Main.players[1].deck.topDeck());
+                if (Main.players[1].deck.topDeck(2)!=null ) a.add(Main.players[1].deck.topDeck(2));
+                if (Main.players[1].deck.topDeck(3)!=null ) a.add(Main.players[1].deck.topDeck(3));
                  for (Card c : a) {
                     if (c.cost <= 1) {
                         Board.addCreatureToBoard(new Creature(c, Main.players[1]), Main.players[1]);
