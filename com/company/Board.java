@@ -23,7 +23,14 @@ public class Board {
             return -1;
         }
     }
-
+    static Player getPlayerByName(String _name) {
+        if (_name.equals(Main.players[0].playerName)) return Main.players[0];
+        else if (_name.equals(Main.players[1].playerName)) return Main.players[1];
+        else {
+            System.out.println("Error - Unknown player.");
+            return null;
+        }
+    }
     static void addCreatureToBoard(Card _creature, Player _player) {
         Creature summonCreature = new Creature(_creature, _player);
 

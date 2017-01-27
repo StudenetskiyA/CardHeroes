@@ -1,10 +1,8 @@
 package com.company;
 
-import javax.imageio.ImageIO;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
+import static com.company.Card.ActivatedAbility.WhatAbility.nothing;
 import static com.company.Main.*;
 
 /**
@@ -48,10 +46,19 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("$CHOISEBLOCKER(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.IChoiseBlocker;
+                isMyTurn = Main.playerStatus.IChoiceBlocker;
                 creatureWhoAttack = Integer.parseInt(parameter.get(1));
                 creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
             }
+        } else if (fromServer.contains("$TAPNOTARGET(")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            Board.creature.get(Board.getPlayerNumByName(parameter.get(0))).get(Integer.parseInt(parameter.get(1))).tapNoTargetAbility();
+        } else if (fromServer.contains("$DISCARD(")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int n=Integer.parseInt(parameter.get(1));
+            Main.printToView(0, Board.getPlayerByName(parameter.get(0)).playerName + " сбрасывает "+Board.getPlayerByName(parameter.get(0)).cardInHand.get(n).name);
+            Board.putCardToGraveyard(Board.getPlayerByName(parameter.get(0)).cardInHand.get(n), Board.getPlayerByName(parameter.get(0)));
+            Board.getPlayerByName(parameter.get(0)).cardInHand.remove(Board.getPlayerByName(parameter.get(0)).cardInHand.get(n));
         } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
             // CRYTARGET also for DeathratleTarget
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -249,6 +256,7 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("$FREE")) {//It means, player choice target in queue and resume queue response
             synchronized (Main.cretureDiedMonitor) {
                 Main.readyDied = true;
+                Card.ActivatedAbility.whatAbility=nothing;
                 Main.cretureDiedMonitor.notify();
             }
         } else if (fromServer.contains("$MULLIGANEND(")) {

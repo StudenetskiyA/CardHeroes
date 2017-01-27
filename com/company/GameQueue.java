@@ -1,5 +1,7 @@
 package com.company;
 
+import static com.company.Main.main;
+
 /**
  * Created by StudenetskiyA on 23.01.2017.
  */

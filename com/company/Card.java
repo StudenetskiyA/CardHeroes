@@ -27,12 +27,19 @@ class Card {
       //  static int tapTargetType;
         static Creature creature;
         static boolean creatureTap;
-        static boolean heroAbility = false;
-        static boolean weaponAbility = false;
+        enum WhatAbility{heroAbility,weaponAbility,toHandAbility,onUpkeepPlayed,onDeathPlayed,onOtherDeathPlayed,nothing}
+        static WhatAbility whatAbility=WhatAbility.nothing;
         static int heroAbilityCost = 0;
-        static boolean onUpkeepPlayed=false;
-        static boolean onDeathPlayed=false;
-        public static boolean onOtherDeathPlayed=false;
+        public static boolean isThatAbility(WhatAbility ab){
+            if (ab==whatAbility) return true;
+            return false;
+        }
+        public static boolean isNothingOrDeath(){
+            if (whatAbility==WhatAbility.nothing) return true;
+            if (whatAbility==WhatAbility.onDeathPlayed) return true;
+            if (whatAbility==WhatAbility.onOtherDeathPlayed) return true;
+            return false;
+        }
     }
 
     public Card(Card _card) {
@@ -98,6 +105,8 @@ class Card {
                 return new Card(1, "Гьерхор", "Йордлинг", 3, 2, 0, 0, "", 2, 2);
             case "Алчущие крови":
                 return new Card(2, name, "Слуа", 5, 2, 10, 0, "Направленный удар. Наймт: Жажда 1.", 3, 3);
+            case "Змееуст":
+                return new Card(1, name, "Слуа", 5, 2, 10, 0, "Защита от заклинаний. Наймт: Жажда 2.", 3, 2);
             case "Лики судьбы":
                 return new Card(3, name, "Пустой", 6, 2, 0, 0, "Найм: Лики-абилка.", 2, 3);
             case "Найтин":
@@ -198,8 +207,8 @@ class Card {
                 return new Card(4, name, "", 1, 2, 0, 0, "Гибель: Взять карт 2.", 2, 3);
             case "Смайта":
                 return new Card(4, name, "", 6, 2, 3, 0, "Гибельт: Ранить выбранное существо или героя на 2.", 4, 3);
-        //    case "Вестник смерти":
-         //       return new Card(1, name, "Слуа", 5, 2, 3, 0, "Гибельт: Сбросьте карту.", 3, 3);
+            case "Вестник смерти":
+                return new Card(1, name, "Слуа", 5, 2, 99, 0, "Гибельт: Сбросьте карту.", 3, 3);
             case "Падальщик пустоши"://fix
                 return new Card(1, name, "Зверь", 6, 2, 4, 0, "При гибели другого вашего существа: Ранить выбранное существо на 2.", 1, 2);
             case "Ядовитое пламя":
@@ -234,14 +243,12 @@ class Card {
                 return new Card(2, name, "Оружие", 3, 3, 0, 1, "ТАПТ: Выбранное существо до конца хода получает к атаке + 2.", 0, 0);
             case "Аккения":
                 return new Card(4, name, "Событие", 2, 4, 0, 0, "Статичный эффект.", 0, 0);
+            case "Пустошь Тулл-Багара":
+                return new Card(1, name, "Событие", 5, 4, 0, 0, "Статичный эффект.", 0, 0);
             default:
                 System.out.println("Ошибка - Неопознанная карта:" + name);
                 return null;
         }
-    }
-
-    static void abilityFromUnknow(Player _whis, Creature _cr, Player _pl, String txt){
-        ability(new Card(0,"неизвестный","",0,0,0,0,"",0,0),_whis,_cr,_pl,txt);
     }
 
     static void ability(Card _who, Player _whis, Creature _cr, Player _pl, String txt) {
@@ -255,7 +262,7 @@ class Card {
             //Card c = new Card(Board.opponent(_whis).deck.topDeck());
             Board.opponent(_whis).graveyard.add(Board.opponent(_whis).deck.topDeck());
             Board.opponent(_whis).deck.removeTopDeck();
-            Main.printToView(0, _cr + " сбрасывает верхнюю карту с колоды "+ Board.opponent(_whis).playerName);
+            Main.printToView(0, _cr.name + " сбрасывает верхнюю карту с колоды "+ Board.opponent(_whis).playerName);
         }
         if (txt.contains("Получить щит ББ.")) {//Only here - _cr=_who to get access to creature
             _whis.bbshield = true;
@@ -564,6 +571,8 @@ class Card {
                 _pl.takeDamage(dmg);
             }
         }
+
+        Main.gameQueue.responseAllQueue();
     }
 
     boolean haveRage() {

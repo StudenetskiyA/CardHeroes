@@ -3,8 +3,6 @@ package com.company;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
-import static com.company.Main.readyDied;
-
 /**
  * Created by StudenetskiyA on 30.12.2016.
  */
@@ -165,14 +163,19 @@ public class Creature extends Card {
 
         //get list of opponent creature
         ArrayList<Creature> crt = new ArrayList<>(Board.creature.get(pl));
-        //delete from it tapped
-        if (crt.contains(target)) crt.remove(target);
-        for (int i = 0; i < crt.size(); i++) {
-            //for (Creature cr:creature){
-            if ((crt.get(i).blockThisTurn) || (crt.get(i).isTapped) || (crt.get(i).effects.cantAttackOrBlock > 0))
-                crt.remove(crt.get(i));
+        ListIterator<Creature> temp = crt.listIterator();
+
+        while (temp.hasNext()) {
+            Creature tmp = temp.next();
+            if (tmp.blockThisTurn || tmp.isTapped || tmp.effects.cantAttackOrBlock > 0 || tmp==target)
+                crt.remove(tmp);
         }
-        //delete from it target
+            //delete from it tapped
+//        for (int i = 0; i < crt.size(); i++) {
+//            //for (Creature cr:creature){
+//            if (crt.get(i).blockThisTurn || crt.get(i).isTapped || crt.get(i).effects.cantAttackOrBlock > 0 || crt.get(i)==target)
+//                crt.remove(crt.get(i));
+//        }
         return crt;
     }
 
@@ -230,7 +233,7 @@ public class Creature extends Card {
                     Main.creatureWhoAttackTarget = nt;
                     Main.creatureWhoAttack = nc;
                 }
-                Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
+                Main.isMyTurn = Main.playerStatus.EnemyChoiceBlocker;
             } else {
                 fightCreature(target);
             }
@@ -255,7 +258,7 @@ public class Creature extends Card {
                     Main.creatureWhoAttackTarget = nt;
                     Main.creatureWhoAttack = nc;
                 }
-                Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
+                Main.isMyTurn = Main.playerStatus.EnemyChoiceBlocker;
             } else {
                 fightPlayer(target);
             }
