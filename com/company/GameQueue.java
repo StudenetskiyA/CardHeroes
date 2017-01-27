@@ -45,6 +45,29 @@ public class GameQueue
         size++;
     }
 
+    public void responseAllQueue(){
+        Main.memPlayerStatus=Main.isMyTurn;
+        while (Main.gameQueue.size() != 0) {
+            GameQueue.QueueEvent event = Main.gameQueue.pull();
+            if (event.whatToDo.equals("Die")) {
+                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
+                    Main.printToView(0, event.targetCr.name + " умирает.");
+
+                    event.targetCr.owner.massDieCheckNeededTarget();
+
+                    if (event.targetCr.text.contains("Гибель:")) {
+                        event.targetCr.deathratleNoTarget(event.targetCr, event.targetCr.owner);
+                    }
+
+                    System.out.println(event.targetCr.name + " удален/" + event.targetCr.owner.playerName);
+                    Board.creature.get(event.targetCr.owner.numberPlayer).remove(event.targetCr);
+                }
+            }
+        }
+        Main.isMyTurn=Main.memPlayerStatus;
+    }
+
+
     public QueueEvent pull() {
         // Если у нас нет элементов, то возвращаем null
         if (size == 0) {

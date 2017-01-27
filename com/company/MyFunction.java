@@ -67,6 +67,14 @@ public class MyFunction {
         return numdmg;
     }
 
+    public static int getNumDiedButNotRemovedYet(ArrayList<Creature> list){
+        int n=0;
+        for (Creature cr:list){
+            if (cr.getTougness()<=cr.damage) n++;
+        }
+        return n;
+    }
+
     public static boolean canTargetComplex(Creature cr){
         boolean canTarget=false;
         if (Board.creature.get(0).size() > 0 && MyFunction.canTarget(MyFunction.Target.myCreature,cr.targetType)) canTarget=true;

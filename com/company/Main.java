@@ -1246,10 +1246,9 @@ public class Main extends JFrame {
         int ht = h + (heroH - heroW) / 2;
 
         if (!Board.creature.get(np).isEmpty()) {
-            // for (Creature creature : Board.creature.get(np))//Sometimes it make exception after any creature die(((
             for (int i = 0; i < Board.creature.get(np).size(); i++)//{
             {
-                if (Board.creature.get(np).get(i)!=null && Board.creature.get(np).get(i).image != null && Board.creature.get(np).get(i).avalaible) {
+                if (Board.creature.get(np).get(i)!=null && Board.creature.get(np).get(i).image != null && Board.creature.get(np).get(i).getTougness()>Board.creature.get(np).get(i).damage) {
                     try {
                         int effects = 0;
                         int crX = battlegroundClick.getX() + numUnit * (heroH + BORDER_CREATURE) + (heroH - heroW) / 2;
@@ -1690,7 +1689,7 @@ private static class MessageToShow {
 }
 
     private static void massCryCheckAndSetPlayerStatus(int nc){
-        //ready = false;
+        //wait response server message
         synchronized (monitor) {
             while (!ready) {
                 try {
@@ -1708,7 +1707,7 @@ private static class MessageToShow {
             players[0].crDied.get(0).effects.deathPlayed=true;
             Client.writeLine("$FREE");
         } else if (Card.ActivatedAbility.onOtherDeathPlayed){
-            Card.ActivatedAbility.creature.activatedAbilityPlayed=true;
+            Card.ActivatedAbility.creature.activatedAbilityPlayed=true;//once per turn, if you remove it - many times.
             Client.writeLine("$FREE");
         } else {
             Board.creature.get(0).get(nc).effects.battlecryPlayed = true;

@@ -24,9 +24,10 @@ public class Creature extends Card {
 
     enum DamageSource {fight, spell, poison, ability, scoot}
 
-    Effects effects = new Effects();
+    Effects effects = new Effects(this);
 
     public class Effects {
+        Creature whis;
         String additionalText = "";
         public int poison = 0;
         public int bonusPower = 0;
@@ -40,13 +41,19 @@ public class Creature extends Card {
         public boolean battlecryPlayed = false;
         public boolean deathPlayed = false;
 
+        Effects(Creature _cr) {
+            whis = _cr;
+        }
+
         public void EOT() {
             cantAttackOrBlock--;
             upkeepPlayed = false;
             turnToDie--;
             bonusPowerUEOT = 0;
             if (cantAttackOrBlock < 0) cantAttackOrBlock = 0;
-            if (turnToDie == 0) die();
+            if (turnToDie == 0) {
+                Main.gameQueue.push(new GameQueue.QueueEvent("Die", whis, 0));
+            }
             activatedAbilityPlayed = false;
         }
 
@@ -192,25 +199,7 @@ public class Creature extends Card {
         }
 
         //Response queue
-        while (Main.gameQueue.size() != 0) {
-            GameQueue.QueueEvent event = Main.gameQueue.pull();
-            if (event.whatToDo.equals("Die")) {
-                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
-                    Main.printToView(0, this.name + " умирает.");
-
-                    event.targetCr.owner.massDieCheckNeededTarget();
-
-                    if (this.text.contains("Гибель:")) {
-                        deathratleNoTarget(this, owner);
-                    }
-
-                    System.out.println(this.name + " удален/" + this.owner.playerName);
-                    Board.creature.get(event.targetCr.owner.numberPlayer).remove(event.targetCr);
-                }
-            }
-        }
-
-
+        Main.gameQueue.responseAllQueue();
     }
 
     void heal(int dmg) {
@@ -292,30 +281,8 @@ public class Creature extends Card {
             takedDamageThisTurn = true;
 
             if (getTougness() <= damage) {
-                Main.gameQueue.push(new GameQueue.QueueEvent("Die", this, 0));
+                die();
             }
-        }
-    }
-
-    void takeDamageWithoutDie(int dmg, DamageSource dmgsrc, Boolean... rage) {
-        if (!this.text.contains("Не получает ран.")) {
-            if ((dmgsrc == DamageSource.scoot) || (dmgsrc == DamageSource.fight)) {
-                if ((takedDamageThisTurn) && (rage[0])) {
-                    dmg++;
-                    System.out.println("RAGE!");
-                }
-                int tmp = dmg;
-                dmg -= currentArmor;
-                currentArmor -= tmp;
-                if (dmg < 0) dmg = 0;
-                if (currentArmor < 0) currentArmor = 0;
-            }
-            if ((effects.getVulnerability())) dmg++;
-            damage += dmg;
-            takedDamageThisTurn = true;
-//            if (getTougness() <= damage) {
-//                die();
-//            }
         }
     }
 
@@ -350,41 +317,17 @@ public class Creature extends Card {
         Card.ability(this, owner, _cr, _pl, txt);
     }
 
-    private static void deathratleNoTarget(Creature _card, Player _owner) {
+    static void deathratleNoTarget(Creature _card, Player _owner) {
         String txt = _card.text.substring(_card.text.indexOf("Гибель:") + "Гибель:".length() + 1, _card.text.indexOf(".", _card.text.indexOf("Гибель:")) + 1);
         Card.ability(_card, _owner, _card, null, txt);//Only here 3th parametr=1th
     }
 
     void die() {
-        damage = getTougness();
-        Main.printToView(0, this.name + " умирает.");
+        Main.gameQueue.push(new GameQueue.QueueEvent("Die", this, 0));
     }
 
     boolean isDie() {
         return (getTougness() <= damage);//And other method to die!
-    }
-
-    void dieWithList(ListIterator l) {
-        Main.printToView(0, this.name + " умирает.");
-        //if (this.text.contains("Гибельт:")) {
-//            owner.massDie();
-        //}
-        if (this.text.contains("Гибель:")) {
-            deathratleNoTarget(this, owner);
-        }
-        //pause until all deathrattle played
-        System.out.println("Pause at " + name + "/" + owner.name);
-        synchronized (Main.cretureDiedMonitor) {
-            while (!Main.readyDied) {
-                try {
-                    Main.cretureDiedMonitor.wait();
-                } catch (InterruptedException e2) {
-                    e2.printStackTrace();
-                }
-            }
-        }
-        System.out.println(this.name + " удален/" + this.owner.playerName);
-        l.remove();
     }
 
     void returnToHand() {

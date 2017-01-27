@@ -79,8 +79,6 @@ public class Player extends Card {
         ArrayList<Creature> r = new ArrayList<>();
         for (Creature c : Board.creature.get(numberPlayer)) {
             if (c.isDie()) {
-                //Or other method for die!
-                //if (!c.effects.deathPlayed)
                     r.add(c);
             }
         }
@@ -89,7 +87,7 @@ public class Player extends Card {
 
     Creature searchWhenOtherDieAbility(Creature cr) {
         for (Creature p : Board.creature.get(numberPlayer)) {
-            if (p.text.contains("При гибели другого вашего существа:") && p != cr && !p.activatedAbilityPlayed)
+            if (p.text.contains("При гибели другого вашего существа:") && p != cr && p.getTougness()>p.damage)
                 return p;
         }
         return null;
@@ -104,13 +102,12 @@ public class Player extends Card {
             Creature tmp = temp.next();
             //Creature ability at death
             Creature cr = searchWhenOtherDieAbility(tmp);//creature, who wants to other die(ex. Падальщик Пустоши)
-            if (cr != null && crDied.size()>0) {
+            if (cr != null && crDied.size()>0 && !cr.activatedAbilityPlayed) {
                 System.out.println("Падальщик "+playerName);
                 //CHECK EXIST TARGET
                 if (MyFunction.canTargetComplex(cr)) {
                     Main.printToView(0, cr.name + " просит выбрать цель.");
 
-                    Main.memPlayerStatus=Main.isMyTurn;
                     if (numberPlayer == 0) { Main.isMyTurn = Main.playerStatus.choiseTarget;
                     } else { Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
                     }
@@ -129,7 +126,7 @@ public class Player extends Card {
                             }
                     }
                     System.out.println("resume");
-                    Main.isMyTurn=Main.memPlayerStatus;
+
                 }
                 else {
                     Main.printToView(0, "Целей для " + cr.name + " нет.");
@@ -140,7 +137,7 @@ public class Player extends Card {
                 //CHECK EXIST TARGET
                 if (MyFunction.canTargetComplex(tmp)) {
                     Main.printToView(0, tmp.name + " просит выбрать цель.");
-                    Main.memPlayerStatus=Main.isMyTurn;
+
                     if (numberPlayer == 0) { Main.isMyTurn = Main.playerStatus.choiseTarget;
                     } else { Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
                     }
@@ -159,7 +156,6 @@ public class Player extends Card {
                         }
                     }
                     System.out.println("resume");
-                    Main.isMyTurn=Main.memPlayerStatus;
                 }
                 else {
                         Main.printToView(0, "Целей для " + tmp.name + " нет.");
@@ -235,9 +231,8 @@ public class Player extends Card {
             Main.printToView(1, Color.GREEN, "Ваш ход");
         else Main.printToView(1, Color.RED, "Ход противника");
 
-        //Bogart!
-        //TODO
-        //
+        //Bogart and other
+        Main.gameQueue.responseAllQueue();
 
         isTapped = false;
         //Get coin

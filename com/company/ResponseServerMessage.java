@@ -78,7 +78,8 @@ public class ResponseServerMessage extends Thread {
                 else
                     cr.tapTargetAbility(null, players[pl]);
             } else {
-                if (Board.creature.get(pl).size() - 1 >= Integer.parseInt(parameter.get(3))) {
+                int died = MyFunction.getNumDiedButNotRemovedYet(Board.creature.get(pl));
+                if (Board.creature.get(pl).size() - 1 >= Integer.parseInt(parameter.get(3))+died) {
                     if (fromServer.contains("$CRYTARGET("))
                         if (death)
                             cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
