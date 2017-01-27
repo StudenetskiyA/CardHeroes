@@ -37,7 +37,7 @@ public class Board {
         int np = _player.numberPlayer;
         creature.get(np).add(summonCreature);
         if (_creature.text.contains("Наймт:")) {
-            //Begin choise target for battlecry
+            //Begin choice target for battlecry
               _player.massSummon();
         }
         if (_creature.text.contains("Найм:")) {

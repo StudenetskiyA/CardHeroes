@@ -165,26 +165,29 @@ public class Player extends Card {
         }
     }
 
-    boolean massSummon() {//Return true if someone wants to choise target at mass summon
+    boolean massSummon() {//Return true if someone wants to choice target at mass summon
         boolean someFounded = false;
         if (numberPlayer == 0) {//Until not have ability mass summon with target at opponent turn!
-            // System.out.println("Upkeep2");
             while (true) {
                 for (int i = Board.creature.get(numberPlayer).size() - 1; i >= 0; i--) {
                     //Creature ability at begin turn
                     if (Board.creature.get(numberPlayer).get(i).text.contains("Наймт:")) {
                         //Check of correct target
                         if (!Board.creature.get(numberPlayer).get(i).effects.battlecryPlayed) {
-                            //Begin choise target for ability
-                            //  Main.printToView(0,"begin target creature n="+i);
-                            Main.isMyTurn = Main.playerStatus.choiseTarget;
-                            Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
-                            Card.ActivatedAbility.creatureTap = false;
-                            ActivatedAbility.onUpkeepPlayed = false;
-                            ActivatedAbility.onDeathPlayed = false;
-                            someFounded = true;
-                            //  Main.printToView(0, "Амбрадор заставляет вернуть другое существо.");
-                            break;
+                            if (MyFunction.canTargetComplex(Board.creature.get(numberPlayer).get(i))) {
+                                //Begin choice target for ability
+                                Main.isMyTurn = Main.playerStatus.choiseTarget;
+                                Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
+                                Card.ActivatedAbility.creatureTap = false;
+                                ActivatedAbility.onUpkeepPlayed = false;
+                                ActivatedAbility.onDeathPlayed = false;
+                                someFounded = true;
+                                break;
+                            }
+                            else {
+                                Main.printToView(0, "Целей для " +  Board.creature.get(numberPlayer).get(i).name + " нет.");
+                                Board.creature.get(numberPlayer).get(i).effects.battlecryPlayed=true;//If you can't target, after you can't play this ability
+                            }
                         }
                     }
                 }
@@ -194,19 +197,15 @@ public class Player extends Card {
         return false;
     }
 
-    boolean upkeep() {//Return true if someone wants to choise target at begin turn
+    boolean upkeep() {//Return true if someone wants to choice target at begin turn
         boolean someFounded = false;
         if (numberPlayer == 0) {//Until not have ability at begin of opponent turn!
-            // System.out.println("Upkeep");
             while (true) {
                 for (int i = Board.creature.get(numberPlayer).size() - 1; i >= 0; i--) {
                     //Creature ability at begin turn
                     if (Board.creature.get(numberPlayer).get(i).text.contains("В начале вашего хода: ") || Board.creature.get(numberPlayer).get(i).text.contains("В начале хода: ")) {
-                        //Check of correct target
                         //TODO For Ambrador ok, when you add new card with on begin turn - fix here!
                         if ((Board.creature.get(numberPlayer).size() > 1) && (!Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed)) {
-                            //Begin choise target for ability
-                            //    Main.printToView(0,"begin target creature n="+i);
                             Main.isMyTurn = Main.playerStatus.choiseTarget;
                             Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
                             Card.ActivatedAbility.creatureTap = false;
@@ -256,11 +255,10 @@ public class Player extends Card {
             Board.creature.get(numberPlayer).get(i).blockThisTurn = false;
             //poison, here creature may die, check it for after.
             if ((Board.creature.get(numberPlayer).get(i).effects.poison != 0) && (!Board.creature.get(numberPlayer).get(i).text.contains("Защита от отравления.")))
-                // Board.newTurnQueue.push(new NewTurnQueue.QueueEvent(Board.creature.get(numberPlayer).get(i),"poison",Board.creature.get(numberPlayer).get(i)));
-                Board.creature.get(numberPlayer).get(i).takeDamage(Board.creature.get(numberPlayer).get(i).effects.poison, Creature.DamageSource.poison);
+               Board.creature.get(numberPlayer).get(i).takeDamage(Board.creature.get(numberPlayer).get(i).effects.poison, Creature.DamageSource.poison);
+            Main.gameQueue.responseAllQueue();//poison queue
         }
 
-        //Upkeep
         upkeep();
         //Draw
         if (Board.turnCount != 1) drawCard();//First player not draw card in first turn. It's rule.
