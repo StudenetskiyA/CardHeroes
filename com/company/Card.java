@@ -498,12 +498,12 @@ class Card {
             ListIterator<Creature> temp = Board.creature.get(op).listIterator();
             while (temp.hasNext()) {
                 Creature tmp = temp.next();
-                tmp.takeDamageWithoutDie(dmg, Creature.DamageSource.ability);
+                tmp.takeDamage(dmg, Creature.DamageSource.ability);
             }
             ListIterator<Creature> temp2 = Board.creature.get(_whis.numberPlayer).listIterator();
             while (temp2.hasNext()) {
                 Creature tmp = temp2.next();
-                tmp.takeDamageWithoutDie(dmg, Creature.DamageSource.ability);
+                tmp.takeDamage(dmg, Creature.DamageSource.ability);
             }
             Main.printToView(0, _who.name + " ранит всех существ на " + dmg + ".");
             Main.gameQueue.responseAllQueue();

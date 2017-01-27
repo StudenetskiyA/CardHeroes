@@ -293,11 +293,10 @@ public class Main extends JFrame {
                         e.printStackTrace();
                     }
                     System.exit(1);
-                } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck and other correct
+                } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck or other NOT correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     String code_not_ok = parameter.get(0);
                     printToView(0, code_not_ok);
-                    // main.repaint();
                 } else if (fromServer.contains("$YOUAREOK")) {//You client,deck and other correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     sufflingConst = Integer.parseInt(parameter.get(0));
@@ -331,8 +330,6 @@ public class Main extends JFrame {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    // System.out.print("enemy hero= "+simpleEnemyDeck.cards.get(0).name);
-
                     Card c = new Card(simpleEnemyDeck.cards.get(0));
                     try {
                         playerHeroClick[1].image = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
@@ -377,7 +374,6 @@ public class Main extends JFrame {
             }
         }
     });
-
 
     public static void printToView(int type, String txt) {
         if (txt.contains("Ход номер ")) Main.gameLog.setText("<html>");

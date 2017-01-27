@@ -249,7 +249,7 @@ public class ResponseServerMessage extends Thread {
                     printToView(0, "Противник находит в колоде " + parameter.get(1) + ".");
                 }
             }
-        } else if (fromServer.contains("$FREE")) {
+        } else if (fromServer.contains("$FREE")) {//It means, player choice target in queue and resume queue response
              synchronized (Main.cretureDiedMonitor) {
                         Main.readyDied=true;
                         Main.cretureDiedMonitor.notify();
@@ -260,14 +260,10 @@ public class ResponseServerMessage extends Thread {
                 scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
             }
         }
+
         synchronized (monitor) {
                ready = true;
                monitor.notifyAll();
             }
-//
-
-//        synchronized (Main.firstMonitor) {
-//            Main.firstMonitor.notifyAll();
-//        }
     }
 }

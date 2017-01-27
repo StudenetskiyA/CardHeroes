@@ -63,5 +63,4 @@ public class Board {
         _owner.graveyard.add(_card);
     }
 
-
 }
