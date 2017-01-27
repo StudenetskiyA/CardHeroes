@@ -326,6 +326,7 @@ public class Creature extends Card {
     }
 
     void die() {
+        Board.putCardToGraveyard(this, this.owner);
         Main.gameQueue.push(new GameQueue.QueueEvent("Die", this, 0));
     }
 

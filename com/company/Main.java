@@ -48,6 +48,7 @@ public class Main extends JFrame {
     static Main main = new Main();
     static MyFunction.ClickImage playerHeroClick[] = new MyFunction.ClickImage[2];
     static JLabel choiceXLabel[] = new JLabel[9];
+    private static int isShowGraveyard=-1;
     //Chat
     static JFrame frame = new JFrame("Chatter");
     static JTextField textField = new JTextField();
@@ -339,7 +340,7 @@ public class Main extends JFrame {
                 g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
             }
             //Enemy graveyard
-            enemyGraveyardClick.setLocation(deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM);
+            enemyGraveyardClick.setLocation(deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP);
             enemyGraveyardClick.setSize(smallCardW, smallCardH);
             if (players[1].graveyard.size() == 0) {
                 g.drawImage(heroGraveyardImage, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
@@ -458,6 +459,9 @@ public class Main extends JFrame {
                 g2.setColor(Color.RED);
                 g2.draw(new Line2D.Float(x1, y1, x2, y2));
             }
+
+            if (isShowGraveyard!=-1) drawPlayerGraveyard(g,isShowGraveyard);
+
             drawMessage(g);
         } else if (isMyTurn == playerStatus.prepareForBattle) drawAvalaibleDeck(g);
     }
@@ -546,6 +550,27 @@ public class Main extends JFrame {
                 searchXLabel[i].setVisible(true);
             }
         }
+    }
+
+    private static void drawPlayerGraveyard(Graphics g, int n) throws IOException {
+        founded = new ArrayList<>(players[n].graveyard);
+            if (founded.size()==0) isShowGraveyard=-1;
+            //TODO If founded.size() small, draw bigger
+        else {
+                g.setFont(new Font("Georgia", Font.BOLD, 15));
+                g.setColor(Color.WHITE);
+                g.drawString("Кладбище "+players[n].playerName, cardX, main.getHeight() / 2 - 2*smallCardH );
+
+                for (int i = 0; i < founded.size(); i++) {
+                    int ii = i % 10;
+                    int jj = i / 10;
+                    BufferedImage im_tmp = ImageIO.read(Main.class.getResourceAsStream("cards/" + founded.get(i).image));
+                    g.drawImage(im_tmp, cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1), smallCardW, smallCardH, null);
+                    searchXLabel[i].setLocation(cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1));
+                    searchXLabel[i].setSize(smallCardW, smallCardH);
+                    searchXLabel[i].setVisible(true);
+                }
+            }
     }
 
     private static void drawPlayerDamageEffects(Graphics g, int p) throws IOException {
@@ -929,6 +954,9 @@ public class Main extends JFrame {
         playerHeroClick[0].addMouseListener(new MyListener(MyListener.Compo.PlayerHero, 0));
         playerHeroClick[0].addMouseMotionListener(new MyListener(MyListener.Compo.PlayerHero, 0));
 
+        playerGraveyardClick.addMouseListener(new MyListener(MyListener.Compo.PlayerGraveyard,0));
+        enemyGraveyardClick.addMouseListener(new MyListener(MyListener.Compo.EnemyGraveyard,0));
+
         viewField.setVisible(false);
         viewField.setLocation(0, 0);
 
@@ -1070,6 +1098,7 @@ public class Main extends JFrame {
     private static class MyListener extends MouseInputAdapter {
         Compo onWhat;
         int num;
+
         MyListener(Compo _compo, int _code) {
             onWhat = _compo;
             num = _code;
@@ -1370,6 +1399,15 @@ public class Main extends JFrame {
                     main.repaint();
                     System.out.println("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
                     Client.writeLine("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
+                } else if ((onWhat == Compo.PlayerGraveyard)) {
+                    if (isShowGraveyard!=0) isShowGraveyard=0;
+                    else isShowGraveyard=-1;
+                    main.repaint();
+                } else if ((onWhat == Compo.EnemyGraveyard)) {
+                    System.out.println("Click on graveyard");
+                    if (isShowGraveyard!=1) isShowGraveyard=1;
+                    else isShowGraveyard=-1;
+                    main.repaint();
                 }
             }
         }
@@ -1531,7 +1569,7 @@ public class Main extends JFrame {
             main.repaint();
         }
 
-        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton, Fullscreen, Settings, DeckChoice}
+        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton, Fullscreen, Settings, DeckChoice, PlayerGraveyard, EnemyGraveyard}
     }
 
     private static class ViewField extends JPanel {
