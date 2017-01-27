@@ -126,7 +126,7 @@ public class Main extends JFrame {
     private static int repainted;//For test how many times called onRepaint
     private static MessageToShow messageToShow = new MessageToShow(" ", 0);
 
-    enum playerStatus {MyTurn, EnemyTurn, IChoiceBlocker, EnemyChoiceBlocker, EnemyChoiceTarget, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiceTarget, prepareForBattle}
+    enum playerStatus {MyTurn, EnemyTurn, IChoiceBlocker, EnemyChoiceBlocker, EnemyChoiceTarget, MuliganPhase, waitingForConnection, waitOtherPlayer, waitingMulligan, choiseX, searchX, choiceTarget, digX, prepareForBattle}
 
     public static void main(String[] args) throws IOException, InterruptedException {
         prepareListOfDeck();
@@ -415,7 +415,7 @@ public class Main extends JFrame {
                 }
             }
 
-            //Choise X
+            //Choice X
             if (isMyTurn == playerStatus.choiseX) {
                 //Work too slow!
                 System.out.println("choiseX");
@@ -428,7 +428,14 @@ public class Main extends JFrame {
             }
             //Search in deck
             if (isMyTurn == playerStatus.searchX) {
-                drawSearchInDeck(g);
+                drawSearchInDeck(g,false);
+            } else {
+                for (int i = 0; i < 40; i++)
+                    searchXLabel[i].setVisible(false);
+            }
+            //Dig
+            if (isMyTurn == playerStatus.digX) {
+                drawSearchInDeck(g,true);
             } else {
                 for (int i = 0; i < 40; i++)
                     searchXLabel[i].setVisible(false);
@@ -505,8 +512,9 @@ public class Main extends JFrame {
         } else if (messageToShow.lenght < delta) message.setVisible(false);
     }
 
-    private static void drawSearchInDeck(Graphics g) throws IOException {
-        founded = new ArrayList<>(players[0].deck.cards);
+    private static void drawSearchInDeck(Graphics g, boolean isGraveyard) throws IOException {
+        if (isGraveyard) founded = new ArrayList<>(players[0].graveyard);
+        else founded = new ArrayList<>(players[0].deck.cards);
         for (int i = founded.size() - 1; i >= 0; i--) {
             if ((choiceXcolor != founded.get(i).color) && (choiceXcolor != 0)) {
                 founded.remove(founded.get(i));
@@ -1399,6 +1407,11 @@ public class Main extends JFrame {
                     main.repaint();
                     System.out.println("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
                     Client.writeLine("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
+                } else if ((onWhat == Compo.SearchX) && (isMyTurn == playerStatus.digX)) {
+                    isMyTurn = playerStatus.MyTurn;
+                    main.repaint();
+                    System.out.println("$DIGFOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
+                    Client.writeLine("$DIGFOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
                 } else if ((onWhat == Compo.PlayerGraveyard)) {
                     if (isShowGraveyard!=0) isShowGraveyard=0;
                     else isShowGraveyard=-1;

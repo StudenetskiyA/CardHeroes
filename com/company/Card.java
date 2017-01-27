@@ -101,6 +101,8 @@ class Card {
                 return new Card(1, "Раскат грома", "", 3, 1, 1, 0, "Ранить выбранное существо на 3.", 0, 0);
             case "Выброс силы":
                 return new Card(2, name, "", 3, 1, 1, 0, "Ранить выбранное существо на 5.", 0, 0);
+            case "Возрождение":
+                return new Card(1, name, "", 5, 1, 0, 0, "Раскопать тип 2.", 0, 0);
             case "Гьерхор":
                 return new Card(1, "Гьерхор", "Йордлинг", 3, 2, 0, 0, "", 2, 2);
             case "Алчущие крови":
@@ -329,6 +331,13 @@ class Card {
                 Main.choiceXcost=0;
                 Main.choiceXcostExactly = MyFunction.getNumericAfterText(txt, "Поиск ТС " + type + " ");
                 System.out.println("search cost = " + Main.choiceXcostExactly);
+            }
+        }
+        else if (txt.contains("Раскопать тип ")) {//Only for player, who called it.
+            if (_whis.playerName.equals(Main.players[0].playerName)) {
+                int dmg = MyFunction.getNumericAfterText(txt, "Раскопать тип ");
+                Main.isMyTurn = Main.playerStatus.digX;
+                Main.choiceXtype = dmg;
             }
         }
         if (txt.contains("Поиск тип ")) {//Only for player, who called it.

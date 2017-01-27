@@ -253,6 +253,31 @@ public class ResponseServerMessage extends Thread {
                     printToView(0, "Противник находит в колоде " + parameter.get(1) + ".");
                 }
             }
+        }  else if (fromServer.contains("$DIGFOUND(")) {
+            choiceXcolor = 0;
+            choiceXtype = 0;
+            choiceXcost = 0;
+            choiceXcostExactly = 0;
+            choiceXcreatureType = "";
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int pl = Board.getPlayerNumByName(parameter.get(0));
+            if (parameter.get(1).equals("-1")) {
+                if (pl == 0) {
+                    printToView(0, "Вы ищете на кладбище, но ничего подходящего не находите.");
+                } else {
+                    printToView(0, "Противник ищет на кладбище, но ничего подходящего не находит.");
+                }
+            } else {
+                if (pl == 0) {
+                    Card card = players[0].searchInGraveyard(parameter.get(1));
+                    players[0].digSpecialCard(card);
+                    printToView(0, "Вы берете с кладбища " + card.name + ".");
+                } else {
+                    Card card = players[1].searchInGraveyard(parameter.get(1));
+                    players[1].digSpecialCard(card);
+                    printToView(0, "Противник берет с кладбища " + card.name + ".");
+                }
+            }
         } else if (fromServer.contains("$FREE")) {//It means, player choice target in queue and resume queue response
             synchronized (Main.cretureDiedMonitor) {
                 Main.readyDied = true;

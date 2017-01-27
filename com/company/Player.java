@@ -384,6 +384,11 @@ public class Player extends Card {
         deck.suffleDeck(Main.sufflingConst);
     }
 
+    void digSpecialCard(Card c) {
+        cardInHand.add(0, c);
+        graveyard.remove(c);
+    }
+
     void takeDamage(int dmg) {
         //equpiment[1]
         if (equpiment[1] != null) {
@@ -444,4 +449,10 @@ public class Player extends Card {
         Card.ability(this, this, _cr, _pl, txt);
     }
 
+    public Card searchInGraveyard(String name){
+        for (int i=0;i<=graveyard.size();i++){
+            if (graveyard.get(i).name.equals(name)) return graveyard.get(i);
+        }
+        return null;
+    }
 }
