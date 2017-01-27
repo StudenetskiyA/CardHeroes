@@ -412,7 +412,6 @@ class Card {
             }
         }
         if (txt.contains("Ранить выбранное существо на ")) {
-            System.out.println("ranit");
             int dmg = MyFunction.getNumericAfterText(txt, "Ранить выбранное существо на ");
             Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
             _cr.takeDamage(dmg, Creature.DamageSource.ability);
@@ -487,12 +486,10 @@ class Card {
             ListIterator<Creature> temp = Board.creature.get(op).listIterator();
             while (temp.hasNext()) {
                 Creature tmp = temp.next();
-                tmp.takeDamageWithoutDie(dmg, Creature.DamageSource.ability);
+                tmp.takeDamage(dmg, Creature.DamageSource.ability);
             }
-            Main.readyDied=false;
-            Board.opponent(_whis).doAllDiedCreature();
-
             Main.printToView(0, _who.name + " ранит всех существ противника на " + dmg + ".");
+            Main.gameQueue.responseAllQueue();
         }
         if (txt.contains(("Ранить каждое существо на "))) {
             int dmg = MyFunction.getNumericAfterText(txt, "Ранить каждое существо на ");
@@ -501,27 +498,15 @@ class Card {
             ListIterator<Creature> temp = Board.creature.get(op).listIterator();
             while (temp.hasNext()) {
                 Creature tmp = temp.next();
-                tmp.takeDamageWithoutDie(dmg, Creature.DamageSource.ability);
+                tmp.takeDamage(dmg, Creature.DamageSource.ability);
             }
             ListIterator<Creature> temp2 = Board.creature.get(_whis.numberPlayer).listIterator();
             while (temp2.hasNext()) {
                 Creature tmp = temp2.next();
-                tmp.takeDamageWithoutDie(dmg, Creature.DamageSource.ability);
+                tmp.takeDamage(dmg, Creature.DamageSource.ability);
             }
-            Main.readyDied=false;
-            Board.opponent(_whis).doAllDiedCreature();
-            //wait response FREE
-//            synchronized (Main.monitor) {
-//                    try {
-//                        Main.monitor.wait();
-//                    } catch (InterruptedException e2) {
-//                        e2.printStackTrace();
-//                    }
-//            }
-            Main.readyDied=false;
-            _whis.doAllDiedCreature();
-
             Main.printToView(0, _who.name + " ранит всех существ на " + dmg + ".");
+            Main.gameQueue.responseAllQueue();
         }
         if (txt.contains(("Каждое другое существо погибает в конце хода противника."))) {//TODO Fix it with deathrattle
             int op = Board.opponentN(_whis);

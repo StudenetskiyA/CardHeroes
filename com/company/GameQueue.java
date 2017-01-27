@@ -1,23 +1,20 @@
 package com.company;
 
 /**
- * Created by samsung on 23.01.2017.
+ * Created by StudenetskiyA on 23.01.2017.
  */
 
-/**
- * Created by samsung on 23.01.2017.
- */
-public class NewTurnQueue
+public class GameQueue
 {
     static class QueueEvent {
-        Creature whoCalled;
         String whatToDo;
         Creature targetCr;
+        int howMany;
 
-        public QueueEvent(Creature _who, String _what, Creature _tc) {
-            whoCalled = _who;
+        public QueueEvent(String _what, Creature _tc,int _howMany) {
             whatToDo = _what;
             targetCr=_tc;
+            howMany=_howMany;
         }
     }
 
@@ -47,6 +44,29 @@ public class NewTurnQueue
         // Увеличиваем размер нашей очереди
         size++;
     }
+
+    public void responseAllQueue(){
+        Main.memPlayerStatus=Main.isMyTurn;
+        while (Main.gameQueue.size() != 0) {
+            GameQueue.QueueEvent event = Main.gameQueue.pull();
+            if (event.whatToDo.equals("Die")) {
+                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
+                    Main.printToView(0, event.targetCr.name + " умирает.");
+
+                    event.targetCr.owner.massDieCheckNeededTarget();
+
+                    if (event.targetCr.text.contains("Гибель:")) {
+                        event.targetCr.deathratleNoTarget(event.targetCr, event.targetCr.owner);
+                    }
+
+                    System.out.println(event.targetCr.name + " удален/" + event.targetCr.owner.playerName);
+                    Board.creature.get(event.targetCr.owner.numberPlayer).remove(event.targetCr);
+                }
+            }
+        }
+        Main.isMyTurn=Main.memPlayerStatus;
+    }
+
 
     public QueueEvent pull() {
         // Если у нас нет элементов, то возвращаем null

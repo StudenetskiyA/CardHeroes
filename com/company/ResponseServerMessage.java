@@ -11,15 +11,15 @@ import static com.company.Main.*;
  * Created by StudenetskiyA on 25.01.2017.
  */
 public class ResponseServerMessage extends Thread {
-    String fromServer="";
+    String fromServer = "";
 
-    ResponseServerMessage(String _fromServer){
-        fromServer=_fromServer;
+    ResponseServerMessage(String _fromServer) {
+        fromServer = _fromServer;
     }
 
-    public void run(){
-       // Main.memPlayerStatus=Main.isMyTurn;
-         if (fromServer.contains("$DRAWCARD(")) {
+    public void run() {
+        // Main.memPlayerStatus=Main.isMyTurn;
+        if (fromServer.contains("$DRAWCARD(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
             //  System.out.println("Draw Card " + parameter.get(0));
@@ -41,9 +41,6 @@ public class ResponseServerMessage extends Thread {
             if (players[0].playerName.equals(parameter.get(0))) {
                 isMyTurn = Main.playerStatus.MyTurn;
                 players[0].newTurn();
-
-                //TODO remove it
-                Client.writeLine("$PLAYCARD(" + players[0].playerName + ",0,-1,-1)");
             } else if (players[1].playerName.equals(parameter.get(0))) {
                 isMyTurn = Main.playerStatus.EnemyTurn;
                 players[1].newTurn();
@@ -78,7 +75,8 @@ public class ResponseServerMessage extends Thread {
                 else
                     cr.tapTargetAbility(null, players[pl]);
             } else {
-                if (Board.creature.get(pl).size() - 1 >= Integer.parseInt(parameter.get(3))) {
+                int died = MyFunction.getNumDiedButNotRemovedYet(Board.creature.get(pl));
+                if (Board.creature.get(pl).size() - 1 >= Integer.parseInt(parameter.get(3)) + died) {
                     if (fromServer.contains("$CRYTARGET("))
                         if (death)
                             cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
@@ -113,8 +111,8 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
             int apl = (pl == 0) ? 1 : 0;
-           // if (pl == 0) isMyTurn = Main.playerStatus.MyTurn;
-           // else isMyTurn = Main.playerStatus.EnemyTurn;
+            // if (pl == 0) isMyTurn = Main.playerStatus.MyTurn;
+            // else isMyTurn = Main.playerStatus.EnemyTurn;
             players[pl].isTapped = true;
             players[pl].untappedCoin -= Integer.parseInt(parameter.get(3));
             if (parameter.get(1).equals("1")) {
@@ -248,25 +246,33 @@ public class ResponseServerMessage extends Thread {
                     printToView(0, "Противник находит в колоде " + parameter.get(1) + ".");
                 }
             }
-        } else if (fromServer.contains("$FREE")) {
-             synchronized (Main.cretureDiedMonitor) {
-                        Main.readyDied=true;
-                        Main.cretureDiedMonitor.notifyAll();
-                    }
-         } else {
+        } else if (fromServer.contains("$FREE")) {//It means, player choice target in queue and resume queue response
+            synchronized (Main.cretureDiedMonitor) {
+                Main.readyDied = true;
+                Main.cretureDiedMonitor.notify();
+            }
+        } else if (fromServer.contains("$MULLIGANEND(")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int pl = Board.getPlayerNumByName(parameter.get(0));
+            int nc = 0;
+            for (int i = 3; i >= 0; i--) {
+                if (Integer.parseInt(parameter.get(i + 1)) == 1) {
+                    players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
+                    players[pl].cardInHand.remove(i);
+                    nc++;
+                }
+            }
+            for (int i = 0; i < nc; i++) players[pl].drawCard();
+        } else {
             if (fromServer.contains(":")) {
                 messageArea.append(fromServer + "\n");
                 scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
             }
         }
-        synchronized (monitor) {
-               ready = true;
-               monitor.notifyAll();
-            }
-//
 
-//        synchronized (Main.firstMonitor) {
-//            Main.firstMonitor.notifyAll();
-//        }
+        synchronized (monitor) {
+            ready = true;
+            monitor.notifyAll();
+        }
     }
 }

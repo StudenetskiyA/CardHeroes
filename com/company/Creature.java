@@ -9,9 +9,10 @@ import static com.company.Main.readyDied;
  * Created by StudenetskiyA on 30.12.2016.
  */
 public class Creature extends Card {
+    boolean avalaible = true;
     boolean isTapped;
     boolean isSummonedJust;
-    boolean activatedAbilityPlayed=false;
+    boolean activatedAbilityPlayed = false;
     boolean takedDamageThisTurn = false;
     boolean attackThisTurn = false;
     boolean blockThisTurn = false;
@@ -20,35 +21,44 @@ public class Creature extends Card {
     int currentArmor = 0;
     int maxArmor = 0;
     int damage;//taked damage
+
     enum DamageSource {fight, spell, poison, ability, scoot}
 
-    Effects effects = new Effects();
+    Effects effects = new Effects(this);
 
     public class Effects {
-        String additionalText="";
-        public int poison=0;
+        Creature whis;
+        String additionalText = "";
+        public int poison = 0;
         public int bonusPower = 0;
         public int bonusPowerUEOT = 0;
         public int bonusTougness = 0;
         public int bonusArmor = 0;
         public int cantAttackOrBlock = 0;
         public int turnToDie = 999;
-        boolean vulnerability=false;
-        public boolean upkeepPlayed=false;
-        public boolean battlecryPlayed=false;
-        public boolean deathPlayed=false;
-        public void EOT() {
-            cantAttackOrBlock--;
-            upkeepPlayed=false;
-            turnToDie--;
-            bonusPowerUEOT=0;
-            if (cantAttackOrBlock < 0) cantAttackOrBlock = 0;
-            if (turnToDie == 0) die();
-            activatedAbilityPlayed=false;
+        boolean vulnerability = false;
+        public boolean upkeepPlayed = false;
+        public boolean battlecryPlayed = false;
+        public boolean deathPlayed = false;
+
+        Effects(Creature _cr) {
+            whis = _cr;
         }
 
-        boolean getVulnerability(){
-            if (Main.players[Board.opponentN(owner)].equpiment[3]!=null && Main.players[Board.opponentN(owner)].equpiment[3].name.equals("Аккения")){
+        public void EOT() {
+            cantAttackOrBlock--;
+            upkeepPlayed = false;
+            turnToDie--;
+            bonusPowerUEOT = 0;
+            if (cantAttackOrBlock < 0) cantAttackOrBlock = 0;
+            if (turnToDie == 0) {
+                Main.gameQueue.push(new GameQueue.QueueEvent("Die", whis, 0));
+            }
+            activatedAbilityPlayed = false;
+        }
+
+        boolean getVulnerability() {
+            if (Main.players[Board.opponentN(owner)].equpiment[3] != null && Main.players[Board.opponentN(owner)].equpiment[3].name.equals("Аккения")) {
                 System.out.println("Аккения детектед");
                 return true;
             }
@@ -56,7 +66,7 @@ public class Creature extends Card {
         }
     }
 
-    boolean getIsSummonedJust(){
+    boolean getIsSummonedJust() {
         if (text.contains("Рывок")) return false;
         if (effects.additionalText.contains("Рывок")) return false;
         //Chain dog take charge
@@ -69,7 +79,7 @@ public class Creature extends Card {
             for (int i = 0; i < Board.creature.get(Board.opponentN(owner)).size(); i++) {
                 if (Board.creature.get(Board.opponentN(owner)).get(i).name.equals("Цепной пес")) houndFounded++;
             }
-            if (houndFounded>1) return false;
+            if (houndFounded > 1) return false;
         }
         return isSummonedJust;
     }
@@ -102,9 +112,9 @@ public class Creature extends Card {
             for (int i = 0; i < Board.creature.get(Board.opponentN(owner)).size(); i++) {
                 if (Board.creature.get(Board.opponentN(owner)).get(i).name.equals("Цепной пес")) houndFounded++;
             }
-            staticBonus += houndFounded-1;
+            staticBonus += houndFounded - 1;
         }
-        return power + effects.bonusPower + staticBonus+effects.bonusPowerUEOT;
+        return power + effects.bonusPower + staticBonus + effects.bonusPowerUEOT;
     }
 
     int getTougness() {
@@ -113,7 +123,7 @@ public class Creature extends Card {
 
     Creature(Creature _card) {
         super(_card.cost, _card.name, _card.creatureType, _card.color, _card.type, _card.targetType, _card.tapTargetType, _card.text, _card.power, _card.hp);
-       // power = _card.power;
+        // power = _card.power;
         //tougness = _card.hp;
         image = _card.image;
         cost = _card.cost;
@@ -167,36 +177,29 @@ public class Creature extends Card {
     }
 
     void fightCreature(Creature second) {
-        if (!second.isTapped) {
+        if (!second.isTapped) {//May be first opponent?
             Main.printToView(0, this.name + " сражается с " + second.name + ".");
             if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
-                this.takeDamageWithoutDie(second.getPower(), DamageSource.fight, second.haveRage());
-                if (this.damage < this.hp) second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
+                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+                if (this.damage < this.hp) second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
             } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
-                second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
+                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
                 if (second.damage < second.hp)
-                    this.takeDamageWithoutDie(second.getPower(), DamageSource.fight, second.haveRage());
+                    this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
             } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
-                this.takeDamageWithoutDie(second.getPower(), DamageSource.fight, second.haveRage());
-                second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
+                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
             } else {
-                this.takeDamageWithoutDie(second.getPower(), DamageSource.fight, second.haveRage());
-                second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
+                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
+                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
             }
-        }
-        else
-        {
+        } else {
             Main.printToView(0, this.name + " ударяет " + second.name + ".");
-            second.takeDamageWithoutDie(this.getPower(), DamageSource.fight, second.haveRage());
+            second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
         }
 
-        Main.readyDied=false;
-        Board.opponent(owner).doAllDiedCreature();
-        Main.readyDied=false;
-        System.out.println("Second doAllDied at Fight");
-        this.owner.doAllDiedCreature();
-        System.out.println("doAllDied at Fight complite");
-
+        //Response queue
+        Main.gameQueue.responseAllQueue();
     }
 
     void heal(int dmg) {
@@ -205,7 +208,7 @@ public class Creature extends Card {
     }
 
     void fightPlayer(Player second) {
-         second.takeDamage(this.getPower());
+        second.takeDamage(this.getPower());
     }
 
     void attackCreature(Creature target) {
@@ -221,11 +224,11 @@ public class Creature extends Card {
             if (blocker.size() != 0) {
                 int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
                 int nt = Board.creature.get(Board.opponentN(owner)).indexOf(target);
-                if (Main.replayCounter==0) {
+                if (Main.replayCounter == 0) {
                     System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
                     Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
-                    Main.creatureWhoAttackTarget=nt;
-                    Main.creatureWhoAttack=nc;
+                    Main.creatureWhoAttackTarget = nt;
+                    Main.creatureWhoAttack = nc;
                 }
                 Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
             } else {
@@ -246,11 +249,11 @@ public class Creature extends Card {
             if (blocker.size() != 0) {
                 int nc = Board.creature.get(owner.numberPlayer).indexOf(this);
                 int nt = -1;
-                if (Main.replayCounter==0) {
+                if (Main.replayCounter == 0) {
                     System.out.println("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
                     Client.writeLine("$CHOISEBLOCKER(" + Board.opponent(owner).playerName + "," + nc + "," + nt + ")");
-                    Main.creatureWhoAttackTarget=nt;
-                    Main.creatureWhoAttack=nc;
+                    Main.creatureWhoAttackTarget = nt;
+                    Main.creatureWhoAttack = nc;
                 }
                 Main.isMyTurn = Main.playerStatus.EnemyChoiseBlocker;
             } else {
@@ -260,14 +263,6 @@ public class Creature extends Card {
     }
 
     void takeDamage(int dmg, DamageSource dmgsrc, Boolean... rage) {
-        takeDamageWithoutDie(dmg,dmgsrc,rage);
-        Main.readyDied=false;
-        Board.opponent(owner).doAllDiedCreature();
-        Main.readyDied=false;
-        owner.doAllDiedCreature();
-    }
-
-    void takeDamageWithoutDie(int dmg, DamageSource dmgsrc, Boolean... rage) {
         if (!this.text.contains("Не получает ран.")) {
             if ((dmgsrc == DamageSource.scoot) || (dmgsrc == DamageSource.fight)) {
                 if ((takedDamageThisTurn) && (rage[0])) {
@@ -281,11 +276,13 @@ public class Creature extends Card {
                 if (currentArmor < 0) currentArmor = 0;
             }
             if ((effects.getVulnerability())) dmg++;
+
             damage += dmg;
             takedDamageThisTurn = true;
-//            if (getTougness() <= damage) {
-//                die();
-//            }
+
+            if (getTougness() <= damage) {
+                die();
+            }
         }
     }
 
@@ -309,9 +306,9 @@ public class Creature extends Card {
         Card.ability(this, owner, _cr, _pl, txt);
     }
 
-    void battlecryNoTarget(){
-        String txt = this.text.substring(this.text.indexOf("Найм:") + "Найм:".length() + 1, this.text.indexOf(".", this.text.indexOf("Найм:"))+1);
-        Card.ability(this,this.owner,this,null,txt);//Only here 3th parametr=1th
+    void battlecryNoTarget() {
+        String txt = this.text.substring(this.text.indexOf("Найм:") + "Найм:".length() + 1, this.text.indexOf(".", this.text.indexOf("Найм:")) + 1);
+        Card.ability(this, this.owner, this, null, txt);//Only here 3th parametr=1th
     }
 
     void battlecryTarget(Creature _cr, Player _pl) {
@@ -320,41 +317,17 @@ public class Creature extends Card {
         Card.ability(this, owner, _cr, _pl, txt);
     }
 
-    private static void deathratleNoTarget(Creature _card, Player _owner) {
+    static void deathratleNoTarget(Creature _card, Player _owner) {
         String txt = _card.text.substring(_card.text.indexOf("Гибель:") + "Гибель:".length() + 1, _card.text.indexOf(".", _card.text.indexOf("Гибель:")) + 1);
         Card.ability(_card, _owner, _card, null, txt);//Only here 3th parametr=1th
     }
 
     void die() {
-        damage=getTougness();
-        Main.printToView(0,this.name + " умирает.");
+        Main.gameQueue.push(new GameQueue.QueueEvent("Die", this, 0));
     }
 
-    boolean isDie(){
+    boolean isDie() {
         return (getTougness() <= damage);//And other method to die!
-    }
-
-    void dieWithList(ListIterator l) {
-        Main.printToView(0,this.name + " умирает.");
-        //if (this.text.contains("Гибельт:")) {
-//            owner.massDie();
-        //}
-        if (this.text.contains("Гибель:")) {
-            deathratleNoTarget(this, owner);
-        }
-        //pause until all deathrattle played
-        System.out.println("Pause at "+name+"/"+owner.name);
-        synchronized (Main.cretureDiedMonitor) {
-            while (!Main.readyDied) {
-                try {
-                    Main.cretureDiedMonitor.wait();
-                } catch (InterruptedException e2) {
-                    e2.printStackTrace();
-                }
-               }
-        }
-        System.out.println(this.name + " удален/"+this.owner.playerName);
-        l.remove();
     }
 
     void returnToHand() {
@@ -363,7 +336,7 @@ public class Creature extends Card {
         // Board.putCardToGraveyard(this, this.owner);
     }
 
-     void removeCreatureFromPlayerBoard() {
+    void removeCreatureFromPlayerBoard() {
         Board.creature.get(owner.numberPlayer).remove(this);
     }
 }

@@ -79,8 +79,6 @@ public class Player extends Card {
         ArrayList<Creature> r = new ArrayList<>();
         for (Creature c : Board.creature.get(numberPlayer)) {
             if (c.isDie()) {
-                //Or other method for die!
-                //if (!c.effects.deathPlayed)
                     r.add(c);
             }
         }
@@ -89,44 +87,46 @@ public class Player extends Card {
 
     Creature searchWhenOtherDieAbility(Creature cr) {
         for (Creature p : Board.creature.get(numberPlayer)) {
-            if (p.text.contains("При гибели другого вашего существа:") && p != cr && !p.activatedAbilityPlayed)
+            if (p.text.contains("При гибели другого вашего существа:") && p != cr && p.getTougness()>p.damage)
                 return p;
         }
         return null;
     }
 
-    boolean massDie() {//Return true if someone wants to choise target at mass die
-        boolean someFounded = false;
-        crDied = new ArrayList<>(diedCreatureOnBoard());
+    void massDieCheckNeededTarget() {//if someone wants to choice target at death(self or other) - pause game
+        crDied = new ArrayList<>(diedCreatureOnBoard());//died creature
         ListIterator<Creature> temp = crDied.listIterator();
         System.out.println("massDie, pl="+playerName+", found died "+crDied.size());
 
         while (temp.hasNext()) {
             Creature tmp = temp.next();
             //Creature ability at death
-            Creature cr = searchWhenOtherDieAbility(tmp);
-            if (cr != null) {
+            Creature cr = searchWhenOtherDieAbility(tmp);//creature, who wants to other die(ex. Падальщик Пустоши)
+            if (cr != null && crDied.size()>0 && !cr.activatedAbilityPlayed) {
                 System.out.println("Падальщик "+playerName);
                 //CHECK EXIST TARGET
-                boolean canTarget=false;
-                if (Board.creature.get(0).size() > 0 && MyFunction.canTarget(MyFunction.Target.myCreature,cr.targetType)) canTarget=true;
-                if (Board.creature.get(1).size() > 0 && MyFunction.canTarget(MyFunction.Target.enemyCreature,cr.targetType)) canTarget=true;
-                if (MyFunction.canTarget(MyFunction.Target.enemyPlayer,cr.targetType)) canTarget=true;//Both players always stay on board
-                if (MyFunction.canTarget(MyFunction.Target.myPlayer,cr.targetType)) canTarget=true;
-
-                if (canTarget) {
+                if (MyFunction.canTargetComplex(cr)) {
                     Main.printToView(0, cr.name + " просит выбрать цель.");
 
-                    if (numberPlayer == 0) {
-                        Main.isMyTurn = Main.playerStatus.choiseTarget;
-                    } else Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                    if (numberPlayer == 0) { Main.isMyTurn = Main.playerStatus.choiseTarget;
+                    } else { Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                    }
 
                     ActivatedAbility.creature = cr;
                     ActivatedAbility.onUpkeepPlayed = false;
                     ActivatedAbility.onDeathPlayed = false;
                     ActivatedAbility.onOtherDeathPlayed = true;
-                    someFounded = true;
-                    break;
+                    //pause until player choice target.
+                    System.out.println("pause");
+                    synchronized (Main.cretureDiedMonitor) {
+                            try {
+                                Main.cretureDiedMonitor.wait();
+                            } catch (InterruptedException e2) {
+                                e2.printStackTrace();
+                            }
+                    }
+                    System.out.println("resume");
+
                 }
                 else {
                     Main.printToView(0, "Целей для " + cr.name + " нет.");
@@ -134,26 +134,28 @@ public class Player extends Card {
                 }
             }
             if (tmp.text.contains("Гибельт:") && !tmp.effects.deathPlayed) {
-                //Check of correct target
                 //CHECK EXIST TARGET
-                boolean canTarget=false;
-                if (Board.creature.get(0).size() > 0 && MyFunction.canTarget(MyFunction.Target.myCreature,cr.targetType)) canTarget=true;
-                if (Board.creature.get(1).size() > 0 && MyFunction.canTarget(MyFunction.Target.enemyCreature,cr.targetType)) canTarget=true;
-                if (MyFunction.canTarget(MyFunction.Target.enemyPlayer,cr.targetType)) canTarget=true;//Both players always stay on board
-                if (MyFunction.canTarget(MyFunction.Target.myPlayer,cr.targetType)) canTarget=true;
-
-                if (canTarget) {
+                if (MyFunction.canTargetComplex(tmp)) {
                     Main.printToView(0, tmp.name + " просит выбрать цель.");
 
-                    if (numberPlayer == 0) {
-                        Main.isMyTurn = Main.playerStatus.choiseTarget;
-                    } else Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;//Enemy choise target
+                    if (numberPlayer == 0) { Main.isMyTurn = Main.playerStatus.choiseTarget;
+                    } else { Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                    }
 
                     ActivatedAbility.creature = new Creature(tmp);
                     ActivatedAbility.onUpkeepPlayed = false;
                     ActivatedAbility.onDeathPlayed = true;
-                    someFounded = true;
-                    break;
+                    ActivatedAbility.onOtherDeathPlayed = false;
+                    //pause until player choice target.
+                    System.out.println("pause");
+                    synchronized (Main.cretureDiedMonitor) {
+                        try {
+                            Main.cretureDiedMonitor.wait();
+                        } catch (InterruptedException e2) {
+                            e2.printStackTrace();
+                        }
+                    }
+                    System.out.println("resume");
                 }
                 else {
                         Main.printToView(0, "Целей для " + tmp.name + " нет.");
@@ -161,10 +163,6 @@ public class Player extends Card {
                     }
             }
         }
-        if (!someFounded){
-            System.out.println("FREE for "+playerName);
-            Client.writeLine("$FREE");}
-        return someFounded;
     }
 
     boolean massSummon() {//Return true if someone wants to choise target at mass summon
@@ -233,21 +231,8 @@ public class Player extends Card {
             Main.printToView(1, Color.GREEN, "Ваш ход");
         else Main.printToView(1, Color.RED, "Ход противника");
 
-        //Bogart!
-        Main.readyDied = false;
-        Board.opponent(this).doAllDiedCreature();
-        //wait response FREE
-//        synchronized (Main.cretureDiedMonitor) {
-//            try {
-//                Main.cretureDiedMonitor.wait();
-//            } catch (InterruptedException e2) {
-//                e2.printStackTrace();
-//            }
-//        }
-        Main.readyDied = false;
-        System.out.println("Second doAllDied at NewTurn");
-        this.doAllDiedCreature();
-        //
+        //Bogart and other
+        Main.gameQueue.responseAllQueue();
 
         isTapped = false;
         //Get coin
@@ -408,26 +393,6 @@ public class Player extends Card {
         System.out.println("ТАП HERO: " + txt);
         isTapped = true;
         Card.ability(this, this, null, null, txt);
-    }
-
-    void doAllDiedCreature() {
-        // if (numberPlayer == 0) {
-        Main.memPlayerStatus = Main.isMyTurn;
-
-        massDie();
-
-        ListIterator<Creature> temp = Board.creature.get(numberPlayer).listIterator();
-        while (temp.hasNext()) {
-            Creature tmp = temp.next();
-            if (tmp.isDie()) {
-                //Or other method for die!
-               // System.out.println("Die(doAll) " + tmp.name + "/" + tmp.owner.playerName);
-                tmp.dieWithList(temp);
-            }
-        }
-        System.out.println("After all dieWithList ");
-        Main.isMyTurn = Main.memPlayerStatus;
-        crDied = new ArrayList<>();
     }
 
     void ability(Creature _cr, Player _pl) {

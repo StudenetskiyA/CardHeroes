@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class Board {
     static List<ArrayList<Creature>> creature;
-    public static NewTurnQueue newTurnQueue = new NewTurnQueue();
+  ///  public static NewTurnQueue newTurnQueue = new NewTurnQueue();
 
     static int turnCount = 0;
 
@@ -62,6 +62,5 @@ public class Board {
     static void putCardToGraveyard(Card _card, Player _owner) {
         _owner.graveyard.add(_card);
     }
-
 
 }
