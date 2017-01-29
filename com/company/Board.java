@@ -3,6 +3,8 @@ package com.company;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.company.Main.main;
+
 /**
  * Created by StudenetiskiyA on 30.12.2016.
  */
@@ -34,23 +36,19 @@ public class Board {
     static void addCreatureToBoard(Card _creature, Player _player) {
         Creature summonCreature = new Creature(_creature, _player);
 
+
+        int np = _player.numberPlayer;
+        creature.get(np).add(summonCreature);
+        Main.gameQueue.push(new GameQueue.QueueEvent("Summon",summonCreature,0));
+
         if (_creature.text.contains("Уникальность.")) {
             for (int i = Board.creature.get(_player.numberPlayer).size() - 1; i >= 0; i--) {
                 if (Board.creature.get(_player.numberPlayer).get(i).name.equals(_creature.name)){
                     Board.creature.get(_player.numberPlayer).get(i).die();
+                    break;
                 }
             }
         }
-        int np = _player.numberPlayer;
-        creature.get(np).add(summonCreature);
-        if (_creature.text.contains("Наймт:")) {
-            //Begin choice target for battlecry
-              _player.massSummon();
-        }
-        if (_creature.text.contains("Найм:")) {
-            summonCreature.battlecryNoTarget();
-            }
-
         if (summonCreature.getTougness()<=0){
             summonCreature.die();
         }

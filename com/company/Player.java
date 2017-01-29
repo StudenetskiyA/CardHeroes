@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 
 import static com.company.Card.ActivatedAbility.WhatAbility.*;
+import static com.company.Main.monitor;
+import static com.company.Main.ready;
 
 /**
  * Created by StudenetskiyA on 30.12.2016.
@@ -76,6 +78,8 @@ public class Player extends Card {
     }
 
     public ArrayList<Creature> crDied;
+    public ArrayList<Creature> crCryed;
+    public ArrayList<Creature> crUpkeeped;
 
     ArrayList<Creature> diedCreatureOnBoard() {
         ArrayList<Creature> r = new ArrayList<>();
@@ -117,7 +121,7 @@ public class Player extends Card {
                     }
 
                     ActivatedAbility.creature = cr;
-                    ActivatedAbility.whatAbility=onOtherDeathPlayed;
+                    ActivatedAbility.whatAbility = onOtherDeathPlayed;
                     //pause until player choice target.
                     System.out.println("pause");
                     synchronized (Main.cretureDiedMonitor) {
@@ -146,7 +150,7 @@ public class Player extends Card {
                     }
 
                     ActivatedAbility.creature = new Creature(tmp);
-                    ActivatedAbility.whatAbility=onDeathPlayed;
+                    ActivatedAbility.whatAbility = onDeathPlayed;
                     //pause until player choice target.
                     System.out.println("pause");
                     synchronized (Main.cretureDiedMonitor) {
@@ -181,12 +185,13 @@ public class Player extends Card {
                         }
                         System.out.println("resume");
                     }
-                    if (n==1){
-                        Main.printToView(0, tmp.name + " заставляет сбросить "+cardInHand.get(0));
+                    if (n == 1) {
+                        Main.printToView(0, tmp.name + " заставляет сбросить " + cardInHand.get(0));
                         Board.putCardToGraveyard(cardInHand.get(0), this);
                         cardInHand.remove(cardInHand.get(0));
                     }
-                    if (n==0){ Main.printToView(0, tmp.name + " заставляет сбросить карту, но ее нет.");
+                    if (n == 0) {
+                        Main.printToView(0, tmp.name + " заставляет сбросить карту, но ее нет.");
                     }
                 } else {
                     Main.printToView(0, "Целей для " + tmp.name + " нет.");
@@ -196,60 +201,77 @@ public class Player extends Card {
         }
     }
 
-    boolean massSummon() {//Return true if someone wants to choice target at mass summon
-        boolean someFounded = false;
-        if (numberPlayer == 0) {//Until not have ability mass summon with target at opponent turn!
-            while (true) {
-                for (int i = Board.creature.get(numberPlayer).size() - 1; i >= 0; i--) {
-                    //Creature ability at begin turn
-                    if (Board.creature.get(numberPlayer).get(i).text.contains("Наймт:")) {
-                        //Check of correct target
-                        if (!Board.creature.get(numberPlayer).get(i).effects.battlecryPlayed) {
-                            if (MyFunction.canTargetComplex(Board.creature.get(numberPlayer).get(i))) {
-                                //Begin choice target for ability
-                                Main.isMyTurn = Main.playerStatus.choiceTarget;
-                                ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
-                                ActivatedAbility.creatureTap = false;
-                                ActivatedAbility.whatAbility= nothing;
-                                someFounded = true;
-                                break;
-                            } else {
-                                Main.printToView(0, "Целей для " + Board.creature.get(numberPlayer).get(i).name + " нет.");
-                                Board.creature.get(numberPlayer).get(i).effects.battlecryPlayed = true;//If you can't target, after you can't play this ability
-                            }
+    void massUpkeepCheckNeededTarget() {//if someone wants to choice target at death(self or other) - pause game
+        crUpkeeped = new ArrayList<>(Board.creature.get(numberPlayer));//died creature
+        ListIterator<Creature> temp = crUpkeeped.listIterator();
+        while (temp.hasNext()) {
+            Creature tmp = temp.next();
+            //Creature ability at upkeep
+            if (tmp.text.contains("В начале хода") || tmp.text.contains("В начале вашего хода") && tmp.getTougness() > tmp.damage)
+                if (Board.creature.get(numberPlayer).size() > 1 && !tmp.effects.upkeepPlayed) {
+                    System.out.println("Амбрадоринг " + playerName);
+                    //CHECK EXIST TARGET
+                    Main.printToView(0, tmp.name + " просит выбрать цель.");
+
+                    if (numberPlayer == 0) {
+                        Main.isMyTurn = Main.playerStatus.choiceTarget;
+                    } else {
+                        Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                    }
+
+                    ActivatedAbility.creature = tmp;
+                    ActivatedAbility.whatAbility = onUpkeepPlayed;
+                    //pause until player choice target.
+                    System.out.println("pause");
+                    synchronized (Main.cretureDiedMonitor) {
+                        try {
+                            Main.cretureDiedMonitor.wait();
+                        } catch (InterruptedException e2) {
+                            e2.printStackTrace();
                         }
                     }
+                    System.out.println("resume");
+                    tmp.effects.upkeepPlayed = true;
+                    break;//Upkeep played creature by creature.
                 }
-                return someFounded;
-            }
         }
-        return false;
     }
 
-    boolean upkeep() {//Return true if someone wants to choice target at begin turn
-        boolean someFounded = false;
-        if (numberPlayer == 0) {//Until not have ability at begin of opponent turn!
-            while (true) {
-                for (int i = Board.creature.get(numberPlayer).size() - 1; i >= 0; i--) {
-                    //Creature ability at begin turn
-                    if (Board.creature.get(numberPlayer).get(i).text.contains("В начале вашего хода: ") || Board.creature.get(numberPlayer).get(i).text.contains("В начале хода: ")) {
-                        //TODO For Ambrador ok, when you add new card with on begin turn - fix here!
-                        if ((Board.creature.get(numberPlayer).size() > 1) && (!Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed)) {
+    void massSummonCheckNeededTarget() {//if someone wants to choice target at death(self or other) - pause game
+        crCryed = new ArrayList<>(Board.creature.get(numberPlayer));//died creature
+        ListIterator<Creature> temp = crCryed.listIterator();
+        while (temp.hasNext()) {
+            Creature tmp = temp.next();
+            //Creature ability at enter to board
+            if (tmp.text.contains("Наймт:") && !tmp.effects.battlecryPlayed && tmp.getTougness() > tmp.damage)
+                   //CHECK EXIST TARGET
+                    if (MyFunction.canTargetComplex(tmp)) {
+                        if (numberPlayer == 0) {
                             Main.isMyTurn = Main.playerStatus.choiceTarget;
-                            Card.ActivatedAbility.creature = Board.creature.get(numberPlayer).get(i);
-                            Card.ActivatedAbility.creatureTap = false;
-                            ActivatedAbility.whatAbility=onUpkeepPlayed;
-                            Board.creature.get(numberPlayer).get(i).effects.upkeepPlayed = true;
-                            someFounded = true;
-                            Main.printToView(0, "Амбрадор заставляет вернуть другое существо.");
-                            break;
+                        } else {
+                            Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
                         }
+                        Main.printToView(0, tmp.name + " просит выбрать цель.");
+
+                        ActivatedAbility.creature = tmp;
+                        ActivatedAbility.whatAbility = nothing;
+                        //pause until player choice target.
+                        System.out.println("pause");
+                        synchronized (Main.cretureDiedMonitor) {
+                            try {
+                                Main.cretureDiedMonitor.wait();
+                            } catch (InterruptedException e2) {
+                                e2.printStackTrace();
+                            }
+                        }
+                        System.out.println("resume");
+                        tmp.effects.battlecryPlayed = true;
+                        break;//Cry played creature by creature.
+                    } else {
+                        Main.printToView(0, "Целей для " + tmp.name + " нет.");
+                        tmp.effects.battlecryPlayed = true;//If you can't target, after you can't play this ability
                     }
-                }
-                return someFounded;
-            }
         }
-        return false;
     }
 
     void newTurn() {
@@ -261,18 +283,24 @@ public class Player extends Card {
 
         //Tull-Bagar
         //TODO FIX null
-        if (this.equpiment[3]!=null && this.equpiment[3].name.equals("Пустошь Тул-Багара")) {
+        if (this.equpiment[3] != null && this.equpiment[3].name.equals("Пустошь Тул-Багара")) {
             Main.printToView(0, "Пустошь Тул-Багара ранит всех героев.");
             this.takeDamage(1);
             Board.opponent(this).takeDamage(1);
         }
-        if (Board.opponent(this).equpiment[3]!=null && Board.opponent(this).equpiment[3].name.equals("Пустошь Тул-Багара")) {
+        if (Board.opponent(this).equpiment[3] != null && Board.opponent(this).equpiment[3].name.equals("Пустошь Тул-Багара")) {
             Main.printToView(0, "Пустошь Тул-Багара ранит всех героев.");
             this.takeDamage(1);
             Board.opponent(this).takeDamage(1);
         }
 
-
+        //Search for Ambrador
+        if (Board.creature.get(numberPlayer).size() > 1) {
+            for (Creature p : Board.creature.get(numberPlayer)) {
+                if (p.text.contains("В начале хода") || p.text.contains("В начале вашего хода") && p.getTougness() > p.damage)
+                    Main.gameQueue.push(new GameQueue.QueueEvent("Upkeep", p, 0));
+            }
+        }
         //Bogart and other
         Main.gameQueue.responseAllQueue();
 
@@ -302,7 +330,6 @@ public class Player extends Card {
             Main.gameQueue.responseAllQueue();//poison queue
         }
 
-        upkeep();
         //Draw
         if (Board.turnCount != 1) drawCard();//First player not draw card in first turn. It's rule.
     }
@@ -368,6 +395,8 @@ public class Player extends Card {
         } else {
             Main.printToView(0, "Не хватает монет.");
         }
+
+        Main.gameQueue.responseAllQueue();
     }
 
     void drawCard() {
@@ -449,8 +478,8 @@ public class Player extends Card {
         Card.ability(this, this, _cr, _pl, txt);
     }
 
-    public Card searchInGraveyard(String name){
-        for (int i=0;i<=graveyard.size();i++){
+    public Card searchInGraveyard(String name) {
+        for (int i = 0; i <= graveyard.size(); i++) {
             if (graveyard.get(i).name.equals(name)) return graveyard.get(i);
         }
         return null;

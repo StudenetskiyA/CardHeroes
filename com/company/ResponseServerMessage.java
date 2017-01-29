@@ -307,5 +307,6 @@ public class ResponseServerMessage extends Thread {
             ready = true;
             monitor.notifyAll();
         }
+
     }
 }

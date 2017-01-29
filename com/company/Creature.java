@@ -62,6 +62,10 @@ public class Creature extends Card {
             }
             return vulnerability;
         }
+
+        int getBonusPower(){
+            return bonusPower+bonusPowerUEOT;
+        }
     }
 
     boolean getIsSummonedJust() {
@@ -163,38 +167,29 @@ public class Creature extends Card {
 
         //get list of opponent creature
         ArrayList<Creature> crt = new ArrayList<>(Board.creature.get(pl));
-        ListIterator<Creature> temp = crt.listIterator();
+        ArrayList<Creature> crtCopy = new ArrayList<>(crt);
+        ListIterator<Creature> temp = crtCopy.listIterator();
 
         while (temp.hasNext()) {
             Creature tmp = temp.next();
             if (tmp.blockThisTurn || tmp.isTapped || tmp.effects.cantAttackOrBlock > 0 || tmp==target)
-                crt.remove(tmp);
+                crt.remove(tmp); //it make error
         }
-            //delete from it tapped
-//        for (int i = 0; i < crt.size(); i++) {
-//            //for (Creature cr:creature){
-//            if (crt.get(i).blockThisTurn || crt.get(i).isTapped || crt.get(i).effects.cantAttackOrBlock > 0 || crt.get(i)==target)
-//                crt.remove(crt.get(i));
-//        }
         return crt;
     }
 
     void fightCreature(Creature second) {
-        if (!second.isTapped) {//May be first opponent?
+        if (!second.isTapped) {//First is passive
             Main.printToView(0, this.name + " сражается с " + second.name + ".");
             if ((second.text.contains("Первый удар.")) && (!this.text.contains("Первый удар."))) {
-                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
                 if (this.damage < this.hp) second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
             } else if ((this.text.contains("Первый удар.")) && (!second.text.contains("Первый удар."))) {
                 second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
-                if (second.damage < second.hp)
-                    this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
-            } else if ((this.text.contains("Первый удар.")) && (second.text.contains("Первый удар."))) {
-                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
-                second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+                if (second.damage < second.hp) this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
             } else {
-                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
                 second.takeDamage(this.getPower(), DamageSource.fight, second.haveRage());
+                this.takeDamage(second.getPower(), DamageSource.fight, second.haveRage());
             }
         } else {
             Main.printToView(0, this.name + " ударяет " + second.name + ".");

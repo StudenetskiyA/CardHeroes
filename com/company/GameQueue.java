@@ -1,6 +1,6 @@
 package com.company;
 
-import static com.company.Main.main;
+import static com.company.Main.*;
 
 /**
  * Created by StudenetskiyA on 23.01.2017.
@@ -51,6 +51,8 @@ public class GameQueue
         Main.memPlayerStatus=Main.isMyTurn;
         while (Main.gameQueue.size() != 0) {
             GameQueue.QueueEvent event = Main.gameQueue.pull();
+            Main.readyQueue=false;
+            System.out.println("next queue response");
             if (event.whatToDo.equals("Die")) {
                 if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
                     Main.printToView(0, event.targetCr.name + " умирает.");
@@ -65,8 +67,26 @@ public class GameQueue
                     Board.creature.get(event.targetCr.owner.numberPlayer).remove(event.targetCr);
                 }
             }
+            else if (event.whatToDo.equals("Upkeep")) {
+                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
+                    event.targetCr.owner.massUpkeepCheckNeededTarget();
+                }
+            }
+            else if (event.whatToDo.equals("Summon")) {
+                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
+                    event.targetCr.owner.massSummonCheckNeededTarget();
+
+                    if (event.targetCr.text.contains("Найм:")) {
+                        event.targetCr.battlecryNoTarget();
+                    }
+                }
+            }
         }
         Main.isMyTurn=Main.memPlayerStatus;
+        synchronized (Main.queueMonitor) {
+            readyQueue = true;
+            Main.queueMonitor.notifyAll();
+        }
     }
 
 

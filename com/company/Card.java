@@ -23,8 +23,7 @@ class Card {
     String hash;//for suffling
 
     static class ActivatedAbility {
-      //  static int targetType;
-      //  static int tapTargetType;
+
         static Creature creature;
         static boolean creatureTap;
         enum WhatAbility{heroAbility,weaponAbility,toHandAbility,onUpkeepPlayed,onDeathPlayed,onOtherDeathPlayed,nothing}
@@ -37,6 +36,7 @@ class Card {
         public static boolean isNothingOrDeath(){
             if (whatAbility==WhatAbility.nothing) return true;
             if (whatAbility==WhatAbility.onDeathPlayed) return true;
+            if (whatAbility==WhatAbility.onUpkeepPlayed) return true;
             if (whatAbility==WhatAbility.onOtherDeathPlayed) return true;
             return false;
         }
@@ -249,7 +249,7 @@ class Card {
                 return new Card(2, name, "Оружие", 3, 3, 0, 1, "ТАПТ: Выбранное существо до конца хода получает к атаке + 2.", 0, 0);
             case "Аккения":
                 return new Card(4, name, "Событие", 2, 4, 0, 0, "Статичный эффект.", 0, 0);
-            case "Пустошь Тулл-Багара":
+            case "Пустошь Тул-Багара":
                 return new Card(1, name, "Событие", 5, 4, 0, 0, "Статичный эффект.", 0, 0);
             default:
                 System.out.println("Ошибка - Неопознанная карта:" + name);
@@ -293,13 +293,14 @@ class Card {
                     Main.printToView(0,"Лики показывают "+c.name);
 
                     if (c.cost <= 1) {
-                        Board.addCreatureToBoard(new Creature(c, Main.players[0]), Main.players[0]);
+                        Creature cr = new Creature(c, Main.players[0]);
+                        Board.addCreatureToBoard(cr,Main.players[0]);
+                        Main.gameQueue.push(new GameQueue.QueueEvent("Summon",cr,0));
                         Main.players[0].deck.cards.remove(c);
                     }
                 }
                 Main.players[0].deck.suffleDeck(Main.sufflingConst);
                 main.repaint();
-                _whis.massSummon();
             } else {
                 ArrayList<Card> a = new ArrayList<>();
                 if (Main.players[1].deck.topDeck()!=null ) a.add(Main.players[1].deck.topDeck());
@@ -307,7 +308,9 @@ class Card {
                 if (Main.players[1].deck.topDeck(3)!=null ) a.add(Main.players[1].deck.topDeck(3));
                  for (Card c : a) {
                     if (c.cost <= 1) {
-                        Board.addCreatureToBoard(new Creature(c, Main.players[1]), Main.players[1]);
+                        Creature cr = new Creature(c, Main.players[0]);
+                        Board.addCreatureToBoard(cr, Main.players[1]);
+                        Main.gameQueue.push(new GameQueue.QueueEvent("Summon",cr,0));
                         Main.players[1].deck.cards.remove(c);
                         Main.printToView(0,"Лики вызывают "+c.name);
                     }
@@ -447,7 +450,7 @@ class Card {
             Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
             _cr.takeDamage(dmg, Creature.DamageSource.ability);
         }
-        else if (txt.contains("Ранить на остаток выбранное существо и своего героя на столько же")) {
+        if (txt.contains("Ранить на остаток выбранное существо и своего героя на столько же")) {
             int dmg = _cr.getTougness()-_cr.damage;
             Main.printToView(0, _cr.name + " получил " + dmg + " урона.");
             Main.printToView(0, _whis.name + " получил " + dmg + " урона.");
@@ -527,7 +530,7 @@ class Card {
                 tmp.takeDamage(dmg, Creature.DamageSource.ability);
             }
             Main.printToView(0, _who.name + " ранит всех существ противника на " + dmg + ".");
-            Main.gameQueue.responseAllQueue();
+            //Main.gameQueue.responseAllQueue();
         }
         if (txt.contains(("Ранить каждое существо на "))) {
             int dmg = MyFunction.getNumericAfterText(txt, "Ранить каждое существо на ");
@@ -544,7 +547,7 @@ class Card {
                 tmp.takeDamage(dmg, Creature.DamageSource.ability);
             }
             Main.printToView(0, _who.name + " ранит всех существ на " + dmg + ".");
-            Main.gameQueue.responseAllQueue();
+         //   Main.gameQueue.responseAllQueue();
         }
         if (txt.contains(("Каждое другое существо погибает в конце хода противника."))) {//TODO Fix it with deathrattle
             int op = Board.opponentN(_whis);
@@ -598,7 +601,7 @@ class Card {
             }
         }
 
-        Main.gameQueue.responseAllQueue();
+       // Main.gameQueue.responseAllQueue();
     }
 
     boolean haveRage() {
