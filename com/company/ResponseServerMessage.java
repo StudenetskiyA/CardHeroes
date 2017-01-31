@@ -181,18 +181,18 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
             int apl = (pl == 0) ? 1 : 0;
-            if (!parameter.get(2).equals("-1")) {//if card targets creature
-                if ((parameter.get(3).equals(players[apl].playerName)))
-                    players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))), null);
+            if (!parameter.get(3).equals("-1")) {//if card targets creature
+                if ((parameter.get(4).equals(players[apl].playerName)))
+                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
                 else //to self creature
-                    players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), Board.creature.get(pl).get(Integer.parseInt(parameter.get(2))), null);
+                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
             } else {
-                if (parameter.get(3).equals(players[apl].playerName))//enemy
-                    players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[apl]);
-                else if (parameter.get(3).equals(players[pl].playerName))//target - self player
-                    players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, players[pl]);
+                if (parameter.get(4).equals(players[apl].playerName))//enemy
+                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, players[apl]);
+                else if (parameter.get(4).equals(players[pl].playerName))//target - self player
+                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, players[pl]);
                 else
-                    players[pl].playCard(players[pl].cardInHand.get(Integer.parseInt(parameter.get(1))), null, null);
+                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, null);
             }
         } else if (fromServer.contains("$PLAYWITHX(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);

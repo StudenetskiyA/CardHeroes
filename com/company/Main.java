@@ -1537,8 +1537,7 @@ public class Main extends JFrame {
                             choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + ",-1,-1";
                             main.repaint();
                         } else {
-                            System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
-                            Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
+                            Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num + ",-1,-1)");
                         }
                     } else {
                         printToView(0, "Заклинание требует цели.");
@@ -1575,8 +1574,7 @@ public class Main extends JFrame {
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (cardMem != null)) {
                     //enemy hero attack by spell from hand
                     if (cardMem.targetType == 2) {
-                        System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1," + players[1].playerName + ")");
-                        Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1," + players[1].playerName + ")");
+                        Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num  + ",-1," + players[1].playerName + ")");
                     } else {
                         printToView(0, "Некорректная цель для данного заклинания, выберите существо.");
                     }
@@ -1593,8 +1591,7 @@ public class Main extends JFrame {
                                 choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
                                 main.repaint();
                             } else {
-                                System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
-                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
+                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num  + "," + whereMyMouseNum + "," + players[0].playerName + ")");
                             }
                         } else {
                             printToView(0, "Некорректная цель для данного заклинания, выберите героя.");
@@ -1613,8 +1610,7 @@ public class Main extends JFrame {
                                 choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
                                 main.repaint();
                             } else {
-                                System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
-                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
+                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
                             }
                         } else {
                             printToView(0, "Некорректная цель для данного заклинания, выберите героя.");
