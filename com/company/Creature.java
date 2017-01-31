@@ -64,8 +64,45 @@ public class Creature extends Card {
         }
 
         int getBonusPower(){
-            return bonusPower+bonusPowerUEOT;
+            int staticBonus = 0;
+            //TanGnome take + for power
+            if ((creatureType.equals("Гном")) && (!name.equals("Тан гномов"))) {
+                int tanFounded = 0;
+                for (int i = 0; i < Board.creature.get(owner.numberPlayer).size(); i++) {
+                    if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Тан гномов")) tanFounded++;
+                }
+                staticBonus += tanFounded;
+            }
+            //Chain dog take and get + power
+            if ((name.equals("Цепной пес"))) {
+                int houndFounded = 0;
+                for (int i = 0; i < Board.creature.get(owner.numberPlayer).size(); i++) {
+                    if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Цепной пес")) houndFounded++;
+                }
+                //and for opponent
+                for (int i = 0; i < Board.creature.get(Board.opponentN(owner)).size(); i++) {
+                    if (Board.creature.get(Board.opponentN(owner)).get(i).name.equals("Цепной пес")) houndFounded++;
+                }
+                staticBonus += houndFounded - 1;
+            }
+            return staticBonus+bonusPower+bonusPowerUEOT;
         }
+
+        int getBonusTougness(){
+            return bonusTougness;
+        }
+    }
+
+    int getBonusOrMinusTougness(){
+        if (damage>0) return -1;
+        else if (damage==0 && effects.getBonusTougness()>0) return 1;
+        else return 0;
+    }
+
+    int getBonusOrMinusPower(){
+        if (getPower()>power) return 1;
+        if (getPower()==power) return 0;
+        else return -1;
     }
 
     boolean getIsSummonedJust() {
@@ -95,32 +132,11 @@ public class Creature extends Card {
     }
 
     int getPower() {
-        int staticBonus = 0;
-        //TanGnome take + for power
-        if ((creatureType.equals("Гном")) && (!name.equals("Тан гномов"))) {
-            int tanFounded = 0;
-            for (int i = 0; i < Board.creature.get(owner.numberPlayer).size(); i++) {
-                if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Тан гномов")) tanFounded++;
-            }
-            staticBonus += tanFounded;
-        }
-        //Chain dog take and get + power
-        if ((name.equals("Цепной пес"))) {
-            int houndFounded = 0;
-            for (int i = 0; i < Board.creature.get(owner.numberPlayer).size(); i++) {
-                if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Цепной пес")) houndFounded++;
-            }
-            //and for opponent
-            for (int i = 0; i < Board.creature.get(Board.opponentN(owner)).size(); i++) {
-                if (Board.creature.get(Board.opponentN(owner)).get(i).name.equals("Цепной пес")) houndFounded++;
-            }
-            staticBonus += houndFounded - 1;
-        }
-        return power + effects.bonusPower + staticBonus + effects.bonusPowerUEOT;
+        return power + effects.getBonusPower();
     }
 
     int getTougness() {
-        return hp + effects.bonusTougness;
+        return hp + effects.getBonusTougness();
     }
 
     Creature(Creature _card) {
@@ -331,8 +347,7 @@ public class Creature extends Card {
 
     void returnToHand() {
         removeCreatureFromPlayerBoard();
-        owner.cardInHand.add(this);
-        // Board.putCardToGraveyard(this, this.owner);
+        owner.cardInHand.add(0,this);
     }
 
     void removeCreatureFromPlayerBoard() {

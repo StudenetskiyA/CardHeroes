@@ -10,7 +10,7 @@ import static com.company.Main.main;
  */
 public class Board {
     static List<ArrayList<Creature>> creature;
-  ///  public static NewTurnQueue newTurnQueue = new NewTurnQueue();
+    static String whichTurn="";
 
     static int turnCount = 0;
 
@@ -41,15 +41,17 @@ public class Board {
         creature.get(np).add(summonCreature);
         Main.gameQueue.push(new GameQueue.QueueEvent("Summon",summonCreature,0));
 
-        if (_creature.text.contains("Уникальность.")) {
+        if (summonCreature.text.contains("Уникальность.")) {
             for (int i = Board.creature.get(_player.numberPlayer).size() - 1; i >= 0; i--) {
-                if (Board.creature.get(_player.numberPlayer).get(i).name.equals(_creature.name)){
+                if (Board.creature.get(_player.numberPlayer).get(i).name.equals(_creature.name) && Board.creature.get(_player.numberPlayer).get(i)!=summonCreature){
+                    System.out.println("Double uniqe creature, die.");
                     Board.creature.get(_player.numberPlayer).get(i).die();
                     break;
                 }
             }
         }
         if (summonCreature.getTougness()<=0){
+            System.out.println("Creature hp less 0, die.");
             summonCreature.die();
         }
     }

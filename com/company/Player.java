@@ -3,6 +3,7 @@ package com.company;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.ListIterator;
+import java.util.concurrent.TimeUnit;
 
 import static com.company.Card.ActivatedAbility.WhatAbility.*;
 import static com.company.Main.monitor;
@@ -95,6 +96,8 @@ public class Player extends Card {
         for (Creature p : Board.creature.get(numberPlayer)) {
             if (p.text.contains("При гибели другого вашего существа:") && p != cr && p.getTougness() > p.damage)
                 return p;
+            if (p.text.contains("При гибели в ваш ход другого вашего существа:") && p.owner.playerName.equals(Board.whichTurn) && p != cr && p.getTougness() > p.damage)
+                return p;
         }
         return null;
     }
@@ -132,7 +135,7 @@ public class Player extends Card {
                         }
                     }
                     System.out.println("resume");
-
+                    ActivatedAbility.creature.activatedAbilityPlayed = true;//if you remove it, may play any times at turn.
                 } else {
                     Main.printToView(0, "Целей для " + cr.name + " нет.");
                     cr.activatedAbilityPlayed = true;//If you can't target, after you can't play this ability
@@ -161,6 +164,7 @@ public class Player extends Card {
                         }
                     }
                     System.out.println("resume");
+                    tmp.effects.deathPlayed = true;
                 } else if (tmp.targetType == 99) {
                     //Check n card
                     int n = cardInHand.size();
@@ -275,6 +279,7 @@ public class Player extends Card {
     }
 
     void newTurn() {
+        Board.whichTurn=playerName;
         Board.turnCount++;
         Main.printToView(0, "Ход номер " + Board.turnCount + ", игрок " + playerName);
         if (numberPlayer == 0)
@@ -451,6 +456,12 @@ public class Player extends Card {
         } else {
             System.out.println("Player lose game.");
             Main.printToView(0, playerName + " проиграл игру.");
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.exit(0);
             //TODO Lose play
         }
     }

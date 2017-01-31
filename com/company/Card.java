@@ -22,6 +22,9 @@ class Card {
     int hp;//only for creature and hero, its maximum health, not current
     String hash;//for suffling
 
+    static Card simpleCard = new Card(0, "", "", 0, 0, 0, 0, "", 0, 0);
+
+
     static class ActivatedAbility {
 
         static Creature creature;
@@ -216,7 +219,7 @@ class Card {
             case "Вестник смерти":
                 return new Card(1, name, "Слуа", 5, 2, 99, 0, "Гибельт: Сбросьте карту.", 3, 3);
             case "Падальщик пустоши"://fix
-                return new Card(1, name, "Зверь", 6, 2, 4, 0, "При гибели другого вашего существа: Ранить выбранное существо на 2.", 1, 2);
+                return new Card(1, name, "Зверь", 6, 2, 4, 0, "При гибели в ваш ход другого вашего существа: Ранить выбранное существо на 2.", 1, 2);
             case "Ядовитое пламя":
                 return new Card(0, name, "", 1, 1, 1, 0, "Доплатите Х *. Ранить выбранное существо на ХХХ.", 0, 0);
             case "Вольный воитель":
@@ -279,6 +282,15 @@ class Card {
                 int dmg = MyFunction.getNumericAfterText(txt, "Поиск цвет ");
                 Main.isMyTurn = Main.playerStatus.searchX;
                 Main.choiceXcolor = dmg;
+                System.out.println("pause");
+                synchronized (Main.cretureDiedMonitor) {
+                    try {
+                        Main.cretureDiedMonitor.wait();
+                    } catch (InterruptedException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                System.out.println("resume");
             }
         }
         if (txt.contains("Лики-абилка.")) {//Only for player, who called it.
@@ -328,6 +340,15 @@ class Card {
                 Main.choiceXcost = MyFunction.getNumericAfterText(txt, "Поиск комбо+ " + type + " " + Main.choiceXcreatureType + " ");
                 Main.choiceXcostExactly=0;
                 System.out.println("search cost = " + Main.choiceXcost);
+                System.out.println("pause");
+                synchronized (Main.cretureDiedMonitor) {
+                    try {
+                        Main.cretureDiedMonitor.wait();
+                    } catch (InterruptedException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                System.out.println("resume");
             }
         }
         if (txt.contains("Поиск ТС ")) {//Only for player, who called it.
@@ -338,6 +359,15 @@ class Card {
                 Main.choiceXcost=0;
                 Main.choiceXcostExactly = MyFunction.getNumericAfterText(txt, "Поиск ТС " + type + " ");
                 System.out.println("search cost = " + Main.choiceXcostExactly);
+                System.out.println("pause");
+                synchronized (Main.cretureDiedMonitor) {
+                    try {
+                        Main.cretureDiedMonitor.wait();
+                    } catch (InterruptedException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                System.out.println("resume");
             }
         }
         else if (txt.contains("Раскопать тип ")) {//Only for player, who called it.
@@ -345,6 +375,15 @@ class Card {
                 int dmg = MyFunction.getNumericAfterText(txt, "Раскопать тип ");
                 Main.isMyTurn = Main.playerStatus.digX;
                 Main.choiceXtype = dmg;
+                System.out.println("pause");
+                synchronized (Main.cretureDiedMonitor) {
+                    try {
+                        Main.cretureDiedMonitor.wait();
+                    } catch (InterruptedException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                System.out.println("resume");
             }
         }
         if (txt.contains("Поиск тип ")) {//Only for player, who called it.
@@ -352,6 +391,15 @@ class Card {
                 int dmg = MyFunction.getNumericAfterText(txt, "Поиск тип ");
                 Main.isMyTurn = Main.playerStatus.searchX;
                 Main.choiceXtype = dmg;
+                System.out.println("pause");
+                synchronized (Main.cretureDiedMonitor) {
+                    try {
+                        Main.cretureDiedMonitor.wait();
+                    } catch (InterruptedException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                System.out.println("resume");
             }
         }
         if (txt.contains("Получает к характеристикам + ")) {
