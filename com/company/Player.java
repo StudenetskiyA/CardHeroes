@@ -339,20 +339,18 @@ public class Player extends Card {
         if (Board.turnCount != 1) drawCard();//First player not draw card in first turn. It's rule.
     }
 
-    void playCardX(Card _card, Creature _targetCreature, Player _targetPlayer, int x) {
-        int num = cardInHand.indexOf(_card);
-        if (num == -1) return;
+    void playCardX(int num, Card _card, Creature _targetCreature, Player _targetPlayer, int x) {
         Main.printToView(0, "X = " + x + ".");
         _card.text = _card.text.replace("ХХХ", String.valueOf(x));
         System.out.println("text after replace:" + _card.text);
         tempX = x;
-        playCard(_card, _targetCreature, _targetPlayer);
+        playCard(num,_card, _targetCreature, _targetPlayer);
         tempX = 0;
     }
 
-    void playCard(Card _card, Creature _targetCreature, Player _targetPlayer) {
-        int num = cardInHand.indexOf(_card);
-        if (num == -1) return;
+    void playCard(int num, Card _card, Creature _targetCreature, Player _targetPlayer) {
+       // int num = cardInHand.indexOf(_card);
+       // if (num == -1) return;
         int effectiveCost = _card.getCost(_card, this);
         if (tempX != 0) effectiveCost += tempX;
 
@@ -360,7 +358,7 @@ public class Player extends Card {
             untappedCoin -= effectiveCost;
             Main.printToView(0, "Розыгрышь карты " + _card.name + ".");
             //remove from hand
-            cardInHand.remove(_card);
+            cardInHand.remove(num);
             //put on table or cast spell
             if (_card.type == 1) {
                 //release text on spell

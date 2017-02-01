@@ -935,15 +935,24 @@ public class Main extends JFrame {
         main.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                if (JOptionPane.showConfirmDialog(main,
-                        "", "Действительно выйти",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-                    System.out.println("$DISCONNECT");
-                    Client.writeLine("$DISCONNECT");
-                    writerToLog.close();
+                String message = "There are commands in the output buffer - really quit?";
+                String title = "Really Quit?";
+                // display the JOptionPane showConfirmDialog
+                int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
+                if (reply == JOptionPane.YES_OPTION)
+                {
+                    System.out.println("Yes exit");
                     System.exit(0);
                 }
+//                if (JOptionPane.showConfirmDialog(main,
+//                        "", "Действительно выйти",
+//                        JOptionPane.YES_NO_OPTION,
+//                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+//                    System.out.println("$DISCONNECT");
+//                    Client.writeLine("$DISCONNECT");
+//                    writerToLog.close();
+//                    System.exit(0);
+//                }
             }
         });
         viewField.add(enterNameFieled);
@@ -978,12 +987,11 @@ public class Main extends JFrame {
         File file = new File("logs/" + fname + ".txt");
         FileWriter writer = new FileWriter(file, true);
         writerToLog = new PrintWriter(writer);
-        main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        main.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         Board.creature = new ArrayList<>(2);
         Board.creature.add(new ArrayList<>());
         Board.creature.add(new ArrayList<>());
-        //     Board.isActiveFirst = true;
 
         playerCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         playerCoinLabel.setVerticalAlignment(SwingConstants.TOP);
@@ -991,15 +999,6 @@ public class Main extends JFrame {
         enemyCoinLabel.setHorizontalAlignment(SwingConstants.LEFT);
         enemyCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         enemyCoinLabel.setForeground(Color.WHITE);
-
-//        enemyDamageLabel.setHorizontalAlignment(SwingConstants.LEFT);
-//        enemyDamageLabel.setVerticalAlignment(SwingConstants.TOP);
-//        enemyDamageLabel.setForeground(Color.RED);
-//        enemyDamageLabel.setFont(new Font(enemyDamageLabel.getFont().getName(), Font.PLAIN, 20));
-//        playerDamageLabel.setHorizontalAlignment(SwingConstants.LEFT);
-//        playerDamageLabel.setVerticalAlignment(SwingConstants.TOP);
-//        playerDamageLabel.setForeground(Color.RED);
-//        playerDamageLabel.setFont(new Font(playerDamageLabel.getFont().getName(), Font.PLAIN, 20));
 
         gameLog.setLocation(0, 0);
         gameLog.setSize(1, 1);
@@ -1534,11 +1533,10 @@ public class Main extends JFrame {
                             //TODO If X==0
                             isMyTurn = playerStatus.choiseX;
                             //choiseXnum = num;
-                            choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + ",-1,-1";
+                            choiceXtext = "$PLAYWITHX(" + players[0].playerName +  "," + players[0].cardInHand.get(num).name + "," + num + ",-1,-1";
                             main.repaint();
                         } else {
-                            System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
-                            Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1,-1)");
+                            Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num + ",-1,-1)");
                         }
                     } else {
                         printToView(0, "Заклинание требует цели.");
@@ -1575,8 +1573,7 @@ public class Main extends JFrame {
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (cardMem != null)) {
                     //enemy hero attack by spell from hand
                     if (cardMem.targetType == 2) {
-                        System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + ",-1," + players[1].playerName + ")");
-                        Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + ",-1," + players[1].playerName + ")");
+                        Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num  + ",-1," + players[1].playerName + ")");
                     } else {
                         printToView(0, "Некорректная цель для данного заклинания, выберите существо.");
                     }
@@ -1590,11 +1587,10 @@ public class Main extends JFrame {
                                 //TODO If X==0
                                 isMyTurn = playerStatus.choiseX;
                                 //choiseXnum = num;
-                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
+                                choiceXtext = "$PLAYWITHX(" + players[0].playerName +  "," + players[0].cardInHand.get(num).name +"," + num + "," + whereMyMouseNum + "," + players[0].playerName;
                                 main.repaint();
                             } else {
-                                System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
-                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
+                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num  + "," + whereMyMouseNum + "," + players[0].playerName + ")");
                             }
                         } else {
                             printToView(0, "Некорректная цель для данного заклинания, выберите героя.");
@@ -1610,11 +1606,10 @@ public class Main extends JFrame {
                                 //TODO If X==0
                                 isMyTurn = playerStatus.choiseX;
                                 //choiseXnum = num;
-                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
+                                choiceXtext = "$PLAYWITHX(" + players[0].playerName +  "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
                                 main.repaint();
                             } else {
-                                System.out.println("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
-                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
+                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
                             }
                         } else {
                             printToView(0, "Некорректная цель для данного заклинания, выберите героя.");
