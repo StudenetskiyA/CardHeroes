@@ -339,9 +339,7 @@ public class Player extends Card {
         if (Board.turnCount != 1) drawCard();//First player not draw card in first turn. It's rule.
     }
 
-    void playCardX(Card _card, Creature _targetCreature, Player _targetPlayer, int x) {
-        int num = cardInHand.indexOf(_card);
-        if (num == -1) return;
+    void playCardX(int num, Card _card, Creature _targetCreature, Player _targetPlayer, int x) {
         Main.printToView(0, "X = " + x + ".");
         _card.text = _card.text.replace("ХХХ", String.valueOf(x));
         System.out.println("text after replace:" + _card.text);

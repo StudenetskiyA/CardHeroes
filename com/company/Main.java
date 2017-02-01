@@ -26,7 +26,7 @@ public class Main extends JFrame {
     //View constant
     static final int BORDER_CREATURE = 3;
     private static final String CLIENT_VERSION = "0.02";
-    private static final String address = "127.0.0.1";//"test1.uralgufk.ru";//"127.0.0.1";  //"cardheroes.hldns.ru";
+    private static final String address = "test1.uralgufk.ru";//"127.0.0.1";  //"cardheroes.hldns.ru";
     private static final int B0RDER_RIGHT = 15;
     private static final int B0RDER_LEFT = 10;
     private static final int B0RDER_TOP = 10;
@@ -1534,7 +1534,7 @@ public class Main extends JFrame {
                             //TODO If X==0
                             isMyTurn = playerStatus.choiseX;
                             //choiseXnum = num;
-                            choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + ",-1,-1";
+                            choiceXtext = "$PLAYWITHX(" + players[0].playerName +  "," + players[0].cardInHand.get(num).name + "," + num + ",-1,-1";
                             main.repaint();
                         } else {
                             Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num + ",-1,-1)");
@@ -1588,7 +1588,7 @@ public class Main extends JFrame {
                                 //TODO If X==0
                                 isMyTurn = playerStatus.choiseX;
                                 //choiseXnum = num;
-                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
+                                choiceXtext = "$PLAYWITHX(" + players[0].playerName +  "," + players[0].cardInHand.get(num).name +"," + num + "," + whereMyMouseNum + "," + players[0].playerName;
                                 main.repaint();
                             } else {
                                 Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num  + "," + whereMyMouseNum + "," + players[0].playerName + ")");
@@ -1607,7 +1607,7 @@ public class Main extends JFrame {
                                 //TODO If X==0
                                 isMyTurn = playerStatus.choiseX;
                                 //choiseXnum = num;
-                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
+                                choiceXtext = "$PLAYWITHX(" + players[0].playerName +  "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
                                 main.repaint();
                             } else {
                                 Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name +","+num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
