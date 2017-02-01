@@ -59,10 +59,6 @@ public class GameQueue
 
                     event.targetCr.owner.massDieCheckNeededTarget();
 
-                    if (event.targetCr.text.contains("Гибель:")) {
-                        event.targetCr.deathratleNoTarget(event.targetCr, event.targetCr.owner);
-                    }
-
                     System.out.println(event.targetCr.name + " удален/" + event.targetCr.owner.playerName);
                     Board.creature.get(event.targetCr.owner.numberPlayer).remove(event.targetCr);
                 }
@@ -75,10 +71,6 @@ public class GameQueue
             else if (event.whatToDo.equals("Summon")) {
                 if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
                     event.targetCr.owner.massSummonCheckNeededTarget();
-
-                    if (event.targetCr.text.contains("Найм:")) {
-                        event.targetCr.battlecryNoTarget();
-                    }
                 }
             }
         }

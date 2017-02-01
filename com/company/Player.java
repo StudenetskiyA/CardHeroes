@@ -141,6 +141,10 @@ public class Player extends Card {
                     cr.activatedAbilityPlayed = true;//If you can't target, after you can't play this ability
                 }
             }
+            if (tmp.text.contains("Гибель:")) {
+                tmp.deathratleNoTarget(tmp, tmp.owner);
+                tmp.effects.deathPlayed = true;
+            }
             if (tmp.text.contains("Гибельт:") && !tmp.effects.deathPlayed) {
                 //CHECK EXIST TARGET
                 if (MyFunction.canTargetComplex(tmp)) {
@@ -247,6 +251,10 @@ public class Player extends Card {
         while (temp.hasNext()) {
             Creature tmp = temp.next();
             //Creature ability at enter to board
+            if (tmp.text.contains("Найм:") && !tmp.effects.battlecryPlayed && tmp.getTougness() > tmp.damage) {
+                tmp.battlecryNoTarget();
+                tmp.effects.battlecryPlayed = true;
+            }
             if (tmp.text.contains("Наймт:") && !tmp.effects.battlecryPlayed && tmp.getTougness() > tmp.damage)
                    //CHECK EXIST TARGET
                     if (MyFunction.canTargetComplex(tmp)) {
@@ -349,8 +357,6 @@ public class Player extends Card {
     }
 
     void playCard(int num, Card _card, Creature _targetCreature, Player _targetPlayer) {
-       // int num = cardInHand.indexOf(_card);
-       // if (num == -1) return;
         int effectiveCost = _card.getCost(_card, this);
         if (tempX != 0) effectiveCost += tempX;
 
