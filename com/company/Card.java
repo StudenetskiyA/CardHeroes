@@ -304,7 +304,7 @@ class Card {
                 for (Card c : a) {
                     Main.printToView(0,"Лики показывают "+c.name);
 
-                    if (c.cost <= 1) {
+                    if (c.cost <= 1 && c.type==2) {
                         Creature cr = new Creature(c, Main.players[0]);
                         Board.addCreatureToBoard(cr,Main.players[0]);
                         Main.gameQueue.push(new GameQueue.QueueEvent("Summon",cr,0));
@@ -319,7 +319,7 @@ class Card {
                 if (Main.players[1].deck.topDeck(2)!=null ) a.add(Main.players[1].deck.topDeck(2));
                 if (Main.players[1].deck.topDeck(3)!=null ) a.add(Main.players[1].deck.topDeck(3));
                  for (Card c : a) {
-                    if (c.cost <= 1) {
+                    if (c.cost <= 1 && c.type==2) {
                         Creature cr = new Creature(c, Main.players[0]);
                         Board.addCreatureToBoard(cr, Main.players[1]);
                         Main.gameQueue.push(new GameQueue.QueueEvent("Summon",cr,0));
