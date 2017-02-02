@@ -12,7 +12,7 @@ class Card {
     int cost;
     String name;
     String text;
-    String image;
+    String image="cards/Гном.jpg";//null
     String creatureType;
     int color;//1-swamp,2-field,3-mountain,4-forest,5-dark,6-neutral,7 and more - multicolor
     int type;//1 for spell, 2 for creature

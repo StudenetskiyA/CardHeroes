@@ -15,13 +15,13 @@ public class ResponseServerMessage extends Thread {
         fromServer = _fromServer;
     }
 
-    public void run() {
+    public synchronized void run() {
+        ready = false;
         // Main.memPlayerStatus=Main.isMyTurn;
         if (fromServer.contains("$DRAWCARD(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
-            //  System.out.println("Draw Card " + parameter.get(0));
-            players[pl].drawCard();
+            players[pl].drawSpecialCardSL(Card.getCardByName(parameter.get(1)));
         } else if (fromServer.contains("$ENDTURN(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             System.out.println("End turn " + parameter.get(0));
@@ -287,15 +287,15 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("$MULLIGANEND(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
-            int nc = 0;
+            //int nc = 0;
             for (int i = 3; i >= 0; i--) {
                 if (Integer.parseInt(parameter.get(i + 1)) == 1) {
-                    players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
+                   // players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
                     players[pl].cardInHand.remove(i);
-                    nc++;
+                   // nc++;
                 }
             }
-            for (int i = 0; i < nc; i++) players[pl].drawCard();
+           // for (int i = 0; i < nc; i++) players[pl].drawCard();
         } else {
             if (fromServer.contains(":")) {
                 messageArea.append(fromServer + "\n");

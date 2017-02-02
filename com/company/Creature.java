@@ -252,6 +252,7 @@ public class Creature extends Card {
     }
 
     void attackPlayer(Player target) {
+        if (target.bbshield) target.bbshield = false;
         if (!text.contains("Опыт в атаке."))
             tapCreature();
         attackThisTurn = true;

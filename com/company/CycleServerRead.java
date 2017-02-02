@@ -65,7 +65,6 @@ public class CycleServerRead extends Thread {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        // System.out.println(a);
                         if (!a.equals("wait")) {
                             //           System.out.println("Server said NO WAIT");
                             Main.firstResponse = false;
@@ -94,7 +93,7 @@ public class CycleServerRead extends Thread {
                     players[1] = new Player(c, simpleEnemyDeck, parameter.get(0), 1);
                     simpleEnemyDeck.cards.remove(0);
 
-                    simpleEnemyDeck.suffleDeck(sufflingConst);
+                   // simpleEnemyDeck.suffleDeck(sufflingConst);
 
                     players[0].untappedCoin = coinStart;
                     players[0].totalCoin = coinStart;
@@ -102,8 +101,8 @@ public class CycleServerRead extends Thread {
                     players[1].totalCoin = coinStart;
                     if (isMyTurn == Main.playerStatus.waitOtherPlayer) {
                         for (int i = 0; i <= 3; i++) {
-                            players[0].drawCard();
-                            players[1].drawCard();
+                           // players[0].drawCard();
+                           // players[1].drawCard();
                         }
                         isMyTurn = Main.playerStatus.MuliganPhase;
                         main.repaint();

@@ -28,7 +28,7 @@ public class Main extends JFrame {
 
     static final int BORDER_CREATURE = 3;
     private static final String CLIENT_VERSION = "0.02";
-    private static final String address ="test1.uralgufk.ru"; //"127.0.0.1";//"test1.uralgufk.ru";//"127.0.0.1";  //"cardheroes.hldns.ru";
+    private static final String address = "127.0.0.1";//"test1.uralgufk.ru";//"127.0.0.1";  //"cardheroes.hldns.ru";
     private static final int B0RDER_RIGHT = 15;
     private static final int B0RDER_LEFT = 10;
     private static final int B0RDER_TOP = 10;
@@ -320,6 +320,15 @@ public class Main extends JFrame {
 
     private static void onRepaintOld(Graphics g) throws IOException {
         scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
+        synchronized (monitor) {
+            while (!ready) {
+                try {
+                    monitor.wait();
+                } catch (InterruptedException e2) {
+                    e2.printStackTrace();
+                }
+            }
+        }
         // System.out.println("onRepaint " + repainted);
         repainted++;
         bigCardW = (int) (main.getWidth() * BIG_CARD_SIZE_FROM_SCREEN);
@@ -657,10 +666,14 @@ public class Main extends JFrame {
                 for (int i = players[0].cardInHand.size() - 1; i >= 0; i--)
                 //for (Card card : player.cardInHand)   // I don't know why, but it create ConcurrentModificationException
                 {
-                    Card card = players[0].cardInHand.get(i);
-                    if (card.image != null) {
+                    //Card card = players[0].cardInHand.get(i);
+                    //TODO When game starts and player draws 4 card, here may be error because draw in time of response
+                    //server message. Hate java graphics!
+
+              //      System.out.println("Card draw "+i+"/"+players[0].cardInHand.get(i).name);
+                    if (players[0].cardInHand.get(i).image != null) {
                         try {
-                            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + card.image));
+                            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].cardInHand.get(i).image));
                             if (isMyTurn == playerStatus.MuliganPhase) {
                                 int tmp = (battlegroundClick.getWidth() - heroW - bigCardW * 4) / 5;
                                 cardClick[i].setLocation(battlegroundClick.getX() + B0RDER_BETWEEN + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2);
@@ -670,7 +683,7 @@ public class Main extends JFrame {
                                     g.drawImage(redcrossImage, cardClick[i].getX(), cardClick[i].getY(), cardClick[i].getWidth(), cardClick[i].getHeight(), null);
                                 }
                             } else {
-                                if (!isYouDraggedCard || card != cardMem) {
+                                if (!isYouDraggedCard || players[0].cardInHand.get(i) != cardMem) {
                                     if (hilightMyCard == i) {
                                         g.drawImage(im, cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - bigCardH - B0RDER_BOTTOM, bigCardW, bigCardH, null);
                                         cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - bigCardH - B0RDER_BOTTOM);
@@ -693,7 +706,7 @@ public class Main extends JFrame {
                             }
                             numCardInHand++;
                         } catch (IOException e) {
-                            System.out.println("Can't load image " + card.image);
+                            System.out.println("Can't load image " + players[0].cardInHand.get(i).image);
                         }
                     }
                 }

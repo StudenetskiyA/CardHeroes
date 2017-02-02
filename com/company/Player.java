@@ -422,6 +422,10 @@ public class Player extends Card {
         deck.suffleDeck(Main.sufflingConst);
     }
 
+    synchronized void drawSpecialCardSL(Card c){
+        cardInHand.add(0, c);
+    }
+
     void digSpecialCard(Card c) {
         cardInHand.add(0, c);
         graveyard.remove(c);

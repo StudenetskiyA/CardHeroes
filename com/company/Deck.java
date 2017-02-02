@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
- * Created by samsung on 30.12.2016.
+ * Created by StudenetskiyA on 30.12.2016.
  */
 public class Deck {
     public ArrayList<Card> cards = new ArrayList<>();
