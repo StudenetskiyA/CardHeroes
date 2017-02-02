@@ -198,7 +198,7 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
             int apl = (pl == 0) ? 1 : 0;
-            int x = Integer.parseInt(parameter.get(4));
+            int x = Integer.parseInt(parameter.get(5));
             //visible off
             for (int i = 0; i < 9; i++) {
                 choiceXLabel[i].setVisible(false);
