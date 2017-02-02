@@ -28,7 +28,7 @@ public class UnitLabel extends JLabel {
         setSize(_width,_height);
         try {
 //            image = ImageIO.read(Main.class.getResourceAsStream(creature.image));
-            image = ImageIO.read(Main.class.getResourceAsStream("cards/small/Вестник смерти.png"));
+            image = ImageIO.read(Main.class.getResourceAsStream("cards/small/Гном-легионер.png"));
 
         } catch (IOException e) {
             e.printStackTrace();

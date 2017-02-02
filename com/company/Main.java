@@ -24,6 +24,8 @@ import static com.company.Card.ActivatedAbility.WhatAbility.*;
 
 public class Main extends JFrame {
     //View constant
+    static final boolean NEW_GRAPHICS=true;
+
     static final int BORDER_CREATURE = 3;
     private static final String CLIENT_VERSION = "0.02";
     private static final String address ="test1.uralgufk.ru"; //"127.0.0.1";//"test1.uralgufk.ru";//"127.0.0.1";  //"cardheroes.hldns.ru";
@@ -171,7 +173,6 @@ public class Main extends JFrame {
             System.out.println("Cloud not connect to server.");
         }
         main.repaint();
-        Main.printToView(0, "Розыгрышь карты .");
         if (connected) {
 
             if (args.length == 0) {
@@ -300,7 +301,24 @@ public class Main extends JFrame {
         }
     }
 
-    private static void onRepaint(Graphics g) throws IOException {
+    private static void onRepaint(Graphics g){
+        if (NEW_GRAPHICS) {
+            try {
+                onRepaintNew(g);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            try {
+                onRepaintOld(g);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void onRepaintOld(Graphics g) throws IOException {
         scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
         // System.out.println("onRepaint " + repainted);
         repainted++;
@@ -1943,13 +1961,7 @@ public class Main extends JFrame {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            try {
                 onRepaint(g);//its too slow!! TODO repaint not many time
-                //    if (needToRefreshMessage) { drawMessage(g);}
-            } catch (IOException e) {
-                System.out.println("Error in onRepaint.");
-                e.printStackTrace();
-            }
         }
 
     }
