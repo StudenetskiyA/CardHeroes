@@ -123,7 +123,7 @@ class Card {
             case "Кригторн":
                 return new Card(2, "Кригторн", "", 3, 2, 0, 0, "Первый удар. Рывок.", 2, 1);
             case "Гном":
-                return new Card(2, "Гном", "Гном", 3, 2, 0, 0, "Рывок. Направленный удар.", 3, 3);
+                return new Card(2, "Гном", "Гном", 3, 2, 0, 0, "", 3, 3);
             case "Гном-легионер":
                 return new Card(4, name, "Гном", 3, 2, 0, 0, "Направленный удар. Рывок.", 3, 5);
             case "Гном-смертник":
@@ -265,7 +265,7 @@ class Card {
         //Which Card player(_who), who player(_whis), on what creature(_cr, may null), on what player(_pl, may null), text to play(txt)
         if (txt.contains("Закрыться.")) {//Only here - _cr=_who to get access to creature
             _cr.tapCreature();
-            Main.printToView(0, _cr + " закрывается.");
+            Main.printToView(0, _cr.name + " закрывается.");
         }
         if (txt.contains("Посмотрите топдек противника, можете положить его на кладбище")) {
             //Card c = new Card(Board.opponent(_whis).deck.topDeck());

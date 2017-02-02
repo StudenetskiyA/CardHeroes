@@ -53,7 +53,7 @@ public class CycleServerRead extends Thread {
                     printToView(0, code_not_ok);
                 } else if (fromServer.contains("$YOUAREOK")) {//You client,deck and other correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-                   // sufflingConst = Integer.parseInt(parameter.get(0));
+                    sufflingConst = Integer.parseInt(parameter.get(0));
 
                     Main.isMyTurn = Main.playerStatus.waitOtherPlayer;
                     Main.simpleDeck.suffleDeck(sufflingConst);

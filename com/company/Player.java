@@ -458,14 +458,16 @@ public class Player extends Card {
             if (dmg != 0)
                 Main.printToView(0, this.name + " получет " + dmg + " урона.");
         } else {
-            System.out.println("Player lose game.");
-            Main.printToView(0, playerName + " проиграл игру.");
-            try {
-                TimeUnit.SECONDS.sleep(3);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (this.numberPlayer==0){
+                System.out.println("You lose game.");
+                Main.printToView(2, Color.RED, "Вы проиграли игру.");
+                Main.isMyTurn= Main.playerStatus.endGame;
+            } else {
+                System.out.println("You win game.");
+                Main.printToView(2, Color.GREEN, "Вы выиграли игру.");
+                Main.isMyTurn= Main.playerStatus.endGame;
             }
-            System.exit(0);
+
             //TODO Lose play
         }
     }

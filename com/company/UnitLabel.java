@@ -15,10 +15,12 @@ public class UnitLabel extends JLabel {
     static final int BorderOval=4;
     static final Color NumberColor=Color.red;
     static final Color NumberBackColor=Color.gray;
+    MyFunction.ClickImage tapClick;
 
     public BufferedImage image;
     Creature creature;
-    Color borderInactiveColor=Color.gray;
+    Color borderInactiveColor=Color.CYAN;
+    Color borderTappedColor = Color.gray;
     Color borderActiveColor = Color.green;
 
     void setAll(Creature _creature, int _width,int _height){
@@ -45,11 +47,11 @@ public class UnitLabel extends JLabel {
         if (isVisible()) {
             Graphics2D g2 = (Graphics2D) g;
             g2.drawImage(image, getX(), getY(), getWidth()+1, getHeight()+1, null);
-            if (creature.isSummonedJust)
+            if (creature.getIsSummonedJust())
             g2.setColor(borderInactiveColor);
-            else if (!creature.isSummonedJust && !creature.isTapped) g2.setColor(borderInactiveColor);
+            else if (!creature.getIsSummonedJust() && !creature.isTapped) g2.setColor(borderActiveColor);
             else //Think about it
-                g2.setColor(borderInactiveColor);
+                g2.setColor(borderTappedColor);
 
             g2.setStroke(new BasicStroke(BorderOval));
             g2.drawOval(getX()-BorderOval/2,getY()-BorderOval/2,getWidth()+BorderOval,getHeight()+BorderOval);
@@ -71,17 +73,19 @@ public class UnitLabel extends JLabel {
             Font font = new Font("Serif", Font.BOLD, fs);
             Rectangle att = new Rectangle(getCenterX()-getWidth()/4-getWidth()/3,down-getWidth()/3,getWidth()/3,getWidth()/3);
             setColorBonusOrMinus(g2,creature.getBonusOrMinusPower());
-            System.out.println("BMpower="+creature.getBonusOrMinusPower());
+           // System.out.println("BMpower="+creature.getBonusOrMinusPower());
             drawCenteredString(g2,String.valueOf(creature.getPower()),att,font);
              att = new Rectangle(getCenterX()+getWidth()/4,down-getWidth()/3,getWidth()/3,getWidth()/3);
             setColorBonusOrMinus(g2,creature.getBonusOrMinusTougness());
-            drawCenteredString(g2,String.valueOf(creature.getTougness()),att,font);
+            drawCenteredString(g2,String.valueOf(creature.getTougness()-creature.damage),att,font);
             if (creature.text.contains("ТАП")) {
+                g2.setColor(Color.BLACK);
                 g2.drawRect(getCenterX()+getWidth()/4-1,up,getWidth()/3+1,getWidth()/3+1);
+                g2.setColor(NumberBackColor);
                 g2.fillRect(getCenterX()+getWidth()/4,up,getWidth()/3,getWidth()/3);
                 try {
-                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/tap.png"));
-                    g2.drawImage(tap, getCenterX() + getWidth() / 4, up, getWidth() / 3, getWidth() / 3, null);
+                    tapClick.image= ImageIO.read(Main.class.getResourceAsStream("icons/effects/tap.png"));
+                    tapClick.LSD(g2, getCenterX() + getWidth() / 4, up, getWidth() / 3, getWidth() / 3);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
