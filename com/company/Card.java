@@ -280,7 +280,7 @@ class Card {
         if (txt.contains("Поиск цвет ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int dmg = MyFunction.getNumericAfterText(txt, "Поиск цвет ");
-                Main.isMyTurn = Main.playerStatus.searchX;
+                Main.isMyTurn = Main.PlayerStatus.searchX;
                 Main.choiceXcolor = dmg;
                 System.out.println("pause");
                 synchronized (Main.cretureDiedMonitor) {
@@ -333,7 +333,7 @@ class Card {
         if (txt.contains("Поиск комбо+ ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int type = MyFunction.getNumericAfterText(txt, "Поиск комбо+ ");
-                Main.isMyTurn = Main.playerStatus.searchX;
+                Main.isMyTurn = Main.PlayerStatus.searchX;
                 Main.choiceXtype = type;
                 Main.choiceXcreatureType = txt.substring(txt.indexOf("Поиск комбо+ ") + "Поиск комбо+ ".length() + 2, txt.indexOf(" ", txt.indexOf("Поиск комбо+ ") + "Поиск комбо+ ".length() + 2));
                 System.out.println("search type = " + Main.choiceXcreatureType);
@@ -354,7 +354,7 @@ class Card {
         if (txt.contains("Поиск ТС ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int type = MyFunction.getNumericAfterText(txt, "Поиск ТС ");
-                Main.isMyTurn = Main.playerStatus.searchX;
+                Main.isMyTurn = Main.PlayerStatus.searchX;
                 Main.choiceXtype = type;
                 Main.choiceXcost=0;
                 Main.choiceXcostExactly = MyFunction.getNumericAfterText(txt, "Поиск ТС " + type + " ");
@@ -373,7 +373,7 @@ class Card {
         else if (txt.contains("Раскопать тип ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int dmg = MyFunction.getNumericAfterText(txt, "Раскопать тип ");
-                Main.isMyTurn = Main.playerStatus.digX;
+                Main.isMyTurn = Main.PlayerStatus.digX;
                 Main.choiceXtype = dmg;
                 System.out.println("pause");
                 synchronized (Main.cretureDiedMonitor) {
@@ -389,7 +389,7 @@ class Card {
         if (txt.contains("Поиск тип ")) {//Only for player, who called it.
             if (_whis.playerName.equals(Main.players[0].playerName)) {
                 int dmg = MyFunction.getNumericAfterText(txt, "Поиск тип ");
-                Main.isMyTurn = Main.playerStatus.searchX;
+                Main.isMyTurn = Main.PlayerStatus.searchX;
                 Main.choiceXtype = dmg;
                 System.out.println("pause");
                 synchronized (Main.cretureDiedMonitor) {

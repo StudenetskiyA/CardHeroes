@@ -244,7 +244,7 @@ public class Creature extends Card {
                     Main.creatureWhoAttackTarget = nt;
                     Main.creatureWhoAttack = nc;
                 }
-                Main.isMyTurn = Main.playerStatus.EnemyChoiceBlocker;
+                Main.isMyTurn = Main.PlayerStatus.EnemyChoiceBlocker;
             } else {
                 fightCreature(target);
             }
@@ -270,7 +270,7 @@ public class Creature extends Card {
                     Main.creatureWhoAttackTarget = nt;
                     Main.creatureWhoAttack = nc;
                 }
-                Main.isMyTurn = Main.playerStatus.EnemyChoiceBlocker;
+                Main.isMyTurn = Main.PlayerStatus.EnemyChoiceBlocker;
             } else {
                 fightPlayer(target);
             }

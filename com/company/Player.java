@@ -118,9 +118,9 @@ public class Player extends Card {
                     Main.printToView(0, cr.name + " просит выбрать цель.");
 
                     if (numberPlayer == 0) {
-                        Main.isMyTurn = Main.playerStatus.choiceTarget;
+                        Main.isMyTurn = Main.PlayerStatus.choiceTarget;
                     } else {
-                        Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                        Main.isMyTurn = Main.PlayerStatus.EnemyChoiceTarget;
                     }
 
                     ActivatedAbility.creature = cr;
@@ -151,9 +151,9 @@ public class Player extends Card {
                     Main.printToView(0, tmp.name + " просит выбрать цель.");
 
                     if (numberPlayer == 0) {
-                        Main.isMyTurn = Main.playerStatus.choiceTarget;
+                        Main.isMyTurn = Main.PlayerStatus.choiceTarget;
                     } else {
-                        Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                        Main.isMyTurn = Main.PlayerStatus.EnemyChoiceTarget;
                     }
 
                     ActivatedAbility.creature = new Creature(tmp);
@@ -175,9 +175,9 @@ public class Player extends Card {
                     if (n > 1) {
                         Main.printToView(0, tmp.name + " просит сбросить карту.");//And other later, today only one
                         if (numberPlayer == 0) {
-                            Main.isMyTurn = Main.playerStatus.choiceTarget;
+                            Main.isMyTurn = Main.PlayerStatus.choiceTarget;
                         } else {
-                            Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                            Main.isMyTurn = Main.PlayerStatus.EnemyChoiceTarget;
                         }
 
                         ActivatedAbility.creature = new Creature(tmp);
@@ -222,9 +222,9 @@ public class Player extends Card {
                     Main.printToView(0, tmp.name + " просит выбрать цель.");
 
                     if (numberPlayer == 0) {
-                        Main.isMyTurn = Main.playerStatus.choiceTarget;
+                        Main.isMyTurn = Main.PlayerStatus.choiceTarget;
                     } else {
-                        Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                        Main.isMyTurn = Main.PlayerStatus.EnemyChoiceTarget;
                     }
 
                     ActivatedAbility.creature = tmp;
@@ -259,9 +259,9 @@ public class Player extends Card {
                    //CHECK EXIST TARGET
                     if (MyFunction.canTargetComplex(tmp)) {
                         if (numberPlayer == 0) {
-                            Main.isMyTurn = Main.playerStatus.choiceTarget;
+                            Main.isMyTurn = Main.PlayerStatus.choiceTarget;
                         } else {
-                            Main.isMyTurn = Main.playerStatus.EnemyChoiceTarget;
+                            Main.isMyTurn = Main.PlayerStatus.EnemyChoiceTarget;
                         }
                         Main.printToView(0, tmp.name + " просит выбрать цель.");
 
@@ -344,7 +344,7 @@ public class Player extends Card {
         }
 
         //Draw
-        if (Board.turnCount != 1) drawCard();//First player not draw card in first turn. It's rule.
+        //if (Board.turnCount != 1) drawCard();//First player not draw card in first turn. It's rule.
     }
 
     void playCardX(int num, Card _card, Creature _targetCreature, Player _targetPlayer, int x) {
@@ -408,7 +408,7 @@ public class Player extends Card {
         Main.gameQueue.responseAllQueue();
     }
 
-    void drawCard() {
+    void drawCard() {//depricated
         if (deck.haveTopDeck())
             cardInHand.add(0, deck.drawTopDeck());
         else {
@@ -465,11 +465,11 @@ public class Player extends Card {
             if (this.numberPlayer==0){
                 System.out.println("You lose game.");
                 Main.printToView(2, Color.RED, "Вы проиграли игру.");
-                Main.isMyTurn= Main.playerStatus.endGame;
+                Main.isMyTurn= Main.PlayerStatus.endGame;
             } else {
                 System.out.println("You win game.");
                 Main.printToView(2, Color.GREEN, "Вы выиграли игру.");
-                Main.isMyTurn= Main.playerStatus.endGame;
+                Main.isMyTurn= Main.PlayerStatus.endGame;
             }
 
             //TODO Lose play

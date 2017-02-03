@@ -24,6 +24,13 @@ public class MyFunction {
 
     enum Target {myPlayer,myCreature,enemyPlayer,enemyCreature}
 
+    public static int searchCardInHandByName(ArrayList<Card> _array,String _name){
+        for (int i=0;i<_array.size();i++) {
+            if (_array.get(i).name.equals(_name)) return i;
+        }
+        return -1;
+    }
+
     public static boolean canTarget(Target target,int targetType){
         //10 my hero or my creature, not self
         //12 my creature, not self

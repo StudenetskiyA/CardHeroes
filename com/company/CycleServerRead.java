@@ -55,7 +55,7 @@ public class CycleServerRead extends Thread {
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     sufflingConst = Integer.parseInt(parameter.get(0));
 
-                    Main.isMyTurn = Main.playerStatus.waitOtherPlayer;
+                    Main.isMyTurn = Main.PlayerStatus.waitOtherPlayer;
                     Main.simpleDeck.suffleDeck(sufflingConst);
                     while (true) {
                         Client.writeLine("wait");
@@ -99,15 +99,15 @@ public class CycleServerRead extends Thread {
                     players[0].totalCoin = coinStart;
                     players[1].untappedCoin = coinStart;
                     players[1].totalCoin = coinStart;
-                    if (isMyTurn == Main.playerStatus.waitOtherPlayer) {
+                    if (isMyTurn == Main.PlayerStatus.waitOtherPlayer) {
                         for (int i = 0; i <= 3; i++) {
                            // players[0].drawCard();
                            // players[1].drawCard();
                         }
-                        isMyTurn = Main.playerStatus.MuliganPhase;
+                        isMyTurn = Main.PlayerStatus.MuliganPhase;
                         main.repaint();
                     }
-                } else {
+                }  else {
                     responseServerMessage = new ResponseServerMessage(fromServer);
                     responseServerMessage.start();
                 }

@@ -26,10 +26,10 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             System.out.println("End turn " + parameter.get(0));
             if (players[0].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.EnemyTurn;
+                isMyTurn = Main.PlayerStatus.EnemyTurn;
                 players[0].endTurn();
             } else if (players[1].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.MyTurn;
+                isMyTurn = Main.PlayerStatus.MyTurn;
                 players[1].endTurn();
             }
             //main.repaint();
@@ -37,16 +37,16 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             //main.repaint();
             if (players[0].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.MyTurn;
+                isMyTurn = Main.PlayerStatus.MyTurn;
                 players[0].newTurn();
             } else if (players[1].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.EnemyTurn;
+                isMyTurn = Main.PlayerStatus.EnemyTurn;
                 players[1].newTurn();
             }
         } else if (fromServer.contains("$CHOISEBLOCKER(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.IChoiceBlocker;
+                isMyTurn = Main.PlayerStatus.IChoiceBlocker;
                 creatureWhoAttack = Integer.parseInt(parameter.get(1));
                 creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
             }
@@ -101,7 +101,7 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
             int apl = (pl == 0) ? 1 : 0;
-            isMyTurn = Main.playerStatus.MyTurn;
+            isMyTurn = Main.PlayerStatus.MyTurn;
             int equip = Integer.parseInt(parameter.get(1));
             if (parameter.get(2).equals("1")) {
                 if (parameter.get(3).equals("-1"))
@@ -141,8 +141,8 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
             int apl = (pl == 0) ? 1 : 0;
-            if (pl == 0) isMyTurn = Main.playerStatus.EnemyTurn;
-            else isMyTurn = Main.playerStatus.MyTurn;
+            if (pl == 0) isMyTurn = Main.PlayerStatus.EnemyTurn;
+            else isMyTurn = Main.PlayerStatus.MyTurn;
 
             Creature cr = Board.creature.get(apl).get(Integer.parseInt(parameter.get(1)));
             if (Integer.parseInt(parameter.get(2)) == -1) {
@@ -287,15 +287,33 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("$MULLIGANEND(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int pl = Board.getPlayerNumByName(parameter.get(0));
-            //int nc = 0;
-            for (int i = 3; i >= 0; i--) {
-                if (Integer.parseInt(parameter.get(i + 1)) == 1) {
-                   // players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
-                    players[pl].cardInHand.remove(i);
-                   // nc++;
-                }
+            int nc = Integer.parseInt(parameter.get(1));
+            for (int i = 0; i <nc; i++) {
+                int a=MyFunction.searchCardInHandByName(players[pl].cardInHand,parameter.get(i+2));
+                players[pl].cardInHand.remove(a);
             }
+
+//            for (int i = 3; i >= 0; i--) {
+//                if (Integer.parseInt(parameter.get(i + 1)) == 1) {
+//                   // players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
+//                    players[pl].cardInHand.remove(i);
+//                   // nc++;
+//                }
+//            }
            // for (int i = 0; i < nc; i++) players[pl].drawCard();
+        } else if (fromServer.contains("#TotalStatusPlayer")) {//All player connected
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            Main.isMyTurn = PlayerStatus.fromInteger(Integer.parseInt(parameter.get(0)));
+            players[0].damage=Integer.parseInt(parameter.get(1));
+            players[0].untappedCoin=Integer.parseInt(parameter.get(2));
+            players[0].totalCoin=Integer.parseInt(parameter.get(3));
+            //4 is cards in deck expiried
+            int nCard = Integer.parseInt(parameter.get(5));
+            players[0].cardInHand = new ArrayList<>();
+            for (int i=0;i<nCard;i++){
+                players[0].cardInHand.add(Card.getCardByName(parameter.get(6+i)));
+            }
+
         } else {
             if (fromServer.contains(":")) {
                 messageArea.append(fromServer + "\n");
