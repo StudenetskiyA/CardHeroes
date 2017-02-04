@@ -56,7 +56,7 @@ public class CycleServerRead extends Thread {
                     sufflingConst = Integer.parseInt(parameter.get(0));
 
                     Main.isMyTurn = Main.PlayerStatus.waitOtherPlayer;
-                    Main.simpleDeck.suffleDeck(sufflingConst);
+                  //  Main.simpleDeck.suffleDeck(sufflingConst);
                     while (true) {
                         Client.writeLine("wait");
                         String a = "";

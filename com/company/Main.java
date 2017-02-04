@@ -24,7 +24,7 @@ import static com.company.Card.ActivatedAbility.WhatAbility.*;
 
 public class Main extends JFrame {
     //View constant
-    static final boolean NEW_GRAPHICS=true;
+    static final boolean NEW_GRAPHICS=false;
 
     static final int BORDER_CREATURE = 3;
     private static final String CLIENT_VERSION = "0.02";
