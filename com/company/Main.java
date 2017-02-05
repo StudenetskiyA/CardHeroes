@@ -6,8 +6,6 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
@@ -300,7 +298,7 @@ public class Main extends JFrame {
 
     public static void printToView(int type, String txt) {
         if (txt.contains("Ход номер ")) Main.gameLog.setText("<html>");
-
+        if (messageToShow!=null) messageToShow.lenght=0;
         if (type == 0) {
             Main.gameLog.setText(Main.gameLog.getText() + txt + "<br>");
         } else if (type == 1) {
@@ -309,7 +307,7 @@ public class Main extends JFrame {
     }
     public static void printToView(int type, Color c, String txt) {
         if (txt.contains("Ход номер ")) Main.gameLog.setText("<html>");
-
+        messageToShow=new MessageToShow("",c,0);
         if (type == 0) {
             Main.gameLog.setText(Main.gameLog.getText() + txt + "<br>");
         } else if (type == 1) {
@@ -511,6 +509,9 @@ public class Main extends JFrame {
                     choiceXLabel[i].setSize(smallCardW, smallCardH);
                     choiceXLabel[i].setVisible(true);
                 }
+            } else {
+                for (int i = 0; i < choiceXLabel.length; i++)
+                    choiceXLabel[i].setVisible(false);
             }
             //Search in deck
             if (isMyTurn == PlayerStatus.searchX) {
@@ -520,7 +521,7 @@ public class Main extends JFrame {
             else if (isMyTurn == PlayerStatus.digX) {
                 drawSearchInDeck(g, true);
             } else {
-                for (int i = 0; i < 40; i++)
+                for (int i = 0; i < searchXLabel.length; i++)
                     searchXLabel[i].setVisible(false);
             }
 
@@ -572,11 +573,13 @@ public class Main extends JFrame {
             if (messageToShow.whenAdd == 0)
                 messageToShow.whenAdd = cal.getTimeInMillis();
 
-            font = new Font("Georgia", Font.ITALIC, 50);
+            int fs=(battlegroundClick.getWidth()-endTurnClick.getWidth())*20/450;
+            font = new Font("Serif", Font.BOLD, fs);
+            //font = new Font("Georgia", Font.ITALIC, 50);
             g1 = (Graphics2D) g;
             g1.setFont(font);
             metrics = g1.getFontMetrics();
-            int x = main.getWidth() / 2 - metrics.stringWidth(messageToShow.message) / 2;
+            int x = battlegroundClick.getX()+battlegroundClick.getWidth()/2 - metrics.stringWidth(messageToShow.message) / 2;
             int y = main.getHeight() / 2;
             g1.setPaint(new Color(150, 150, 150));
             TextLayout textLayout = new TextLayout(messageToShow.message, font, g1.getFontRenderContext());
@@ -758,16 +761,17 @@ public class Main extends JFrame {
                     unitClick[np][numUnit].setAll(Board.creature.get(np).get(i), crW, crH);
                     unitClick[np][numUnit].setLocation(crX, h);
                     unitClick[np][numUnit].drawImage(g);
-                    if (i == hilightMyCreature) {
+                    if (i == hilightMyCreature && np==0) {
                         im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
                         g.drawImage(im, crX + crW + UnitLabel.plusSize(), h - bigCardH + crH, bigCardW, bigCardH, null);
-                    } else if (i == hilightEnemyCreature) {
+                    } else if (i == hilightEnemyCreature && np==1) {
                         im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
                         g.drawImage(im, crX + crW + UnitLabel.plusSize(), h, bigCardW, bigCardH, null);
                     }
                     numUnit++;
                 }
             }
+            //TODO Do it
             if (isMyTurn == PlayerStatus.IChoiceBlocker) {
                 im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiator.png"));
                 g.drawImage(im, battlegroundClick.getX() + creatureWhoAttack * (BORDER_CREATURE + heroH) + heroH / 2 - heroH / 10, battlegroundClick.getY() + (heroH + heroW) / 2 - heroH / 10, heroH / 5, heroH / 5, null);
