@@ -45,16 +45,23 @@ public class Client {
         }
     }
 
-    static String readLine() throws IOException {
+    static String readLine(){
         if (Main.connected)
-        return in.readLine();
+            try {
+                return in.readLine();
+            } catch (IOException e) {
+            //TODO Message of server down
+                //e.printStackTrace();
+                System.out.println("Server down.");
+                System.exit(2);
+            }
         return null;
     }
     static void writeLine(String line){
         Main.ready=false;
         if (Main.connected) {
             out.println(line);
-            //System.out.println("I send "+line);
+            System.out.println("I send "+line);
         }
     }
 }

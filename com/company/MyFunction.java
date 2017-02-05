@@ -22,7 +22,87 @@ public class MyFunction {
         return rtrn;
     }
 
+    enum DamageSource {fight, spell, poison, ability, scoot}
+
+    enum Effect{
+        poison(1), vulnerability(2);
+
+        private final int value;
+
+        Effect(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static Effect fromInteger(int x) {
+            switch(x) {
+                case 1:
+                    return poison;
+                case 2:
+                    return vulnerability;
+            }
+            return null;
+        }
+    }
+
+
     enum Target {myPlayer,myCreature,enemyPlayer,enemyCreature}
+
+    static class ActivatedAbility {
+
+        static Creature creature;
+        static boolean creatureTap;
+        static WhatAbility whatAbility=WhatAbility.nothing;
+        static int heroAbilityCost = 0;
+
+        public static boolean isThatAbility(WhatAbility ab){
+            if (ab==whatAbility) return true;
+            return false;
+        }
+        public static boolean isNothingOrDeath(){
+            if (whatAbility==WhatAbility.nothing) return true;
+            if (whatAbility==WhatAbility.onDeathPlayed) return true;
+            if (whatAbility==WhatAbility.onUpkeepPlayed) return true;
+            if (whatAbility==WhatAbility.onOtherDeathPlayed) return true;
+            return false;
+        }
+        enum WhatAbility {
+            heroAbility(1), weaponAbility(2), toHandAbility(3), onUpkeepPlayed(4), onDeathPlayed(5), onOtherDeathPlayed(6), nothing(0);
+
+            private final int value;
+
+            WhatAbility(int value) {
+                this.value = value;
+            }
+
+            public int getValue() {
+                return value;
+            }
+
+            public static WhatAbility fromInteger(int x) {
+                switch (x) {
+                    case 0:
+                        return nothing;
+                    case 1:
+                        return heroAbility;
+                    case 2:
+                        return weaponAbility;
+                    case 3:
+                        return toHandAbility;
+                    case 4:
+                        return onUpkeepPlayed;
+                    case 5:
+                        return onDeathPlayed;
+                    case 6:
+                        return onOtherDeathPlayed;
+                }
+                return null;
+            }
+        }
+    }
 
     public static int searchCardInHandByName(ArrayList<Card> _array,String _name){
         for (int i=0;i<_array.size();i++) {

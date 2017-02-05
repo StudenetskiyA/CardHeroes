@@ -46,41 +46,41 @@ public class GameQueue
         // Увеличиваем размер нашей очереди
         size++;
     }
-
-    public void responseAllQueue(){
-        Main.memPlayerStatus=Main.isMyTurn;
-        while (Main.gameQueue.size() != 0) {
-            GameQueue.QueueEvent event = Main.gameQueue.pull();
-            Main.readyQueue=false;
-            System.out.println("next queue response");
-            if (event.whatToDo.equals("Die")) {
-                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
-                    Main.printToView(0, event.targetCr.name + " умирает.");
-
-                    event.targetCr.owner.massDieCheckNeededTarget();
-
-                    System.out.println(event.targetCr.name + " удален/" + event.targetCr.owner.playerName);
-                    Board.creature.get(event.targetCr.owner.numberPlayer).remove(event.targetCr);
-                }
-            }
-            else if (event.whatToDo.equals("Upkeep")) {
-                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
-                    event.targetCr.owner.massUpkeepCheckNeededTarget();
-                }
-            }
-            else if (event.whatToDo.equals("Summon")) {
-                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
-                    event.targetCr.owner.massSummonCheckNeededTarget();
-                }
-            }
-        }
-        Main.isMyTurn=Main.memPlayerStatus;
-        synchronized (Main.queueMonitor) {
-            readyQueue = true;
-            Main.queueMonitor.notifyAll();
-        }
-    }
-
+//
+//    public void responseAllQueue(){
+//        Main.memPlayerStatus=Main.isMyTurn;
+//        while (Main.gameQueue.size() != 0) {
+//            GameQueue.QueueEvent event = Main.gameQueue.pull();
+//            Main.readyQueue=false;
+//            System.out.println("next queue response");
+//            if (event.whatToDo.equals("Die")) {
+//                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
+//                    Main.printToView(0, event.targetCr.name + " умирает.");
+//
+//                    event.targetCr.owner.massDieCheckNeededTarget();
+//
+//                    System.out.println(event.targetCr.name + " удален/" + event.targetCr.owner.playerName);
+//                    Board.creature.get(event.targetCr.owner.numberPlayer).remove(event.targetCr);
+//                }
+//            }
+//            else if (event.whatToDo.equals("Upkeep")) {
+//                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
+//                    event.targetCr.owner.massUpkeepCheckNeededTarget();
+//                }
+//            }
+//            else if (event.whatToDo.equals("Summon")) {
+//                if (Board.creature.get(event.targetCr.owner.numberPlayer).contains(event.targetCr)) {
+//                    event.targetCr.owner.massSummonCheckNeededTarget();
+//                }
+//            }
+//        }
+//        Main.isMyTurn=Main.memPlayerStatus;
+//        synchronized (Main.queueMonitor) {
+//            readyQueue = true;
+//            Main.queueMonitor.notifyAll();
+//        }
+//    }
+//
 
     public QueueEvent pull() {
         // Если у нас нет элементов, то возвращаем null
