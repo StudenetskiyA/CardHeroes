@@ -745,6 +745,7 @@ public class Main extends JFrame {
 
     private static void drawNewCreatures(Graphics g, int np) throws IOException {
         int numUnit = 0;
+        int numNotDiedUnit= 0;
         int h;
         BufferedImage im;
         int crW = smallCardW;
@@ -757,7 +758,7 @@ public class Main extends JFrame {
             for (int i = 0; i < Board.creature.get(np).size(); i++)//{
             {
                 if (Board.creature.get(np).get(i) != null && Board.creature.get(np).get(i).image != null && !Board.creature.get(np).get(i).isDie()) {
-                    int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + numUnit * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);// + (heroH - heroW) / 2;
+                    int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + numNotDiedUnit * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);// + (heroH - heroW) / 2;
                     unitClick[np][numUnit].setAll(Board.creature.get(np).get(i), crW, crH);
                     unitClick[np][numUnit].setLocation(crX, h);
                     unitClick[np][numUnit].drawImage(g);
@@ -768,6 +769,7 @@ public class Main extends JFrame {
                         im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
                         g.drawImage(im, crX + crW + UnitLabel.plusSize(), h, bigCardW, bigCardH, null);
                     }
+                    numNotDiedUnit++;
                 }
                 numUnit++;
             }
