@@ -98,9 +98,9 @@ public class Main extends JFrame {
     private static ViewField viewField = new ViewField();
     private static JLabel deckClick = new JLabel();
     private static MyFunction.ClickImage weaponClick = new MyFunction.ClickImage();
-    private static JLabel cardClick[] = new JLabel[9];//TODO 10 card maximum??
-    private static JLabel deckChoiseClick[] = new JLabel[9];
-    private static UnitLabel unitClick[][] = new UnitLabel[2][9];
+    private static JLabel cardClick[] = new JLabel[10];//TODO 10 card maximum??
+    private static JLabel deckChoiseClick[] = new JLabel[10];
+    private static UnitLabel unitClick[][] = new UnitLabel[2][10];
     private static JLabel battlegroundClick = new JLabel();
     private static JLabel playerCoinLabel = new JLabel();
     private static JLabel enemyCoinLabel = new JLabel();
