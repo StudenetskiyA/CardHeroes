@@ -136,7 +136,7 @@ public class Creature extends Card {
         Board.creature.get(pl.numberPlayer).remove(Board.creature.get(pl.numberPlayer).indexOf(cr));
     }
 
-    static void tap(Player pl, Creature cr, int dmg){
+    static void tap(Player pl, Creature cr, int dmg) {
         //Animation
         boolean t=(dmg==1)? true:false;
         Board.creature.get(pl.numberPlayer).get(Board.creature.get(pl.numberPlayer).indexOf(cr)).isTapped=t;
