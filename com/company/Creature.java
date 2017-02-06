@@ -20,6 +20,7 @@ public class Creature extends Card {
     public class Effects {
         Creature whis;
         String additionalText = "";
+        public boolean isDie=false;
         public int poison = 0;
         public int bonusPower = 0;
         public int bonusPowerUEOT = 0;
@@ -32,18 +33,6 @@ public class Creature extends Card {
 
         Effects(Creature _cr) {
             whis = _cr;
-        }
-
-        public void EOT() {
-            cantAttackOrBlock--;
-            upkeepPlayed = false;
-            turnToDie--;
-            bonusPowerUEOT = 0;
-            if (cantAttackOrBlock < 0) cantAttackOrBlock = 0;
-            if (turnToDie == 0) {
-               // Main.gameQueue.push(new GameQueue.QueueEvent("Die", whis, 0));
-            }
-            activatedAbilityPlayed = false;
         }
 
         int getBonusPower(){
@@ -80,6 +69,21 @@ public class Creature extends Card {
                 case poison: {
                     poison=p;
                     Main.printToView(0,whis.name+ " получает отравление на "+p);
+                    break;
+                }
+                case vulnerability:{
+                    vulnerability=true;
+                    Main.printToView(0,whis.name+ " получает уязвимость.");
+                    break;
+                }
+                case turnToDie:{
+                    turnToDie=p;
+                    Main.printToView(0,whis.name+ " получает чуму.");
+                    break;
+                }
+                case die:{
+                    isDie=true;
+                    break;
                 }
             }
         }
@@ -164,6 +168,7 @@ public class Creature extends Card {
     }
 
     boolean isDie() {
+        if (effects.isDie) return true;
         return (getTougness() <= damage);//And other method to die!
     }
 }

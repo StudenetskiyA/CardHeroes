@@ -26,4 +26,11 @@ public class Board {
         _owner.graveyard.add(_card);
     }
 
+    static int getDiedCreatureLeftCount(int playerNum, int nc){
+        int count=0;
+        for (int i=0;i<nc;i++){
+            if (creature.get(playerNum).get(i).isDie()) count++;
+        }
+        return count;
+    }
 }

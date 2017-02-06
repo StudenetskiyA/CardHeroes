@@ -90,17 +90,58 @@ public class UnitLabel extends JLabel {
                     e.printStackTrace();
                 }
             }
+            //TODO Calculate effects count.
             int effectsX=getCenterX()-getWidth()/6;
             int effectsY=down-2*getWidth()/3;
+            int effectsFounded=0;
             if (creature.effects.poison!=0) {
                 try {
                     BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison"+creature.effects.poison+".png"));
-                    g2.drawImage(tap, effectsX, effectsY, getWidth() / 3, getWidth() / 3, null);
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                effectsFounded++;
+            }
+            if (creature.effects.turnToDie<=2) {
+                try {
+                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/dienear.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
+            if (creature.effects.vulnerability) {
+                try {
+                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/vulnerability.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
+            if (creature.effects.cantAttackOrBlock!=0) {
+                try {
+                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/cantattactorblock.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
+            if (creature.effects.bonusArmor!=0) {
+                try {
+                    //TODO When we have more pictures, replace 3 for N.
+                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonusarmor3.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
             }
 
+            //TODO if effects more than can be placed on card
         }
     }
 

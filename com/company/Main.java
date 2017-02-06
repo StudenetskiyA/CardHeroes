@@ -98,7 +98,7 @@ public class Main extends JFrame {
     private static ViewField viewField = new ViewField();
     private static JLabel deckClick = new JLabel();
     private static MyFunction.ClickImage weaponClick = new MyFunction.ClickImage();
-    private static JLabel cardClick[] = new JLabel[9];
+    private static JLabel cardClick[] = new JLabel[9];//TODO 10 card maximum??
     private static JLabel deckChoiseClick[] = new JLabel[9];
     private static UnitLabel unitClick[][] = new UnitLabel[2][9];
     private static JLabel battlegroundClick = new JLabel();
@@ -756,7 +756,7 @@ public class Main extends JFrame {
         if (!Board.creature.get(np).isEmpty()) {
             for (int i = 0; i < Board.creature.get(np).size(); i++)//{
             {
-                if (Board.creature.get(np).get(i) != null && Board.creature.get(np).get(i).image != null && Board.creature.get(np).get(i).getTougness() > Board.creature.get(np).get(i).damage) {
+                if (Board.creature.get(np).get(i) != null && Board.creature.get(np).get(i).image != null && !Board.creature.get(np).get(i).isDie()) {
                     int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + numUnit * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);// + (heroH - heroW) / 2;
                     unitClick[np][numUnit].setAll(Board.creature.get(np).get(i), crW, crH);
                     unitClick[np][numUnit].setLocation(crX, h);
@@ -768,34 +768,53 @@ public class Main extends JFrame {
                         im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
                         g.drawImage(im, crX + crW + UnitLabel.plusSize(), h, bigCardW, bigCardH, null);
                     }
+                }
+                numUnit++;
+            }
+            numUnit=0;
+            //Draw hilight creature AFTER draw other.
+            for (int i = 0; i < Board.creature.get(np).size(); i++)//{
+            {
+                if (Board.creature.get(np).get(i) != null && Board.creature.get(np).get(i).image != null && Board.creature.get(np).get(i).getTougness() > Board.creature.get(np).get(i).damage) {
+                    int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + numUnit * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);// + (heroH - heroW) / 2;
+                    if (i == hilightMyCreature && np==0) {
+                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+                        g.drawImage(im, crX + crW + UnitLabel.plusSize(), h - bigCardH + crH, bigCardW, bigCardH, null);
+                    } else if (i == hilightEnemyCreature && np==1) {
+                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+                        g.drawImage(im, crX + crW + UnitLabel.plusSize(), h, bigCardW, bigCardH, null);
+                    }
                     numUnit++;
                 }
             }
+
+
             //TODO Do it
+            int hBottom=battlegroundClick.getY() + battlegroundClick.getHeight() - crH - B0RDER_BETWEEN - UnitLabel.plusSize();
+            int hTop=battlegroundClick.getY() + B0RDER_BETWEEN + UnitLabel.plusSize();
             if (isMyTurn == PlayerStatus.IChoiceBlocker) {
                 im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiator.png"));
-                g.drawImage(im, battlegroundClick.getX() + creatureWhoAttack * (BORDER_CREATURE + heroH) + heroH / 2 - heroH / 10, battlegroundClick.getY() + (heroH + heroW) / 2 - heroH / 10, heroH / 5, heroH / 5, null);
-                if (creatureWhoAttackTarget != -1)
-                    if (Board.creature.get(0).get(creatureWhoAttackTarget).isTapped) {
-                        g.drawImage(im, battlegroundClick.getX() + creatureWhoAttackTarget * (BORDER_CREATURE + heroH) + heroH / 2 - heroH / 10, h - heroH / 5, heroH / 5, heroH / 5, null);
-                    } else
-                        g.drawImage(im, battlegroundClick.getX() + creatureWhoAttackTarget * (BORDER_CREATURE + heroH) + heroH / 2 - heroH / 10, h - heroH / 5, heroH / 5, heroH / 5, null);
-                else //TODO Arrow to tapped hero
-                    g.drawImage(im, playerHeroClick[0].getX() + heroW / 2 - heroH / 10, playerHeroClick[0].getY() - heroH / 10, heroH / 5, heroH / 5, null);
+                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN) + crW / 2 - heroW / 10;
+                g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
+                if (creatureWhoAttackTarget != -1) {
+                    crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttackTarget * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);
+                    g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
+                } else {//TODO Arrow to hero
+                    //  g.drawImage(im, playerHeroClick[0].getX() + heroW / 2 - heroH / 10, playerHeroClick[0].getY() - heroH / 10, heroH / 5, heroH / 5, null);
+                }
             }
             if ((isMyTurn == PlayerStatus.EnemyChoiceBlocker) && (Main.replayCounter == 0)) {
                 im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiatorrevert.png"));
-                g.drawImage(im, battlegroundClick.getX() + creatureWhoAttack * (heroH + BORDER_CREATURE) + heroH / 2 - heroH / 10, battlegroundClick.getY() + battlegroundClick.getHeight() - (heroH + heroW) / 2 - heroH / 10, heroH / 5, heroH / 5, null);
+                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN) + crW / 2 - heroW / 10;
+                g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
                 if (creatureWhoAttackTarget != -1) {
-                    if (Board.creature.get(1).get(creatureWhoAttackTarget).isTapped) {
-                        g.drawImage(im, battlegroundClick.getX() + creatureWhoAttackTarget * (heroH + BORDER_CREATURE) + heroH / 2 - heroH / 10, battlegroundClick.getY() + (heroH + heroW) / 2 - heroH / 10, heroH / 5, heroH / 5, null);
-                    } else
-                        g.drawImage(im, battlegroundClick.getX() + creatureWhoAttackTarget * (heroH + BORDER_CREATURE) + heroH / 2 - heroH / 10, battlegroundClick.getY() + heroH - heroH / 10, heroH / 5, heroH / 5, null);
-                } else
-                    g.drawImage(im, playerHeroClick[1].getX() + heroW / 2 - heroH / 10, playerHeroClick[1].getY() + playerHeroClick[1].getHeight() - heroH / 10, heroH / 5, heroH / 5, null);
+                    crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttackTarget * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);
+                    g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
+                } else {
+                    // g.drawImage(im, playerHeroClick[1].getX() + heroW / 2 - heroH / 10, playerHeroClick[1].getY() + playerHeroClick[1].getHeight() - heroH / 10, heroH / 5, heroH / 5, null);
+                }
             }
         }
-
     }
 
     private static void prepareListOfDeck() throws UnsupportedEncodingException {
