@@ -1312,7 +1312,6 @@ public class Main extends JFrame {
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (ActivatedAbility.isThatAbility(weaponAbility))) {
                 //Weapon ability on my unit
                 if ((players[0].equpiment[2].tapTargetType == 1) || (players[0].equpiment[2].tapTargetType == 3)) {
-                    System.out.println("$EQUIPTARGET(" + players[0].playerName + ",2,0," + num + ")");
                     Client.writeLine("$EQUIPTARGET(" + players[0].playerName + ",2,0," + num + ")");
                     ActivatedAbility.whatAbility = nothing;
                 } else {

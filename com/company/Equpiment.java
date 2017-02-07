@@ -2,9 +2,8 @@ package com.company;
 
 import java.util.ArrayList;
 
-/**
- * Created by samsung on 18.01.2017.
- */
+// Created by StudenetskiyA on 18.01.2017.
+
 public class Equpiment extends Card {
     public boolean isTapped;
     public Player owner;

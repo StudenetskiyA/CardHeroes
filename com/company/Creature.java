@@ -85,6 +85,11 @@ public class Creature extends Card {
                     isDie=true;
                     break;
                 }
+                case bonusPowerUEOT:{
+                    bonusPowerUEOT+=p;
+                    Main.printToView(0,whis.name+ " получает до конца хода +"+p+" к удару.");
+                }
+
             }
         }
     }

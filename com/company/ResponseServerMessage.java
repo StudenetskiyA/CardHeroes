@@ -53,6 +53,13 @@ public class ResponseServerMessage extends Thread {
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             Board.creature.get(np).add(new Creature(Card.getCardByName(parameter.get(1)), players[np]));
             Main.printToView(0, Card.getCardByName(parameter.get(1)).name + " входит в игру.");
+        } else if (fromServer.contains("#PutEquipToBoard")) {//#PutCreatureToBoard(Player, CreatureName)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int n=MyFunction.getEquipNumByType(Card.getCardByName(parameter.get(1)).creatureType);
+            players[np].equpiment[n] = new Equpiment(Card.getCardByName(parameter.get(1)),players[np]);
+            //TODO For event another text
+            Main.printToView(0, players[np].name+" экипировал "+Card.getCardByName(parameter.get(1)).name + " .");
         } else if (fromServer.contains("#DieCreature")) {//#DieCreature(Player, CreatureNumOnBoard)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
