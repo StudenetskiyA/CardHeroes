@@ -535,8 +535,8 @@ public class Main extends JFrame {
             //When you dragged creature to attack
             if (isYouDraggedAttackCreature && creatureMem != null) {
                 //center of creature
-                int x1 = battlegroundClick.getX() + Board.creature.get(0).indexOf(creatureMem) * (heroH + BORDER_CREATURE) + heroW / 2;
-                int y1 = battlegroundClick.getY() + battlegroundClick.getHeight() - heroH / 2;
+                int y1= battlegroundClick.getY() + battlegroundClick.getHeight() - smallCardH - B0RDER_BETWEEN - UnitLabel.plusSize()+smallCardH/2;
+                int x1 = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + Board.creature.get(0).indexOf(creatureMem) * (smallCardW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN)+smallCardW / 2;
                 //cursor
                 int x2 = (int) MouseInfo.getPointerInfo().getLocation().getX() - (int) main.getLocationOnScreen().getX();
                 int y2 = (int) MouseInfo.getPointerInfo().getLocation().getY() - (int) main.getLocationOnScreen().getY();
