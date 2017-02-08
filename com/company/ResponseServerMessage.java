@@ -25,12 +25,16 @@ public class ResponseServerMessage extends Thread {
                 players[0].damage = Integer.parseInt(parameter.get(2));
                 players[0].untappedCoin = Integer.parseInt(parameter.get(3));
                 players[0].totalCoin = Integer.parseInt(parameter.get(4));
-                //5 is cards in deck expiried
-                enemyHandSize = Integer.parseInt(parameter.get(6));
-                int nCard = Integer.parseInt(parameter.get(7));
+                players[0].temporaryCoin = Integer.parseInt(parameter.get(5));
+                players[1].untappedCoin = Integer.parseInt(parameter.get(6));
+                players[1].totalCoin = Integer.parseInt(parameter.get(7));
+                players[1].temporaryCoin = Integer.parseInt(parameter.get(8));
+                //9 is cards in deck expiried
+                enemyHandSize = Integer.parseInt(parameter.get(10));
+                int nCard = Integer.parseInt(parameter.get(11));
                 players[0].cardInHand.clear();
                 for (int i = 0; i < nCard; i++) {
-                    players[0].cardInHand.add(Card.getCardByName(parameter.get(8 + i)));
+                    players[0].cardInHand.add(Card.getCardByName(parameter.get(12 + i)));
                 }
             }
         } else if (fromServer.contains("#PlayerStatus")) {
