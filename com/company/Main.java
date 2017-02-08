@@ -193,6 +193,7 @@ public class Main extends JFrame {
         main.setLocation(477, 0);
         main.setSize(890, 688);
         main.setVisible(true);
+
         //FULL SCREEN
 //        main.dispose();
 //        main.setUndecorated(true);
@@ -305,6 +306,7 @@ public class Main extends JFrame {
             messageToShow = new MessageToShow(txt, 1500);
         }
     }
+
     public static void printToView(int type, Color c, String txt) {
         if (txt.contains("Ход номер ")) Main.gameLog.setText("<html>");
         messageToShow=new MessageToShow("",c,0);
@@ -683,11 +685,11 @@ public class Main extends JFrame {
             }
         }
 
-        if (players[0].bbshield) {
+        if (players[0].effects.getBBShield()) {
             im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
             g.drawImage(im, heroCenterX - heroH * effectsFounded / 5, playerHeroClick[0].getY() + playerHeroClick[0].getHeight() / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
         }
-        if (players[1].bbshield) {
+        if (players[1].effects.getBBShield()) {
             im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
             g.drawImage(im, heroCenterX - heroH * effectsFounded / 5, playerHeroClick[1].getY() + playerHeroClick[0].getHeight() / 2 - heroH / 10 - heroH / 5, heroH / 5, heroH / 5, null);
         }
@@ -1242,8 +1244,8 @@ public class Main extends JFrame {
             } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == PlayerStatus.choiceTarget) && ActivatedAbility.isNothingOrDeath()) {
                 //Battlecry or TAPT on enemy hero
                 if (MyFunction.canTarget(MyFunction.Target.enemyPlayer, ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyPlayer, ActivatedAbility.creature.tapTargetType)) {
-                    if ((players[1].bbshield) && (ActivatedAbility.creature.text.contains("Выстрел")))
-                        players[1].bbshield = false;
+                    if ((players[1].effects.getBBShield()) && (ActivatedAbility.creature.text.contains("Выстрел")))
+                        players[1].effects.bbShield = false;
                     int nc = Board.creature.get(0).indexOf(ActivatedAbility.creature);
                     if (ActivatedAbility.creatureTap) {
                         Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
@@ -1277,7 +1279,7 @@ public class Main extends JFrame {
                 //Battlecry or TAPT on enemy unit
                 if (MyFunction.canTarget(MyFunction.Target.enemyCreature, ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyCreature, ActivatedAbility.creature.tapTargetType)) {
                     //Bjornbon check attack or not this cry or tap.
-                    if ((players[1].bbshield) && (ActivatedAbility.creature.text.contains("Выстрел"))) {
+                    if ((players[1].effects.getBBShield()) && (ActivatedAbility.creature.text.contains("Выстрел"))) {
                         printToView(0, "Целью первой атаки должен быть Бьорнбон.");
                     } else {
                         int nc = Board.creature.get(0).indexOf(ActivatedAbility.creature);
@@ -1327,6 +1329,7 @@ public class Main extends JFrame {
                         ActivatedAbility.creature.targetType = Board.creature.get(0).get(num).targetType;
                         ActivatedAbility.creature.tapTargetType = Board.creature.get(0).get(num).tapTargetType;
                         ActivatedAbility.creatureTap = true;
+                        Main.printToView(2, Color.GREEN, ActivatedAbility.creature.name+" просит выбрать цель.");//change it
                         main.repaint();
                     } else {
                         printToView(0, "Повернутое существо не может это сделать.");
@@ -1468,14 +1471,14 @@ public class Main extends JFrame {
                         if (creatureMem.getIsSummonedJust()) {
                             printToView(0, "Это существо вошло в игру на этом ходу.");
                         } else {
-                            players[1].bbshield = false;
+                            players[1].effects.bbShield = false;
                             System.out.println("$ATTACKPLAYER(" + players[0].playerName + "," + num + ")");
                             Client.writeLine("$ATTACKPLAYER(" + players[0].playerName + "," + num + ")");
                         }
                     }
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (creatureMem != null)) {
                     //enemy creature attack by player creature
-                    if (players[1].bbshield) {
+                    if (players[1].effects.getBBShield()) {
                         printToView(0, "Первая атака должна быть в Бьорнбона.");
                     } else {
                         if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {

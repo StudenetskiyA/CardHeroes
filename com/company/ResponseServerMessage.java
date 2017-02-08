@@ -40,6 +40,18 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             players[0].cardInHand.add(Card.getCardByName(parameter.get(0)));
             players[0].deck.removeCardFromDeckByName(parameter.get(0));//TODO Player must not know you own deck!
+        } else if (fromServer.contains("#AddCardToGraveyard")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            players[np].graveyard.add(Card.getCardByName(parameter.get(1)));
+        } else if (fromServer.contains("#RemoveCardFromHand")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            if (np==0){
+                players[0].cardInHand.remove(Card.getCardByName(parameter.get(1)));
+            } else {
+                enemyHandSize--;
+            }
         } else if (fromServer.contains("#ReturnToHand")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
@@ -77,6 +89,12 @@ public class ResponseServerMessage extends Thread {
             int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
             //When queue response, you may target creature, but it number may not correct if left of it have died creature.
             Board.creature.get(np).get(nc).effects.takeEffect(MyFunction.Effect.fromInteger(Integer.parseInt(parameter.get(2))), dmg);
+        }  else if (fromServer.contains("#TakePlayerEffect")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int dmg = Integer.parseInt(parameter.get(2));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            players[np].effects.takeEffect(MyFunction.EffectPlayer.fromInteger(Integer.parseInt(parameter.get(1))), dmg);
         } else if (fromServer.contains("#TakeCreatureDamage")) {//#TakeCreatureDamage(Player, CreatureNumOnBoard, Damage)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
@@ -130,6 +148,19 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
                 Main.isMyTurn = Main.PlayerStatus.searchX;
+                Main.choiceXtype = Integer.parseInt(parameter.get(1));
+                Main.choiceXcolor = Integer.parseInt(parameter.get(2));
+                if (parameter.get(3).equals("0"))
+                    Main.choiceXcreatureType = "";
+                else Main.choiceXcreatureType = parameter.get(3);
+                Main.choiceXcost = Integer.parseInt(parameter.get(4));
+                Main.choiceXcostExactly = Integer.parseInt(parameter.get(5));
+                Main.printToView(0, parameter.get(6));
+            }
+        } else if (fromServer.contains("#ChoiceSearchInGraveyard")) {//#SearchInDeck(PlayerName,CardType,CardColor,CreatureType,CardCost,CardCostExactly,Message)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            if (players[0].playerName.equals(parameter.get(0))) {
+                Main.isMyTurn = PlayerStatus.digX;
                 Main.choiceXtype = Integer.parseInt(parameter.get(1));
                 Main.choiceXcolor = Integer.parseInt(parameter.get(2));
                 if (parameter.get(3).equals("0"))

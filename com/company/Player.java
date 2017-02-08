@@ -18,7 +18,37 @@ public class Player extends Card {
     ArrayList<Card> graveyard;
     Equpiment equpiment[];//0-armor,1-amulet,2-weapon,3-event
 
-    Boolean bbshield = false;//Bjornbon shield
+    Effects effects = new Effects(this);
+
+    public class Effects {
+        Player whis;
+        String additionalText = "";
+        boolean bbShield = false;
+
+        Effects(Player _pl) {
+            whis = _pl;
+        }
+
+        boolean getBBShield() {
+            return bbShield;
+        }
+
+        //#TakeCreatureEffect(Player, CreatureNumOnBoard,Effect,EffectCount)
+        public void takeEffect(MyFunction.EffectPlayer ef, int n) {
+            switch (ef) {
+                case bbShield: {
+                    if (n==1) {
+                        bbShield = true;
+                        Main.printToView(0, whis.name + " получает щит Бьернбона.");
+                    }
+                    else bbShield=false;
+
+                    break;
+                }
+            }
+        }
+    }
+
 
     Player(Card _card, Deck _deck, String _playerName, int _n) {
         super(0, _card.name, _card.creatureType, 1, 0, _card.targetType, _card.tapTargetType, _card.text, 0, _card.hp);
