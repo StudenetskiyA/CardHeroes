@@ -26,16 +26,19 @@ public class Creature extends Card {
         public int bonusPowerUEOT = 0;
         public int bonusTougness = 0;
         public int bonusArmor = 0;
-        public int cantAttackOrBlock = 0;
         public int turnToDie = 999;
         boolean vulnerability = false;
-        public boolean upkeepPlayed = false;
 
         Effects(Creature _cr) {
             whis = _cr;
         }
 
+        String getAdditionalText(){
+            return additionalText;
+        }
+
         int getBonusPower(){
+            //TODO Remove logic from it. Server knows, it must say it to client.
             int staticBonus = 0;
             //TanGnome take + for power
             if ((creatureType.equals("Гном")) && (!name.equals("Тан гномов"))) {
@@ -44,6 +47,22 @@ public class Creature extends Card {
                     if (Board.creature.get(owner.numberPlayer).get(i).name.equals("Тан гномов")) tanFounded++;
                 }
                 staticBonus += tanFounded;
+            }
+            //Yatagan
+            if (owner.equpiment[2]!=null &&owner.equpiment[2].name.equals("Орочий ятаган")) {
+                staticBonus+=1;
+            }
+            //Flaming giant
+            if (name.equals("Пылающий исполин")) {
+                staticBonus+=damage;
+            }
+            //Vozd' clana on graveyard
+            if (color==2) {
+                int vozdFounded = 0;
+                for (int i = 0; i < owner.graveyard.size(); i++) {
+                    if (owner.graveyard.get(i).name.equals("Вождь клана")) vozdFounded++;
+                }
+                staticBonus += vozdFounded;
             }
             //Chain dog take and get + power
             if ((name.equals("Цепной пес"))) {
@@ -62,6 +81,15 @@ public class Creature extends Card {
 
         int getBonusTougness(){
             return bonusTougness;
+        }
+
+        void takeTextEffect(String txt){
+            additionalText+=txt;
+            Main.printToView(0,whis.name+ " получает '"+txt+"'.");
+        }
+        void looseTextEffect(String txt){
+            if (!additionalText.contains(txt)) return;
+            additionalText = additionalText.replaceFirst(txt,"");
         }
 
         void takeEffect(MyFunction.Effect effect,int p){
@@ -85,16 +113,34 @@ public class Creature extends Card {
                     isDie=true;
                     break;
                 }
+                case bonusPower:{
+                    bonusPower+=p;
+                    Main.printToView(0,whis.name+ " получает +"+p+" к удару.");
+                    break;
+                }
                 case bonusPowerUEOT:{
                     bonusPowerUEOT+=p;
                     Main.printToView(0,whis.name+ " получает до конца хода +"+p+" к удару.");
-                }
-                case cantattackandblock:{
-                    cantAttackOrBlock=p;
-                    Main.printToView(0,whis.name+ " не может атаковать и блокировать "+p+" ходов.");
+                    break;
                 }
             }
         }
+    }
+
+    boolean getCanAttack(){
+        if (getIsSummonedJust()) return false;
+        if (isTapped) return false;
+        if (attackThisTurn) return false;
+        return !MyFunction.textNotInTake(getText()).contains("Не может атаковать");
+    }
+
+    boolean getCanBlock(){
+        if (isTapped) return false;
+        if (blockThisTurn) return false;
+        return !MyFunction.textNotInTake(getText()).contains("Не может блокировать");
+    }
+    String getText() {
+        return text + "." + effects.getAdditionalText();
     }
 
     int getBonusOrMinusTougness(){

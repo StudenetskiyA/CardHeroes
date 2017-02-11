@@ -70,6 +70,7 @@ public class Main extends JFrame {
     static String choiceXcreatureType = "";
     static int choiceXcost = 0;
     static int choiceXcostExactly = 0;
+    static String choiceXname="";
     static String choiceXtext;
     static PlayerStatus isMyTurn = PlayerStatus.prepareForBattle;
     static boolean wantToMulligan[] = new boolean[4];
@@ -95,7 +96,7 @@ public class Main extends JFrame {
     private static int bigCardH;
     private static int cardX;
     //Elements of view
-    private static ViewField viewField = new ViewField();
+    static ViewField viewField = new ViewField();
     private static JLabel deckClick = new JLabel();
     private static MyFunction.ClickImage weaponClick = new MyFunction.ClickImage();
     private static JLabel cardClick[] = new JLabel[10];//TODO 10 card maximum??
@@ -127,11 +128,13 @@ public class Main extends JFrame {
     private static int repainted;//For test how many times called onRepaint
     private static MessageToShow messageToShow = new MessageToShow(" ", 0);
     static int enemyHandSize = 0;
+    static UserChoice userChoice;
+    static boolean userChoiceShow = false;
 
     enum PlayerStatus {
         MyTurn(1), EnemyTurn(2), IChoiceBlocker(3), EnemyChoiceBlocker(4), EnemyChoiceTarget(5), MuliganPhase(6), waitingForConnection(7),
         waitOtherPlayer(8), waitingMulligan(9), choiseX(10), searchX(11), choiceTarget(12), digX(13), endGame(14), prepareForBattle(15),
-        unknow(0);
+        unknow(0), choiceYesNo(16);
 
         private final int value;
 
@@ -177,6 +180,8 @@ public class Main extends JFrame {
                     return endGame;
                 case 15:
                     return prepareForBattle;
+                case 16:
+                    return choiceYesNo;
             }
             return null;
         }
@@ -185,6 +190,7 @@ public class Main extends JFrame {
     // static UserChoice userChoice;//For choice, when card ask
 
     public static void main(String[] args) throws IOException, InterruptedException {
+       // userChoice = new UserChoice(viewField,"cards/Мастер теней.jpg","Мастер Теней предлагает сбросить карту противника:","Сбросить","Оставить");
         prepareListOfDeck();
         loadImage();
         setInitialProperties();
@@ -209,7 +215,6 @@ public class Main extends JFrame {
 
         viewField.setVisible(true);
 
-        //  userChoice = new UserChoice(viewField,"cards/Мастер теней.jpg",);
 
         try {
             //TODO while connect
@@ -551,6 +556,8 @@ public class Main extends JFrame {
 
             drawMessage(g);
         } else if (isMyTurn == PlayerStatus.prepareForBattle) drawAvalaibleDeck(g);
+
+        if (userChoiceShow) userChoice.show(g,bigCardW,bigCardH);
     }
 
     private static void drawMessage(Graphics g) {
@@ -616,6 +623,10 @@ public class Main extends JFrame {
                 continue;
             }
             if ((choiceXcostExactly != founded.get(i).cost) && (choiceXcostExactly != 0)) {
+                founded.remove(founded.get(i));
+                continue;
+            }
+            if (((!choiceXname.equals(founded.get(i).name))) && (!choiceXname.equals(""))) {
                 founded.remove(founded.get(i));
                 continue;
             }
@@ -798,24 +809,25 @@ public class Main extends JFrame {
             int hTop=battlegroundClick.getY() + B0RDER_BETWEEN + UnitLabel.plusSize();
             if (isMyTurn == PlayerStatus.IChoiceBlocker) {
                 im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiator.png"));
-                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN) + crW / 2 - heroW / 10;
+                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 +
+                        creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE) + crW / 2 - heroW / 10;
                 g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
                 if (creatureWhoAttackTarget != -1) {
                     crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttackTarget * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);
                     g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
                 } else {//TODO Arrow to hero
-                    //  g.drawImage(im, playerHeroClick[0].getX() + heroW / 2 - heroH / 10, playerHeroClick[0].getY() - heroH / 10, heroH / 5, heroH / 5, null);
+                    g.drawImage(im, playerHeroClick[0].getX() + heroW / 2 - heroH / 10, playerHeroClick[0].getY(), heroH / 5, heroH / 5, null);
                 }
             }
             if ((isMyTurn == PlayerStatus.EnemyChoiceBlocker) && (Main.replayCounter == 0)) {
                 im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiatorrevert.png"));
-                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN) + crW / 2 - heroW / 10;
+                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE) + crW / 2 - heroW / 10;
                 g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
                 if (creatureWhoAttackTarget != -1) {
                     crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttackTarget * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);
                     g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
                 } else {
-                    // g.drawImage(im, playerHeroClick[1].getX() + heroW / 2 - heroH / 10, playerHeroClick[1].getY() + playerHeroClick[1].getHeight() - heroH / 10, heroH / 5, heroH / 5, null);
+                    g.drawImage(im, playerHeroClick[1].getX() + heroW / 2 - heroH / 10, playerHeroClick[1].getY() + playerHeroClick[1].getHeight() - heroH / 5, heroH / 5, heroH / 5, null);
                 }
             }
         }
@@ -1237,6 +1249,7 @@ public class Main extends JFrame {
                         System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     }
+                    if (messageToShow!=null) messageToShow.lenght=0;
                     ActivatedAbility.creatureTap = false;
                 } else {
                     printToView(0, "Выберите корректную цель.");
@@ -1252,6 +1265,7 @@ public class Main extends JFrame {
                     } else {
                         Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                     }
+                    if (messageToShow!=null) messageToShow.lenght=0;
                     ActivatedAbility.creatureTap = false;
                 } else {
                     printToView(0, "Выберите корректную цель.");
@@ -1270,6 +1284,7 @@ public class Main extends JFrame {
                             System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                             Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                         }
+                        if (messageToShow!=null) messageToShow.lenght=0;
                         ActivatedAbility.creatureTap = false;
                     }
                 } else {
@@ -1289,6 +1304,7 @@ public class Main extends JFrame {
                         } else {
                             Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
                         }
+                        if (messageToShow!=null) messageToShow.lenght=0;
                         ActivatedAbility.creatureTap = false;
                     }
                 } else {
@@ -1300,6 +1316,7 @@ public class Main extends JFrame {
                     System.out.println("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + ActivatedAbility.heroAbilityCost + ")");
                     Client.writeLine("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + ActivatedAbility.heroAbilityCost + ")");
                     ActivatedAbility.whatAbility = nothing;
+                    if (messageToShow!=null) messageToShow.lenght=0;
                 } else {
                     printToView(0, "Выберите корректную цель.");
                 }
@@ -1465,7 +1482,7 @@ public class Main extends JFrame {
                     }
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (creatureMem != null)) {
                     //enemy hero attack by creature
-                    if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {
+                    if (!creatureMem.getCanAttack()) {
                         printToView(0, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
                     } else {
                         if (creatureMem.getIsSummonedJust()) {
@@ -1481,7 +1498,7 @@ public class Main extends JFrame {
                     if (players[1].effects.getBBShield()) {
                         printToView(0, "Первая атака должна быть в Бьорнбона.");
                     } else {
-                        if ((creatureMem.isTapped) || (creatureMem.attackThisTurn) || (creatureMem.effects.cantAttackOrBlock > 0)) {
+                        if (!creatureMem.getCanAttack()) {
                             printToView(0, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
                         } else {
                             if (creatureMem.getIsSummonedJust()) {

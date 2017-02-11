@@ -22,6 +22,7 @@ public class UnitLabel extends JLabel {
     Color borderInactiveColor=Color.CYAN;
     Color borderTappedColor = Color.gray;
     Color borderActiveColor = Color.green;
+    Color borderAlreadyAttackColor = Color.blue;
 
     void setAll(Creature _creature, int _width,int _height){
         creature=_creature;
@@ -47,11 +48,11 @@ public class UnitLabel extends JLabel {
         if (isVisible()) {
             Graphics2D g2 = (Graphics2D) g;
             g2.drawImage(image, getX(), getY(), getWidth()+1, getHeight()+1, null);
-            if (creature.getIsSummonedJust())
+            if (creature.getIsSummonedJust() && !creature.isTapped)
             g2.setColor(borderInactiveColor);
-            else if (!creature.getIsSummonedJust() && !creature.isTapped) g2.setColor(borderActiveColor);
-            else //Think about it
-                g2.setColor(borderTappedColor);
+            else if (!creature.getIsSummonedJust() && !creature.isTapped && !creature.attackThisTurn) g2.setColor(borderActiveColor);
+            else if (!creature.getIsSummonedJust() && !creature.isTapped && creature.attackThisTurn) g2.setColor(borderAlreadyAttackColor);
+            else g2.setColor(borderTappedColor);
 
             g2.setStroke(new BasicStroke(BorderOval));
             g2.drawOval(getX()-BorderOval/2,getY()-BorderOval/2,getWidth()+BorderOval,getHeight()+BorderOval);
@@ -121,15 +122,6 @@ public class UnitLabel extends JLabel {
                 }
                 effectsFounded++;
             }
-            if (creature.effects.cantAttackOrBlock!=0) {
-                try {
-                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/cantattactorblock.png"));
-                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                effectsFounded++;
-            }
             if (creature.effects.bonusArmor!=0) {
                 try {
                     //TODO When we have more pictures, replace 3 for N.
@@ -139,6 +131,27 @@ public class UnitLabel extends JLabel {
                     e.printStackTrace();
                 }
                 effectsFounded++;
+            }
+            if (!creature.effects.additionalText.equals("")) {
+                if (creature.effects.additionalText.contains("Не может атаковать. Не может блокировать.")) {
+                    try {
+                        BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/cantattactorblock.png"));
+                        g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    effectsFounded++;
+                }
+                //Unknowed additional text
+                else {
+                    try {
+                        BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/additionaltext.png"));
+                        g2.drawImage(tap, effectsX + effectsFounded * getWidth() / 3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    effectsFounded++;
+                }
             }
 
             //TODO if effects more than can be placed on card

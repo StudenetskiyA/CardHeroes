@@ -86,6 +86,20 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             players[np].untapAll();
+        } else if (fromServer.contains("#TakeCreatureText")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            String text = parameter.get(2);
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            Board.creature.get(np).get(nc).effects.takeTextEffect(text);
+        } else if (fromServer.contains("#LooseCreatureText")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            String text = parameter.get(2);
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            Board.creature.get(np).get(nc).effects.looseTextEffect(text);
         } else if (fromServer.contains("#TakeCreatureEffect")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
@@ -132,12 +146,23 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("#Message")) {//#Message(TypeN,Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             Main.printToView(Integer.parseInt(parameter.get(0)), parameter.get(1));
+        } else if (fromServer.contains("#Attack(")) {//Just informative command
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int anp = (np==0)? 1:0;
+            creatureWhoAttack = Integer.parseInt(parameter.get(1));
+            creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
+            String t;
+            if (creatureWhoAttackTarget==-1) t=players[anp].name;
+            else t=Board.creature.get(anp).get(creatureWhoAttackTarget).name;
+            Main.printToView(0,Board.creature.get(np).get(creatureWhoAttack).name+" атакует "+t+".");
         } else if (fromServer.contains("#ChoiceBlocker(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
                 isMyTurn = Main.PlayerStatus.IChoiceBlocker;
                 creatureWhoAttack = Integer.parseInt(parameter.get(1));
                 creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
+                Main.printToView(0,Color.GREEN,"Выберете защитника.");
             }
         } else if (fromServer.contains("#ChoiceTarget")) {//#ChoiceTarget(Player, Status, CreatureNum, WhatAbility, Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -148,18 +173,28 @@ public class ResponseServerMessage extends Thread {
                 ActivatedAbility.whatAbility = WhatAbility.fromInteger(Integer.parseInt(parameter.get(3)));
                 Main.printToView(2, Color.GREEN, parameter.get(4));//change it
             }
+        } else if (fromServer.contains("#ChoiceYesNo")) {//#ChoiceYesNo(Player, Card, Message, Yes, No)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            if (players[0].playerName.equals(parameter.get(0))) {
+                Main.isMyTurn = PlayerStatus.choiceYesNo;
+                main.userChoice = new UserChoice(main.viewField,parameter.get(1),parameter.get(2),parameter.get(3),parameter.get(4));
+                main.userChoiceShow=true;
+            }
         } else if (fromServer.contains("#ChoiceSearchInDeck")) {//#SearchInDeck(PlayerName,CardType,CardColor,CreatureType,CardCost,CardCostExactly,Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
                 Main.isMyTurn = Main.PlayerStatus.searchX;
                 Main.choiceXtype = Integer.parseInt(parameter.get(1));
                 Main.choiceXcolor = Integer.parseInt(parameter.get(2));
-                if (parameter.get(3).equals("0"))
+                if (parameter.get(3).equals(" "))
                     Main.choiceXcreatureType = "";
                 else Main.choiceXcreatureType = parameter.get(3);
                 Main.choiceXcost = Integer.parseInt(parameter.get(4));
                 Main.choiceXcostExactly = Integer.parseInt(parameter.get(5));
-                Main.printToView(0, parameter.get(6));
+                if (parameter.get(6).equals(" "))
+                    Main.choiceXname = "";
+                else Main.choiceXname = parameter.get(6);
+                Main.printToView(0, parameter.get(7));
             }
         } else if (fromServer.contains("#ChoiceSearchInGraveyard")) {//#SearchInDeck(PlayerName,CardType,CardColor,CreatureType,CardCost,CardCostExactly,Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -172,7 +207,10 @@ public class ResponseServerMessage extends Thread {
                 else Main.choiceXcreatureType = parameter.get(3);
                 Main.choiceXcost = Integer.parseInt(parameter.get(4));
                 Main.choiceXcostExactly = Integer.parseInt(parameter.get(5));
-                Main.printToView(0, parameter.get(6));
+                if (parameter.get(6).equals(" "))
+                    Main.choiceXname = "";
+                else Main.choiceXname = parameter.get(6);
+                Main.printToView(0, parameter.get(7));
             }
         }
 

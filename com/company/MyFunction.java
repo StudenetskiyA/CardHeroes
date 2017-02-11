@@ -166,13 +166,14 @@ public class MyFunction {
     public static boolean canTarget(Target target,int targetType){
         //10 my hero or my creature, not self
         //12 my creature, not self
+        //13 any creature not self
         if (target==Target.myPlayer)
         {
             if (targetType==2 || targetType==3 || targetType==9 || targetType==10 ) return true;
         }
         else if (target==Target.myCreature)
         {
-            if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 || targetType==12 ) return true;
+            if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 || targetType==12 || targetType==13 ) return true;
         }
         else if (target==Target.enemyPlayer)
         {
@@ -180,7 +181,7 @@ public class MyFunction {
         }
         else if (target==Target.enemyCreature)
         {
-            if (targetType==1 || targetType==3 || targetType==4 || targetType==6) return true;
+            if (targetType==1 || targetType==3 || targetType==4 || targetType==6 || targetType==13) return true;
         }
         return false;
     }
@@ -212,6 +213,17 @@ public class MyFunction {
             if (cr.getTougness()<=cr.damage) n++;
         }
         return n;
+    }
+
+    public static String getTextBetweenSymbol(String fromText, String afterText, String symbol){
+        return fromText.substring(fromText.indexOf(afterText)+afterText.length(),fromText.indexOf(symbol,fromText.indexOf(afterText)+afterText.length()));
+    }
+
+    public static String textNotInTake(String fromText){
+        if (!fromText.contains("'")) return fromText;
+        String tmp = getTextBetweenSymbol(fromText,fromText.substring(0,fromText.indexOf("'")+1),"'");
+        tmp=fromText.substring(0,fromText.indexOf(tmp))+fromText.substring(fromText.indexOf(tmp)+1+tmp.length(),fromText.length());
+        return tmp;
     }
 
     public static boolean canTargetComplex(Creature cr){
