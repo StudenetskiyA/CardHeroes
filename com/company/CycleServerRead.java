@@ -73,13 +73,9 @@ public class CycleServerRead extends Thread {
                     }
                     //Load information about opponent - name and heroHame.
                     Card c = Card.getCardByName(parameter.get(1));
-                    try {
-                        playerHeroClick[1].image = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + c.name + ".jpg"));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                     players[1] = new Player(c, simpleEnemyDeck, parameter.get(0), 1);
                     //For tests, server may begin with any coin.
+                    Main.heroLabel[1].setVisible(true);
                     players[0].untappedCoin = Integer.parseInt(parameter.get(2));
                     players[0].totalCoin = Integer.parseInt(parameter.get(2));
                     players[1].untappedCoin = Integer.parseInt(parameter.get(2));

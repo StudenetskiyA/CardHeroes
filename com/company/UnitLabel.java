@@ -8,9 +8,8 @@ import java.io.IOException;
 
 import static com.company.Main.main;
 
-/**
- * Created by StudenetskiyA on 29.01.2017.
- */
+// Created by StudenetskiyA on 29.01.2017.
+
 public class UnitLabel extends JLabel {
     static final int BorderOval=4;
     static final Color NumberColor=Color.red;
