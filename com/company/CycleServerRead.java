@@ -1,6 +1,5 @@
 package com.company;
 
-import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -14,7 +13,9 @@ public class CycleServerRead extends Thread {
     @Override
     public synchronized void run() {
         super.run();
+
         while (true) {
+            if (cycleServerReadDo){
             String fromServer = "";
             if (!Main.isReplay) {
                 fromServer = Client.readLine();
@@ -26,7 +27,7 @@ public class CycleServerRead extends Thread {
                 }
             }
             if (fromServer != null) {
-                if (!fromServer.equals("wait") && !fromServer.equals("")) {
+                if (!fromServer.equals("")) {
                     writerToLog.println(fromServer);
                     System.out.println("Server: " + fromServer);
                 }
@@ -35,13 +36,13 @@ public class CycleServerRead extends Thread {
                     printToView(0, "Разрыв соединения!");
                     writerToLog.close();
                     printToView(1, "Opponent disconnected");
-                    try {
-                        //TODO Do something - return to first screen as example
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    System.exit(1);
+//                    try {
+//                        //TODO Do something - return to first screen as example
+//                        TimeUnit.SECONDS.sleep(5);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    System.exit(1);
                 } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck or other NOT correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     String code_not_ok = parameter.get(0);
@@ -59,6 +60,7 @@ public class CycleServerRead extends Thread {
                     while (true) {
                         Client.writeLine("wait");
                         String a = Client.readLine();
+                        //System.out.println("Sv = "+a);
                         if (!a.equals("wait")) {
                             break;
                         }
@@ -84,6 +86,7 @@ public class CycleServerRead extends Thread {
                         isMyTurn = Main.PlayerStatus.MuliganPhase;
                         main.repaint();
                     }
+                    System.out.println("OPP con ok");
                 } else {
                     responseServerMessage = new ResponseServerMessage(fromServer);
                     responseServerMessage.start();
@@ -99,5 +102,7 @@ public class CycleServerRead extends Thread {
                 main.repaint();
             }
         }
+        else break;
+    }
     }
 }

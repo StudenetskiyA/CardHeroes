@@ -1,7 +1,9 @@
 package com.company;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import static com.company.Main.*;
 import static com.company.MyFunction.ActivatedAbility;
@@ -48,6 +50,29 @@ public class ResponseServerMessage extends Thread {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             players[np].graveyard.add(Card.getCardByName(parameter.get(1)));
+        } else if (fromServer.contains("#Surrend")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            String[] args = new String[0];
+            if (np==0){
+                Main.printToView(1,Color.RED,"Вы проиграли.");
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                main.atEndOfPlay();
+            } else {
+                Main.printToView(1,Color.GREEN,"Ваш противник сдался.");
+                System.out.println("Opp surr");
+                main.repaint();
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                main.atEndOfPlay();
+            }
         } else if (fromServer.contains("#RemoveCardFromHand")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;

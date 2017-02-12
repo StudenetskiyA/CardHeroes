@@ -24,8 +24,8 @@ import static com.company.MyFunction.ActivatedAbility.WhatAbility.*;
 public class Main extends JFrame {
     //Connect constant
     private static final String CLIENT_VERSION = "0.02";
-    private static final String address = "127.0.0.1";//"test1.uralgufk.ru";//"127.0.0.1";  //"cardheroes.hldns.ru";
-    private static String serverPort = "8901";
+    static final String address = "127.0.0.1";//"test1.uralgufk.ru";//"127.0.0.1";  //"cardheroes.hldns.ru";
+    static String serverPort = "8901";
     //View constant
     static final int BORDER_CREATURE = 3;
     private static final int B0RDER_RIGHT = 15;
@@ -78,6 +78,7 @@ public class Main extends JFrame {
     //Monitors for thread
     static boolean ready = true;
     public static final Object monitor = new Object();
+    public static boolean cycleServerReadDo = true;
     //
     static boolean isReplay = false;
     static Thread cycleReadFromServer = new CycleServerRead();
@@ -98,17 +99,18 @@ public class Main extends JFrame {
     private static UnitLabel unitClick[][] = new UnitLabel[2][10];
     static HeroLabel[] heroLabel = new HeroLabel[2];
     private static JLabel battlegroundClick = new JLabel();
-    private static JLabel playerCoinLabel = new JLabel();
-    private static JLabel enemyCoinLabel = new JLabel();
+    static JLabel playerCoinLabel = new JLabel();
+    static JLabel enemyCoinLabel = new JLabel();
     private static JLabel playerGraveyardClick = new JLabel();
     private static JLabel enemyGraveyardClick = new JLabel();
-    private static JLabel gameLog = new JLabel();
+    static JLabel gameLog = new JLabel();
     private static JLabel endTurnClick = new JLabel();
     private static JLabel searchXLabel[] = new JLabel[40];
     private static JLabel message = new JLabel();
     private static MyFunction.ClickImage menuClick = new MyFunction.ClickImage();
     private static MyFunction.ClickImage fullScreenClick = new MyFunction.ClickImage();
     private static MyFunction.ClickImage settingsClick = new MyFunction.ClickImage();
+    private static MyFunction.ClickImage surrendClick = new MyFunction.ClickImage();
     //Static image for button, background and etc.
     static Image background;
     private static Image heroCoinImage;
@@ -211,7 +213,7 @@ public class Main extends JFrame {
                 } else {
                     runGame(args[0], args[1], null);
                     main.repaint();
-                    cycleReadFromServer.start();
+                    //cycleReadFromServer.start();
                 }
             }
         } else {
@@ -220,6 +222,11 @@ public class Main extends JFrame {
     }
 
     static void runGame(String playerName, String deckName, String replayName) throws IOException, InterruptedException {
+        gameLog.setVisible(true);
+        playerCoinLabel.setVisible(true);
+        enemyCoinLabel.setVisible(true);
+        textField.setVisible(true);
+        scrollPane.setVisible(true);
         System.out.println("Game runs " + playerName + " " + deckName);
         simpleDeck = new Deck(deckName);
         simpleEnemyDeck = new Deck("defaultDeck");
@@ -228,10 +235,11 @@ public class Main extends JFrame {
         players[0] = new Player(c, simpleDeck, playerName, 0);
         simpleDeck.cards.remove(0);
         players[1] = new Player(simpleDeck, "", playerName, 0, 30);
+        if (pbScreen.isVisible)
         pbScreen.hideWindow();
         textField.setVisible(true);
         scrollPane.setVisible(true);
-
+        main.repaint();
         if (playerName.equals("replay")) {
             InputStream path = Main.class.getResourceAsStream("replays/" + replayName + ".txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
@@ -261,6 +269,9 @@ public class Main extends JFrame {
                 }
                 Client.writeLine("$ENDDECK");
             }
+            cycleServerReadDo=true;
+            cycleReadFromServer =new CycleServerRead();
+            cycleReadFromServer.start();
         }
     }
 
@@ -527,28 +538,24 @@ public class Main extends JFrame {
 
             if (isShowGraveyard != -1) drawPlayerGraveyard(g, isShowGraveyard);
 
-            drawMessage(g);
-        }
+            drawChat(g);
 
+        }
 
         if (userChoiceShow) userChoice.show(g, bigCardW, bigCardH);
 
         if (pbScreen.isVisible) pbScreen.onRepaint(g);
         //Settings click
         settingsClick.LSD(g, main.getWidth() - smallCardH / 3 - B0RDER_RIGHT, main.getHeight() - smallCardH / 3 - B0RDER_BOTTOM, smallCardW / 3, smallCardH / 3);
+        menuClick.LSD(g,main.getWidth() / 2 - heroW / 2, main.getHeight() / 2 - heroH / 2,heroW, heroW * 149 / 283);
+        fullScreenClick.LSD(g,main.getWidth() / 2 - heroW / 2, main.getHeight() / 2 - heroH / 2 - heroW * 149 / 283 - B0RDER_BETWEEN,heroW, heroW * 149 / 283);
+        if (isMyTurn!=PlayerStatus.prepareForBattle)
+        surrendClick.LSD(g,main.getWidth() / 2 - heroW / 2,main.getHeight() / 2 - heroH / 2 - 2*heroW * 149 / 283 - B0RDER_BETWEEN*2,heroW, heroW * 149 / 283);
 
-        menuClick.setLocation(main.getWidth() / 2 - heroW / 2, main.getHeight() / 2 - heroH / 2);
-        menuClick.setSize(heroW, heroW * 149 / 283);
-        menuClick.drawImage(g);
-
-        fullScreenClick.setLocation(main.getWidth() / 2 - heroW / 2, main.getHeight() / 2 - heroH / 2 - heroW * 149 / 283 - B0RDER_BETWEEN);
-        fullScreenClick.setSize(heroW, heroW * 149 / 283);
-        fullScreenClick.drawImage(g);
+        drawMessage(g);
     }
 
-    private static void drawMessage(Graphics g) {
-        //chat
-        // cardX = B0RDER_LEFT + B0RDER_BETWEEN * 3 + smallCardW * 3;
+    private static void drawChat(Graphics g){
         gameLog.setLocation(B0RDER_LEFT, B0RDER_TOP + smallCardH + B0RDER_BETWEEN);
         gameLog.setSize(battlegroundClick.getX() - B0RDER_BETWEEN - B0RDER_LEFT, main.getHeight() - B0RDER_BOTTOM - B0RDER_TOP - B0RDER_BETWEEN * 2 - smallCardH * 2 - heroH - smallCardH / 5);
 
@@ -559,11 +566,12 @@ public class Main extends JFrame {
         textField.setLocation(B0RDER_LEFT, scrollPane.getY() + scrollPane.getHeight());
         textField.setSize(battlegroundClick.getX() - B0RDER_BETWEEN - B0RDER_LEFT, smallCardH / 5);
 
-        //JTextField textField = new JTextField(40);
+    }
 
+    private static void drawMessage(Graphics g) {
         Calendar cal = Calendar.getInstance();
         long delta = cal.getTimeInMillis() - messageToShow.whenAdd;
-        //  System.out.println("Delta="+delta);
+
         if ((messageToShow.lenght > delta) || (messageToShow.whenAdd == 0) && (!messageToShow.message.equals(" "))) {
             if (messageToShow.whenAdd == 0)
                 messageToShow.whenAdd = cal.getTimeInMillis();
@@ -890,9 +898,12 @@ public class Main extends JFrame {
 
         settingsClick.image = ImageIO.read(Main.class.getResourceAsStream("icons/Settings.png"));
         settingsClick.addMouseListener(new MyListener(MyListener.Compo.Settings, 0));
+        surrendClick.image = ImageIO.read(Main.class.getResourceAsStream("icons/Surrend.png"));
+        surrendClick.addMouseListener(new MyListener(MyListener.Compo.Surrend, 0));
 
         fullScreenClick.setVisible(false);
         menuClick.setVisible(false);
+        surrendClick.setVisible(false);
         fullScreenClick.addMouseListener(new MyListener(MyListener.Compo.Fullscreen, 0));
 
         menuClick.addMouseListener(new MyListener(MyListener.Compo.Menu, 0));
@@ -901,13 +912,6 @@ public class Main extends JFrame {
         weaponClick.addMouseListener(new MyListener(MyListener.Compo.Weapon, 0));
 
         endTurnClick.addMouseListener(new MyListener(MyListener.Compo.EndTurnButton, 0));
-
-//        playerHeroClick[0] = new MyFunction.ClickImage();
-//        playerHeroClick[1] = new MyFunction.ClickImage();
-//        playerHeroClick[1].addMouseListener(new MyListener(MyListener.Compo.EnemyHero, 0));
-//        playerHeroClick[1].addMouseMotionListener(new MyListener(MyListener.Compo.EnemyHero, 0));
-//        playerHeroClick[0].addMouseListener(new MyListener(MyListener.Compo.PlayerHero, 0));
-//        playerHeroClick[0].addMouseMotionListener(new MyListener(MyListener.Compo.PlayerHero, 0));
 
         heroLabel[0] = new HeroLabel();
         heroLabel[1] = new HeroLabel();
@@ -947,11 +951,10 @@ public class Main extends JFrame {
         viewField.add(menuClick);
         viewField.add(fullScreenClick);
         viewField.add(settingsClick);
+        viewField.add(surrendClick);
         viewField.add(weaponClick);
         viewField.add(playerGraveyardClick);
         viewField.add(enemyGraveyardClick);
-//        viewField.add(playerHeroClick[1]);
-//        viewField.add(playerHeroClick[0]);
         viewField.add(playerCoinLabel);
         viewField.add(enemyCoinLabel);
         viewField.add(gameLog);
@@ -1012,6 +1015,31 @@ public class Main extends JFrame {
         main.setVisible(true);
     }
 
+    static void atEndOfPlay(){
+        cycleServerReadDo=false;
+        gameLog.setVisible(false);
+        playerCoinLabel.setVisible(false);
+        enemyCoinLabel.setVisible(false);
+        textField.setVisible(false);
+        scrollPane.setVisible(false);
+        heroLabel[1].setVisible(false);
+        for (int i=0;i<wantToMulligan.length;i++) wantToMulligan[i]=false;
+        isMyTurn= PlayerStatus.prepareForBattle;
+        try {
+            pbScreen.showWindow();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //TODO reconnect
+        Main.connected=false;
+        try {
+            //TODO while connect
+            Client.connect(Integer.parseInt(Main.serverPort), Main.address);
+        } catch (Exception x) {
+            System.out.println("Cloud not connect to server.");
+        }
+    }
+
     private static class MyListener extends MouseInputAdapter {
         Compo onWhat;
         int num;
@@ -1032,11 +1060,20 @@ public class Main extends JFrame {
             if (onWhat == Compo.Settings) {
                 if (!menuClick.isVisible()) {
                     menuClick.setVisible(true);
+                    surrendClick.setVisible(true);
                     fullScreenClick.setVisible(true);
                 } else {
                     menuClick.setVisible(false);
+                    surrendClick.setVisible(false);
                     fullScreenClick.setVisible(false);
                 }
+            } else if (onWhat == Compo.Surrend) {
+                menuClick.setVisible(false);
+                fullScreenClick.setVisible(false);
+                surrendClick.setVisible(false);
+                System.out.println("$SURREND");
+                Client.writeLine("$SURREND");
+                writerToLog.close();
             } else if (onWhat == Compo.Menu) {
                 System.out.println("$DISCONNECT");
                 Client.writeLine("$DISCONNECT");
@@ -1045,6 +1082,7 @@ public class Main extends JFrame {
             } else if (onWhat == Compo.Fullscreen) {
                 menuClick.setVisible(false);
                 fullScreenClick.setVisible(false);
+                surrendClick.setVisible(false);
                 if (main.isResizable()) {
                     //FULL SCREEN
                     main.dispose();
@@ -1475,7 +1513,7 @@ public class Main extends JFrame {
             main.repaint();
         }
 
-        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton, Fullscreen, Settings, DeckChoice, PlayerGraveyard, CreatureInMyPlayTap, PlayerHeroTap, EnemyGraveyard}
+        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton, Fullscreen, Settings, DeckChoice, PlayerGraveyard, CreatureInMyPlayTap, PlayerHeroTap, Surrend, EnemyGraveyard}
     }
 
     static class ViewField extends JPanel {

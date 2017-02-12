@@ -61,7 +61,7 @@ public class Client {
         Main.ready=false;
         if (Main.connected) {
             out.println(line);
-           // System.out.println("I send "+line);
+            System.out.println("I send "+line);
         }
     }
 }

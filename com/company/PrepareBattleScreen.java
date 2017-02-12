@@ -23,10 +23,10 @@ public class PrepareBattleScreen {
     private static final double SMALL_CARD_SIZE_FROM_SCREEN = 0.06;
     static PrintWriter writerToLog;
     //Elements of view
-    static ArrayList<String> decksChoice = new ArrayList<>();
-    static ArrayList<String> decksChoiceHeroes = new ArrayList<>();
-    static JTextField enterNameFieled = new JTextField(40);
-    static Thread cycleReadFromServer = new CycleServerRead();
+    static ArrayList<String> decksChoice ;//= new ArrayList<>();
+    static ArrayList<String> decksChoiceHeroes ;//= new ArrayList<>();
+    static JTextField enterNameFieled;// = new JTextField(40);
+   // static Thread cycleReadFromServer;// = new CycleServerRead();
     //For repaint
     //Elements of view
     private static JLabel deckChoiseClick[] = new JLabel[10];
@@ -89,19 +89,18 @@ public class PrepareBattleScreen {
         }
     }
 
-
     public static void showWindow() throws IOException {
+        decksChoice = new ArrayList<>();
+        decksChoiceHeroes = new ArrayList<>();
+        enterNameFieled = new JTextField(40);
+       // cycleReadFromServer = new CycleServerRead();
         prepareListOfDeck();
         loadImage();
         setInitialProperties();
 
         Main.viewField.setVisible(true);
         isVisible=true;
-        if (Main.connected) {
-                cycleReadFromServer.start();
-        } else {
-            System.exit(1);
-        }
+
     }
 
     public static void hideWindow(){
@@ -187,23 +186,6 @@ public class PrepareBattleScreen {
             background = ImageIO.read(Main.class.getResourceAsStream("icons/background.jpg"));
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    static void loadDeckFromFile(Deck deck, String deckName) throws IOException {
-        InputStream path = Main.class.getResourceAsStream("decks/" + deckName + ".txt");
-        BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
-        try {
-            String line = "";
-            while (line != null) {
-                line = br.readLine();
-                if (line != null) {
-                    //    System.out.println("Load card = " + line);
-                    deck.cards.add(new Card(Card.getCardByName(line)));
-                }
-            }
-        } finally {
-            br.close();
         }
     }
 
