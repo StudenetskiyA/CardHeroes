@@ -365,27 +365,27 @@ public class Main extends JFrame {
             endTurnClick.setSize(heroW, heroW * 149 / 283);
 
             if (isMyTurn == PlayerStatus.MyTurn) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Endturn.png"));
+                endTurnImage = ImageIO.read(new File("icons/Endturn.png"));
             } else if (isMyTurn == PlayerStatus.IChoiceBlocker) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Blockturn.png"));
+                endTurnImage = ImageIO.read(new File("icons/Blockturn.png"));
             } else if (isMyTurn == PlayerStatus.EnemyChoiceBlocker) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Blockenemyturn.png"));
+                endTurnImage = ImageIO.read(new File("icons/Blockenemyturn.png"));
             } else if (isMyTurn == PlayerStatus.EnemyChoiceTarget) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Enemychoicetarget.png"));
+                endTurnImage = ImageIO.read(new File("icons/Enemychoicetarget.png"));
             } else if (isMyTurn == PlayerStatus.MuliganPhase) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Mulliganturn.png"));
+                endTurnImage = ImageIO.read(new File("icons/Mulliganturn.png"));
             } else if (isMyTurn == PlayerStatus.EnemyTurn) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Enemyturn.png"));
+                endTurnImage = ImageIO.read(new File("icons/Enemyturn.png"));
             } else if (isMyTurn == PlayerStatus.waitingMulligan) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waitmulliganturn.png"));
+                endTurnImage = ImageIO.read(new File("icons/Waitmulliganturn.png"));
             } else if (isMyTurn == PlayerStatus.waitingForConnection) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Connectionturn.png"));
+                endTurnImage = ImageIO.read(new File("icons/Connectionturn.png"));
             } else if (isMyTurn == PlayerStatus.choiceTarget) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waittarget.png"));
+                endTurnImage = ImageIO.read(new File("icons/Waittarget.png"));
             } else if (isMyTurn == PlayerStatus.searchX) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waittarget.png"));//TODO Other icon
+                endTurnImage = ImageIO.read(new File("icons/Waittarget.png"));//TODO Other icon
             } else if (isMyTurn == PlayerStatus.waitOtherPlayer) {
-                endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Waitotherconnectionturn.png"));
+                endTurnImage = ImageIO.read(new File("icons/Waitotherconnectionturn.png"));
             }
             g.drawImage(endTurnImage, endTurnClick.getX(), endTurnClick.getY(), endTurnClick.getWidth(), endTurnClick.getHeight(), null);
 
@@ -417,7 +417,7 @@ public class Main extends JFrame {
             if (players[0].graveyard.size() == 0) {
                 g.drawImage(heroGraveyardImage, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
             } else {
-                im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].graveyard.get(players[0].graveyard.size() - 1).image));
+                im = ImageIO.read(new File("cards/" + players[0].graveyard.get(players[0].graveyard.size() - 1).image));
                 g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
             }
             //Enemy graveyard
@@ -426,7 +426,7 @@ public class Main extends JFrame {
             if (players[1].graveyard.size() == 0) {
                 g.drawImage(heroGraveyardImage, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
             } else {
-                im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[1].graveyard.get(players[1].graveyard.size() - 1).image));
+                im = ImageIO.read(new File("cards/" + players[1].graveyard.get(players[1].graveyard.size() - 1).image));
                 g.drawImage(im, deckClick.getX() + deckClick.getWidth() + B0RDER_BETWEEN, B0RDER_TOP, smallCardW, smallCardH, null);
             }
             //Hero&enemy coin
@@ -447,7 +447,7 @@ public class Main extends JFrame {
                 for (int i = players[0].cardInHand.size() - 1; i >= 0; i--) {
                     if (players[0].cardInHand.get(i).image != null) {
                         try {
-                            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[0].cardInHand.get(i).image));
+                            im = ImageIO.read(new File("cards/" + players[0].cardInHand.get(i).image));
                             if (isMyTurn == PlayerStatus.MuliganPhase) {
                                 int tmp = (battlegroundClick.getWidth() - heroW - bigCardW * 4) / 5;
                                 cardClick[i].setLocation(battlegroundClick.getX() + B0RDER_BETWEEN + (numCardInHand * bigCardW) + ((numCardInHand + 1) * tmp), main.getHeight() / 2 - bigCardH / 2);
@@ -486,7 +486,7 @@ public class Main extends JFrame {
                 }
             }
             //Enemy cards
-            im = ImageIO.read(Main.class.getResourceAsStream("icons/Deck.png"));//His card deck up
+            im = ImageIO.read(new File("icons/Deck.png"));//His card deck up
             for (int i = 0; i < enemyHandSize; i++) {
                 g.drawImage(im, cardX + smallCardW + (int) (i * smallCardW * 0.5), B0RDER_TOP, smallCardW, smallCardH, null);
             }
@@ -519,7 +519,7 @@ public class Main extends JFrame {
 
             //When you dragged card from hand
             if (isYouDraggedCard && cardMem != null) {
-                im = ImageIO.read(Main.class.getResourceAsStream("cards/" + cardMem.image));
+                im = ImageIO.read(new File("cards/" + cardMem.image));
                 g.drawImage(im, (int) MouseInfo.getPointerInfo().getLocation().getX() - smallCardW / 2 - (int) main.getLocationOnScreen().getX(), (int) MouseInfo.getPointerInfo().getLocation().getY() - smallCardH - (int) main.getLocationOnScreen().getY(), smallCardW, smallCardH, null);
             }
             //When you dragged creature to attack
@@ -639,7 +639,7 @@ public class Main extends JFrame {
             for (int i = 0; i < founded.size(); i++) {
                 int ii = i % 10;
                 int jj = i / 10;
-                BufferedImage im_tmp = ImageIO.read(Main.class.getResourceAsStream("cards/" + founded.get(i).image));
+                BufferedImage im_tmp = ImageIO.read(new File("cards/" + founded.get(i).image));
                 g.drawImage(im_tmp, cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1), smallCardW, smallCardH, null);
                 searchXLabel[i].setLocation(cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1));
                 searchXLabel[i].setSize(smallCardW, smallCardH);
@@ -661,7 +661,7 @@ public class Main extends JFrame {
             for (int i = 0; i < founded.size(); i++) {
                 int ii = i % 10;
                 int jj = i / 10;
-                BufferedImage im_tmp = ImageIO.read(Main.class.getResourceAsStream("cards/" + founded.get(i).image));
+                BufferedImage im_tmp = ImageIO.read(new File("cards/" + founded.get(i).image));
                 g.drawImage(im_tmp, cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1), smallCardW, smallCardH, null);
                 searchXLabel[i].setLocation(cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1));
                 searchXLabel[i].setSize(smallCardW, smallCardH);
@@ -681,12 +681,12 @@ public class Main extends JFrame {
         if (players[p].equpiment[0] == null) {
             // g.drawImage(heroNoArmorImage, x, h, smallCardW, smallCardH, null);
         } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[p].equpiment[0].image));
+            im = ImageIO.read(new File("cards/" + players[p].equpiment[0].image));
             g.drawImage(im, x, h, smallCardW, smallCardH, null);
             if (players[p].equpiment[0].hp != 0) {
                 int a = 6 - players[p].equpiment[0].hp;
                 if (a != 0) {
-                    im = ImageIO.read(Main.class.getResourceAsStream("icons/damage/" + a + ".png"));
+                    im = ImageIO.read(new File("icons/damage/" + a + ".png"));
                     g.drawImage(im, x + smallCardW / 2 - heroH / 10, h + smallCardH / 2 - heroH / 10, heroH / 5, heroH / 5, null);
                 }
             }
@@ -696,14 +696,14 @@ public class Main extends JFrame {
         if (players[p].equpiment[1] == null) {
             // g.drawImage(heroNoAmuletImage, x-smallCardH-B0RDER_BETWEEN, h, smallCardW, smallCardH, null);
         } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[p].equpiment[1].image));
+            im = ImageIO.read(new File("cards/" + players[p].equpiment[1].image));
             g.drawImage(im, x - (smallCardH + B0RDER_BETWEEN) * found, h, smallCardW, smallCardH, null);
             found++;
         }
         //weapon
         if (players[p].equpiment[2] != null) {
             weaponClick.setVisible(true);
-            weaponClick.image = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[p].equpiment[2].image));
+            weaponClick.image = ImageIO.read(new File("cards/" + players[p].equpiment[2].image));
             weaponClick.LSDiftap(g, players[p].equpiment[2].isTapped, x - (smallCardH + B0RDER_BETWEEN) * found, h, smallCardW, smallCardH);
             found++;
         }
@@ -712,7 +712,7 @@ public class Main extends JFrame {
         if (players[p].equpiment[3] == null) {
             //    g.drawImage(heroNoEventImage, x-smallCardH*3-B0RDER_BETWEEN*3, h, smallCardW, smallCardH, null);
         } else {
-            im = ImageIO.read(Main.class.getResourceAsStream("cards/" + players[p].equpiment[3].image));
+            im = ImageIO.read(new File("cards/" + players[p].equpiment[3].image));
             g.drawImage(im, x - (smallCardH + B0RDER_BETWEEN) * found, h, smallCardW, smallCardH, null);
             found++;
         }
@@ -739,10 +739,10 @@ public class Main extends JFrame {
                     unitClick[np][numUnit].setLocation(crX, h);
                     unitClick[np][numUnit].drawImage(g);
                     if (i == hilightMyCreature && np == 0) {
-                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+                        im = ImageIO.read(new File("cards/" + Board.creature.get(np).get(i).image));
                         g.drawImage(im, crX + crW + UnitLabel.plusSize(), h - bigCardH + crH, bigCardW, bigCardH, null);
                     } else if (i == hilightEnemyCreature && np == 1) {
-                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+                        im = ImageIO.read(new File("cards/" + Board.creature.get(np).get(i).image));
                         g.drawImage(im, crX + crW + UnitLabel.plusSize(), h, bigCardW, bigCardH, null);
                     }
                     numNotDiedUnit++;
@@ -756,10 +756,10 @@ public class Main extends JFrame {
                 if (Board.creature.get(np).get(i) != null && Board.creature.get(np).get(i).image != null && Board.creature.get(np).get(i).getTougness() > Board.creature.get(np).get(i).damage) {
                     int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + numUnit * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);// + (heroH - heroW) / 2;
                     if (i == hilightMyCreature && np == 0) {
-                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+                        im = ImageIO.read(new File("cards/" + Board.creature.get(np).get(i).image));
                         g.drawImage(im, crX + crW + UnitLabel.plusSize(), h - bigCardH + crH, bigCardW, bigCardH, null);
                     } else if (i == hilightEnemyCreature && np == 1) {
-                        im = ImageIO.read(Main.class.getResourceAsStream("cards/" + Board.creature.get(np).get(i).image));
+                        im = ImageIO.read(new File("cards/" + Board.creature.get(np).get(i).image));
                         g.drawImage(im, crX + crW + UnitLabel.plusSize(), h, bigCardW, bigCardH, null);
                     }
                     numUnit++;
@@ -771,7 +771,7 @@ public class Main extends JFrame {
             int hBottom = battlegroundClick.getY() + battlegroundClick.getHeight() - crH - B0RDER_BETWEEN - UnitLabel.plusSize();
             int hTop = battlegroundClick.getY() + B0RDER_BETWEEN + UnitLabel.plusSize();
             if (isMyTurn == PlayerStatus.IChoiceBlocker) {
-                im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiator.png"));
+                im = ImageIO.read(new File("icons/effects/attackinitiator.png"));
                 int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 +
                         creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE) + crW / 2 - heroW / 10;
                 g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
@@ -783,7 +783,7 @@ public class Main extends JFrame {
                 }
             }
             if ((isMyTurn == PlayerStatus.EnemyChoiceBlocker) && (Main.replayCounter == 0)) {
-                im = ImageIO.read(Main.class.getResourceAsStream("icons/effects/attackinitiatorrevert.png"));
+                im = ImageIO.read(new File("icons/effects/attackinitiatorrevert.png"));
                 int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE) + crW / 2 - heroW / 10;
                 g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
                 if (creatureWhoAttackTarget != -1) {
@@ -804,21 +804,22 @@ public class Main extends JFrame {
     private static void loadImage() {
         try {
             background = ImageIO.read(new File("icons/background.jpg"));
-            heroCoinImage = ImageIO.read(Main.class.getResourceAsStream("icons/Coin.png"));
-            heroDeckImage = ImageIO.read(Main.class.getResourceAsStream("icons/Deck.png"));
-            menuClick.image = ImageIO.read(Main.class.getResourceAsStream("icons/Exit.png"));
-            fullScreenClick.image = ImageIO.read(Main.class.getResourceAsStream("icons/Fullscreen.png"));
-            endTurnImage = ImageIO.read(Main.class.getResourceAsStream("icons/Endturn.png"));
-            heroGraveyardImage = ImageIO.read(Main.class.getResourceAsStream("icons/Graveyard.png"));
-            redcrossImage = ImageIO.read(Main.class.getResourceAsStream("icons/Bigredcross.png"));
+            heroCoinImage = ImageIO.read(new File("icons/Coin.png"));
+            heroDeckImage = ImageIO.read(new File("icons/Deck.png"));
+            menuClick.image = ImageIO.read(new File("icons/Exit.png"));
+            fullScreenClick.image = ImageIO.read(new File("icons/Fullscreen.png"));
+            endTurnImage = ImageIO.read(new File("icons/Endturn.png"));
+            heroGraveyardImage = ImageIO.read(new File("icons/Graveyard.png"));
+            redcrossImage = ImageIO.read(new File("icons/Bigredcross.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     static void loadDeckFromFile(Deck deck, String deckName) throws IOException {
-        InputStream path = Main.class.getResourceAsStream("decks/" + deckName + ".txt");
-        BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
+        File path = new File("decks/" + deckName + ".txt");
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path), "windows-1251"));
         try {
             String line = "";
             while (line != null) {
@@ -897,9 +898,9 @@ public class Main extends JFrame {
         deckClick.addMouseMotionListener(new MyListener(MyListener.Compo.Deck, 0));
         deckClick.addMouseListener(new MyListener(MyListener.Compo.Deck, 0));
 
-        settingsClick.image = ImageIO.read(Main.class.getResourceAsStream("icons/Settings.png"));
+        settingsClick.image = ImageIO.read(new File("icons/Settings.png"));
         settingsClick.addMouseListener(new MyListener(MyListener.Compo.Settings, 0));
-        surrendClick.image = ImageIO.read(Main.class.getResourceAsStream("icons/Surrend.png"));
+        surrendClick.image = ImageIO.read(new File("icons/Surrend.png"));
         surrendClick.addMouseListener(new MyListener(MyListener.Compo.Surrend, 0));
 
         fullScreenClick.setVisible(false);

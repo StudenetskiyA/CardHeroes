@@ -141,9 +141,11 @@ public class PrepareBattleScreen {
         BufferedReader brIn = null;
         for (String deck : decksChoice) {
             try {
-                InputStream path = Main.class.getResourceAsStream("decks/" + deck);
-                brIn = new BufferedReader(new InputStreamReader(path, "windows-1251"));
+                File fl = new File("decks/" + deck);
+                 brIn = new BufferedReader(new InputStreamReader(new FileInputStream(fl), "windows-1251"));
+                //brIn = new BufferedReader(new InputStreamReader(path, "windows-1251"));
                 String a = brIn.readLine();
+
                 decksChoiceHeroes.add(a);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -168,7 +170,7 @@ public class PrepareBattleScreen {
         for (String deck : decksChoice) {
             BufferedImage im;
             try {
-                im = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/" + decksChoiceHeroes.get(deckShown) + ".jpg"));
+                im = ImageIO.read(new File("cards/heroes/" + decksChoiceHeroes.get(deckShown) + ".jpg"));
                 g.drawImage(im, B0RDER_LEFT * 5 + Main.heroW * deckShown + B0RDER_BETWEEN * deckShown * 2, main.getHeight() / 2, Main.heroW, Main.heroH, null);
                 deckChoiseClick[deckShown].setLocation(B0RDER_LEFT * 5 + Main.heroW * deckShown + B0RDER_BETWEEN * deckShown * 2, main.getHeight() / 2);
                 deckChoiseClick[deckShown].setSize(Main.heroW, Main.heroH);
@@ -183,7 +185,7 @@ public class PrepareBattleScreen {
 
     private static void loadImage() {
         try {
-            background = ImageIO.read(Main.class.getResourceAsStream("icons/background.jpg"));
+            background = ImageIO.read(new File("icons/background.jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
