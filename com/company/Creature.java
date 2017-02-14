@@ -123,6 +123,8 @@ public class Creature extends Card {
                     Main.printToView(0,whis.name+ " получает до конца хода +"+p+" к удару.");
                     break;
                 }
+			default:
+				break;
             }
         }
     }

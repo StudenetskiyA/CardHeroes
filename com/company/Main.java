@@ -204,7 +204,7 @@ public class Main extends JFrame {
         main.repaint();
         if (connected) {
             if (args.length == 0) {
-                pbScreen.showWindow();
+                PrepareBattleScreen.showWindow();
             } else {
                 if (args.length > 2) {
                     replayDeck = args[3];
@@ -235,8 +235,8 @@ public class Main extends JFrame {
         players[0] = new Player(c, simpleDeck, playerName, 0);
         simpleDeck.cards.remove(0);
         players[1] = new Player(simpleDeck, "", playerName, 0, 30);
-        if (pbScreen.isVisible)
-        pbScreen.hideWindow();
+        if (PrepareBattleScreen.isVisible)
+        PrepareBattleScreen.hideWindow();
         textField.setVisible(true);
         scrollPane.setVisible(true);
         main.repaint();
@@ -358,7 +358,8 @@ public class Main extends JFrame {
             //Battleground
             battlegroundClick.setLocation(cardX, B0RDER_TOP + B0RDER_BETWEEN + heroH + HeroLabel.plusSize());
             battlegroundClick.setSize(main.getWidth() - B0RDER_RIGHT - battlegroundClick.getX(), main.getHeight() - B0RDER_BOTTOM - B0RDER_BETWEEN * 2 - B0RDER_TOP - heroH * 2 - HeroLabel.plusSize() * 2);
-            g.drawRect(battlegroundClick.getX(), battlegroundClick.getY(), battlegroundClick.getWidth(), battlegroundClick.getHeight());//TODO Image of battleground
+            g.drawRect(battlegroundClick.getX(), battlegroundClick.getY(), battlegroundClick.getWidth(), battlegroundClick.getHeight());
+            //TODO Image of battleground
 
             endTurnClick.setLocation(main.getWidth() - heroW - B0RDER_RIGHT, main.getHeight() / 2 - heroW * 75 / 283);
             endTurnClick.setSize(heroW, heroW * 149 / 283);
@@ -544,7 +545,7 @@ public class Main extends JFrame {
 
         if (userChoiceShow) userChoice.show(g, bigCardW, bigCardH);
 
-        if (pbScreen.isVisible) pbScreen.onRepaint(g);
+        if (PrepareBattleScreen.isVisible) PrepareBattleScreen.onRepaint(g);
         //Settings click
         settingsClick.LSD(g, main.getWidth() - smallCardH / 3 - B0RDER_RIGHT, main.getHeight() - smallCardH / 3 - B0RDER_BOTTOM, smallCardW / 3, smallCardH / 3);
         menuClick.LSD(g,main.getWidth() / 2 - heroW / 2, main.getHeight() / 2 - heroH / 2,heroW, heroW * 149 / 283);
@@ -802,7 +803,7 @@ public class Main extends JFrame {
 
     private static void loadImage() {
         try {
-            background = ImageIO.read(Main.class.getResourceAsStream("icons/background.jpg"));
+            background = ImageIO.read(new File("icons/background.jpg"));
             heroCoinImage = ImageIO.read(Main.class.getResourceAsStream("icons/Coin.png"));
             heroDeckImage = ImageIO.read(Main.class.getResourceAsStream("icons/Deck.png"));
             menuClick.image = ImageIO.read(Main.class.getResourceAsStream("icons/Exit.png"));
@@ -1026,7 +1027,7 @@ public class Main extends JFrame {
         for (int i=0;i<wantToMulligan.length;i++) wantToMulligan[i]=false;
         isMyTurn= PlayerStatus.prepareForBattle;
         try {
-            pbScreen.showWindow();
+            PrepareBattleScreen.showWindow();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -1319,7 +1320,6 @@ public class Main extends JFrame {
                 System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
                 Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.IChoiceBlocker)) {
-                //TODO can't block
                 if ((Board.creature.get(0).get(num).isTapped) || (Board.creature.get(0).get(num).blockThisTurn)) {
                     printToView(0, "Повернутые/уже блокировавшие существа не могут блокировать.");
                 } else if (creatureWhoAttackTarget == num) {
