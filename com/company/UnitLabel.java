@@ -8,9 +8,8 @@ import java.io.IOException;
 
 import static com.company.Main.main;
 
-/**
- * Created by StudenetskiyA on 29.01.2017.
- */
+// Created by StudenetskiyA on 29.01.2017.
+
 public class UnitLabel extends JLabel {
     static final int BorderOval=4;
     static final Color NumberColor=Color.red;
@@ -22,13 +21,14 @@ public class UnitLabel extends JLabel {
     Color borderInactiveColor=Color.CYAN;
     Color borderTappedColor = Color.gray;
     Color borderActiveColor = Color.green;
+    Color borderAlreadyAttackColor = Color.blue;
 
     void setAll(Creature _creature, int _width,int _height){
         creature=_creature;
         setSize(_width,_height);
         try {
-//            image = ImageIO.read(Main.class.getResourceAsStream(creature.image));
-            image = ImageIO.read(Main.class.getResourceAsStream("cards/small/Гном-легионер.png"));
+           image = ImageIO.read(Main.class.getResourceAsStream("cards/small/"+creature.image.substring(0,creature.image.length()-4)+".png"));
+           // image = ImageIO.read(Main.class.getResourceAsStream("cards/small/Гном-легионер.png"));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -47,11 +47,11 @@ public class UnitLabel extends JLabel {
         if (isVisible()) {
             Graphics2D g2 = (Graphics2D) g;
             g2.drawImage(image, getX(), getY(), getWidth()+1, getHeight()+1, null);
-            if (creature.getIsSummonedJust())
+            if (creature.getIsSummonedJust() && !creature.isTapped)
             g2.setColor(borderInactiveColor);
-            else if (!creature.getIsSummonedJust() && !creature.isTapped) g2.setColor(borderActiveColor);
-            else //Think about it
-                g2.setColor(borderTappedColor);
+            else if (!creature.getIsSummonedJust() && !creature.isTapped && !creature.attackThisTurn) g2.setColor(borderActiveColor);
+            else if (!creature.getIsSummonedJust() && !creature.isTapped && creature.attackThisTurn) g2.setColor(borderAlreadyAttackColor);
+            else g2.setColor(borderTappedColor);
 
             g2.setStroke(new BasicStroke(BorderOval));
             g2.drawOval(getX()-BorderOval/2,getY()-BorderOval/2,getWidth()+BorderOval,getHeight()+BorderOval);
@@ -90,17 +90,70 @@ public class UnitLabel extends JLabel {
                     e.printStackTrace();
                 }
             }
+            //TODO Calculate effects count.
             int effectsX=getCenterX()-getWidth()/6;
             int effectsY=down-2*getWidth()/3;
+            int effectsFounded=0;
             if (creature.effects.poison!=0) {
                 try {
                     BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison"+creature.effects.poison+".png"));
-                    g2.drawImage(tap, effectsX, effectsY, getWidth() / 3, getWidth() / 3, null);
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                effectsFounded++;
+            }
+            if (creature.effects.turnToDie<=2) {
+                try {
+                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/dienear.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
+            if (creature.effects.vulnerability) {
+                try {
+                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/vulnerability.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
+            if (creature.effects.bonusArmor!=0) {
+                try {
+                    //TODO When we have more pictures, replace 3 for N.
+                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonusarmor3.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
+            if (!creature.effects.additionalText.equals("")) {
+                if (creature.effects.additionalText.contains("Не может атаковать. Не может блокировать.")) {
+                    try {
+                        BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/cantattactorblock.png"));
+                        g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    effectsFounded++;
+                }
+                //Unknowed additional text
+                else {
+                    try {
+                        BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/additionaltext.png"));
+                        g2.drawImage(tap, effectsX + effectsFounded * getWidth() / 3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    effectsFounded++;
+                }
             }
 
+            //TODO if effects more than can be placed on card
         }
     }
 

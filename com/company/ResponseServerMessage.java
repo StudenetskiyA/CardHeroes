@@ -1,13 +1,15 @@
 package com.company;
 
+import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
-import static com.company.Card.ActivatedAbility.WhatAbility.nothing;
 import static com.company.Main.*;
+import static com.company.MyFunction.ActivatedAbility;
+import static com.company.MyFunction.ActivatedAbility.WhatAbility;
 
-/**
- * Created by StudenetskiyA on 25.01.2017.
- */
+//Created by StudenetskiyA on 25.01.2017.
 public class ResponseServerMessage extends Thread {
     String fromServer = "";
 
@@ -15,291 +17,225 @@ public class ResponseServerMessage extends Thread {
         fromServer = _fromServer;
     }
 
-    public void run() {
-        // Main.memPlayerStatus=Main.isMyTurn;
-        if (fromServer.contains("$DRAWCARD(")) {
+    public synchronized void run() {
+        ready = false;
+        //TODO For each command add Main.printToView. Server don't send text already
+        if (fromServer.contains("#TotalStatusPlayer")) {//All player connected
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            //  System.out.println("Draw Card " + parameter.get(0));
-            players[pl].drawCard();
-        } else if (fromServer.contains("$ENDTURN(")) {
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            System.out.println("End turn " + parameter.get(0));
             if (players[0].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.EnemyTurn;
-                players[0].endTurn();
-            } else if (players[1].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.MyTurn;
-                players[1].endTurn();
+                Main.isMyTurn = PlayerStatus.fromInteger(Integer.parseInt(parameter.get(1)));
+                players[0].damage = Integer.parseInt(parameter.get(2));
+                players[0].untappedCoin = Integer.parseInt(parameter.get(3));
+                players[0].totalCoin = Integer.parseInt(parameter.get(4));
+                players[0].temporaryCoin = Integer.parseInt(parameter.get(5));
+                players[1].untappedCoin = Integer.parseInt(parameter.get(6));
+                players[1].totalCoin = Integer.parseInt(parameter.get(7));
+                players[1].temporaryCoin = Integer.parseInt(parameter.get(8));
+                //9 is cards in deck expiried
+                enemyHandSize = Integer.parseInt(parameter.get(10));
+                int nCard = Integer.parseInt(parameter.get(11));
+                players[0].cardInHand.clear();
+                for (int i = 0; i < nCard; i++) {
+                    players[0].cardInHand.add(Card.getCardByName(parameter.get(12 + i)));
+                }
             }
-            //main.repaint();
-        } else if (fromServer.contains("$NEWTURN(")) {
+        } else if (fromServer.contains("#PlayerStatus")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            //main.repaint();
-            if (players[0].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.MyTurn;
-                players[0].newTurn();
-            } else if (players[1].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.EnemyTurn;
-                players[1].newTurn();
+            Main.isMyTurn = PlayerStatus.fromInteger(Integer.parseInt(parameter.get(0)));
+        } else if (fromServer.contains("#AddCardToHand")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            players[0].cardInHand.add(Card.getCardByName(parameter.get(0)));
+            players[0].deck.removeCardFromDeckByName(parameter.get(0));//TODO Player must not know you own deck!
+        } else if (fromServer.contains("#AddCardToGraveyard")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            players[np].graveyard.add(Card.getCardByName(parameter.get(1)));
+        } else if (fromServer.contains("#Surrend")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            String[] args = new String[0];
+            if (np==0){
+                Main.printToView(1,Color.RED,"Вы проиграли.");
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                main.atEndOfPlay();
+            } else {
+                Main.printToView(1,Color.GREEN,"Ваш противник сдался.");
+                System.out.println("Opp surr");
+                main.repaint();
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                main.atEndOfPlay();
             }
-        } else if (fromServer.contains("$CHOISEBLOCKER(")) {
+        } else if (fromServer.contains("#RemoveCardFromHand")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            if (np==0){
+                players[0].cardInHand.remove(Card.getCardByName(parameter.get(1)));
+            } else {
+                enemyHandSize--;
+            }
+        } else if (fromServer.contains("#ReturnToHand")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            players[np].cardInHand.add(Card.getCardByName(Board.creature.get(np).get(nc).name));
+            Main.printToView(0, Board.creature.get(np).get(nc).name + " возвращается в руку.");
+            Board.creature.get(np).remove(Integer.parseInt(parameter.get(1)));
+        } else if (fromServer.contains("#PutCreatureToBoard")) {//#PutCreatureToBoard(Player, CreatureName)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            Board.creature.get(np).add(new Creature(Card.getCardByName(parameter.get(1)), players[np]));
+            Main.printToView(0, Card.getCardByName(parameter.get(1)).name + " входит в игру.");
+        } else if (fromServer.contains("#PutEquipToBoard")) {//#PutCreatureToBoard(Player, CreatureName)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int n=MyFunction.getEquipNumByType(Card.getCardByName(parameter.get(1)).creatureType);
+            players[np].equpiment[n] = new Equpiment(Card.getCardByName(parameter.get(1)),players[np]);
+            //TODO For event another text
+            Main.printToView(0, players[np].name+" экипировал "+Card.getCardByName(parameter.get(1)).name + " .");
+        } else if (fromServer.contains("#DieCreature")) {//#DieCreature(Player, CreatureNumOnBoard)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            Creature.die(players[np], Board.creature.get(np).get(nc));
+        } else if (fromServer.contains("#UntapAll")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            players[np].untapAll();
+        } else if (fromServer.contains("#TakeCreatureText")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            String text = parameter.get(2);
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            Board.creature.get(np).get(nc).effects.takeTextEffect(text);
+        } else if (fromServer.contains("#LooseCreatureText")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            String text = parameter.get(2);
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            Board.creature.get(np).get(nc).effects.looseTextEffect(text);
+        } else if (fromServer.contains("#TakeCreatureEffect")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int dmg = Integer.parseInt(parameter.get(3));
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            Board.creature.get(np).get(nc).effects.takeEffect(MyFunction.Effect.fromInteger(Integer.parseInt(parameter.get(2))), dmg);
+        }  else if (fromServer.contains("#TakePlayerEffect")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int dmg = Integer.parseInt(parameter.get(2));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            players[np].effects.takeEffect(MyFunction.EffectPlayer.fromInteger(Integer.parseInt(parameter.get(1))), dmg);
+        } else if (fromServer.contains("#TakeCreatureDamage")) {//#TakeCreatureDamage(Player, CreatureNumOnBoard, Damage)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int dmg = Integer.parseInt(parameter.get(2));
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
+            Creature.takeDamage(players[np], Board.creature.get(np).get(nc), dmg);
+            Main.printToView(0, Board.creature.get(np).get(Integer.parseInt(parameter.get(1))).name + " получает " + dmg + " урона.");
+        } else if (fromServer.contains("#TapCreature")) {//#TapCreature(Player, CreatureNumOnBoard, 1 - tap || 0 - untap)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int dmg = Integer.parseInt(parameter.get(2));
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            Creature.tap(players[np], Board.creature.get(np).get(nc), dmg);
+        } else if (fromServer.contains("#TakeHeroDamage")) {//#TakeHeroDamage(Player, Damage)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int dmg = Integer.parseInt(parameter.get(1));
+            players[np].takeDamage(dmg);
+        } else if (fromServer.contains("#TapPlayer")) {//#TapPlayer(Player, 1 - tap || 0 - untap)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int dmg = Integer.parseInt(parameter.get(1));
+            players[np].tap(dmg);
+        } else if (fromServer.contains("#PlaySpell")) {//#PlaySpell(Player, SpellName, TargetHalfBoard[0-self,1-enemy], TargetCreatureNum[-1 means targets player])
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            Main.printToView(0, parameter.get(0)+" разыгрывает "+parameter.get(1));
+        } else if (fromServer.contains("#Chat")) {//#Chat(Player, Text)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            messageArea.append(parameter.get(0) + "\n");
+        } else if (fromServer.contains("#Message")) {//#Message(TypeN,Message)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            Main.printToView(Integer.parseInt(parameter.get(0)), parameter.get(1));
+        } else if (fromServer.contains("#Attack(")) {//Just informative command
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int anp = (np==0)? 1:0;
+            creatureWhoAttack = Integer.parseInt(parameter.get(1));
+            creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
+            String t;
+            if (creatureWhoAttackTarget==-1) t=players[anp].name;
+            else t=Board.creature.get(anp).get(creatureWhoAttackTarget).name;
+            Main.printToView(0,Board.creature.get(np).get(creatureWhoAttack).name+" атакует "+t+".");
+        } else if (fromServer.contains("#ChoiceBlocker(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
-                isMyTurn = Main.playerStatus.IChoiceBlocker;
+                isMyTurn = Main.PlayerStatus.IChoiceBlocker;
                 creatureWhoAttack = Integer.parseInt(parameter.get(1));
                 creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
+                Main.printToView(0,Color.GREEN,"Выберете защитника.");
             }
-        } else if (fromServer.contains("$TAPNOTARGET(")) {
+        } else if (fromServer.contains("#ChoiceTarget")) {//#ChoiceTarget(Player, Status, CreatureNum, WhatAbility, Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            Board.creature.get(Board.getPlayerNumByName(parameter.get(0))).get(Integer.parseInt(parameter.get(1))).tapNoTargetAbility();
-        } else if (fromServer.contains("$DISCARD(")) {
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int n=Integer.parseInt(parameter.get(1));
-            Main.printToView(0, Board.getPlayerByName(parameter.get(0)).playerName + " сбрасывает "+Board.getPlayerByName(parameter.get(0)).cardInHand.get(n).name);
-            Board.putCardToGraveyard(Board.getPlayerByName(parameter.get(0)).cardInHand.get(n), Board.getPlayerByName(parameter.get(0)));
-            Board.getPlayerByName(parameter.get(0)).cardInHand.remove(Board.getPlayerByName(parameter.get(0)).cardInHand.get(n));
-        } else if ((fromServer.contains("$CRYTARGET(")) || (fromServer.contains("$TAPTARGET("))) {
-            // CRYTARGET also for DeathratleTarget
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int apl = (pl == 0) ? 1 : 0;
-            Creature cr;
-            boolean death = false;
-            if (parameter.get(1).equals("-1")) {
-                //died creature ability.
-                death = true;
-                cr = new Creature(Card.ActivatedAbility.creature);
-                // Card.ActivatedAbility.creature = null;
-            } else {
-                cr = Board.creature.get(pl).get(Integer.parseInt(parameter.get(1)));
+            if (players[0].playerName.equals(parameter.get(0))) {
+                Main.isMyTurn = PlayerStatus.fromInteger(Integer.parseInt(parameter.get(1)));
+                //It may be ability of died creature
+                ActivatedAbility.creature = Board.creature.get(0).get(Integer.parseInt(parameter.get(2)));
+                ActivatedAbility.whatAbility = WhatAbility.fromInteger(Integer.parseInt(parameter.get(3)));
+                Main.printToView(2, Color.GREEN, parameter.get(4));//change it
             }
-            if (parameter.get(2).equals("1")) pl = apl;
-            if (parameter.get(3).equals("-1")) {
-                if (fromServer.contains("$CRYTARGET("))
-                    if (death) cr.deathratle(null, players[pl]);
-                    else cr.battlecryTarget(null, players[pl]);
-                else
-                    cr.tapTargetAbility(null, players[pl]);
-            } else {
-                int died = MyFunction.getNumDiedButNotRemovedYet(Board.creature.get(pl));
-                if (Board.creature.get(pl).size() - 1 >= Integer.parseInt(parameter.get(3)) + died) {
-                    if (fromServer.contains("$CRYTARGET("))
-                        if (death)
-                            cr.deathratle(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
-                        else
-                            cr.battlecryTarget(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
-                    else
-                        cr.tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
-                }
-            }
-//            synchronized (monitor) {
-//                ready = true;
-//                monitor.notifyAll();
-//            }
-        } else if (fromServer.contains("$EQUIPTARGET(")) {
+        } else if (fromServer.contains("#ChoiceYesNo")) {//#ChoiceYesNo(Player, Card, Message, Yes, No)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int apl = (pl == 0) ? 1 : 0;
-            isMyTurn = Main.playerStatus.MyTurn;
-            int equip = Integer.parseInt(parameter.get(1));
-            if (parameter.get(2).equals("1")) {
-                if (parameter.get(3).equals("-1"))
-                    players[pl].equpiment[equip].tapTargetAbility(null, players[1]);
-                else
-                    players[pl].equpiment[equip].tapTargetAbility(Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
-            } else {
-                if (parameter.get(3).equals("-1"))
-                    players[pl].equpiment[equip].tapTargetAbility(null, players[0]);
-                else
-                    players[pl].equpiment[equip].tapTargetAbility(Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
+            if (players[0].playerName.equals(parameter.get(0))) {
+                Main.isMyTurn = PlayerStatus.choiceYesNo;
+                main.userChoice = new UserChoice(main.viewField,parameter.get(1),parameter.get(2),parameter.get(3),parameter.get(4));
+                main.userChoiceShow=true;
             }
-        } else if (fromServer.contains("$HEROTARGET(")) {
+        } else if (fromServer.contains("#ChoiceSearchInDeck")) {//#SearchInDeck(PlayerName,CardType,CardColor,CreatureType,CardCost,CardCostExactly,Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int apl = (pl == 0) ? 1 : 0;
-            // if (pl == 0) isMyTurn = Main.playerStatus.MyTurn;
-            // else isMyTurn = Main.playerStatus.EnemyTurn;
-            players[pl].isTapped = true;
-            players[pl].untappedCoin -= Integer.parseInt(parameter.get(3));
-            if (parameter.get(1).equals("1")) {
-                if (parameter.get(2).equals("-1")) players[pl].ability(null, players[1]);
-                else players[pl].ability(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))), null);
-            } else {
-                if (parameter.get(2).equals("-1")) players[pl].ability(null, players[0]);
-                else players[pl].ability(Board.creature.get(pl).get(Integer.parseInt(parameter.get(2))), null);
+            if (players[0].playerName.equals(parameter.get(0))) {
+                Main.isMyTurn = Main.PlayerStatus.searchX;
+                Main.choiceXtype = Integer.parseInt(parameter.get(1));
+                Main.choiceXcolor = Integer.parseInt(parameter.get(2));
+                if (parameter.get(3).equals(" "))
+                    Main.choiceXcreatureType = "";
+                else Main.choiceXcreatureType = parameter.get(3);
+                Main.choiceXcost = Integer.parseInt(parameter.get(4));
+                Main.choiceXcostExactly = Integer.parseInt(parameter.get(5));
+                if (parameter.get(6).equals(" "))
+                    Main.choiceXname = "";
+                else Main.choiceXname = parameter.get(6);
+                Main.printToView(0, parameter.get(7));
             }
-        } else if (fromServer.contains("$HERONOTARGET(")) {
+        } else if (fromServer.contains("#ChoiceSearchInGraveyard")) {//#SearchInDeck(PlayerName,CardType,CardColor,CreatureType,CardCost,CardCostExactly,Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            //if (pl == 0) isMyTurn = Main.playerStatus.MyTurn;
-            //else isMyTurn = Main.playerStatus.EnemyTurn;
-            players[pl].isTapped = true;
-            players[pl].untappedCoin -= Integer.parseInt(parameter.get(1));
-            players[pl].abilityNoTarget();
-        } else if (fromServer.contains("$BLOCKER(")) {
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int apl = (pl == 0) ? 1 : 0;
-            if (pl == 0) isMyTurn = Main.playerStatus.EnemyTurn;
-            else isMyTurn = Main.playerStatus.MyTurn;
-
-            Creature cr = Board.creature.get(apl).get(Integer.parseInt(parameter.get(1)));
-            if (Integer.parseInt(parameter.get(2)) == -1) {
-                if (Integer.parseInt(parameter.get(3)) == -1) {
-                    //Fight with hero
-                    cr.fightPlayer(players[pl]);
-                } else {
-                    Creature block = Board.creature.get(pl).get(Integer.parseInt(parameter.get(3)));
-                    //Fight with bocker
-                    block.blockThisTurn = true;
-                    cr.fightCreature(block);
-                    if (Integer.parseInt(parameter.get(4)) == 1) {
-                        if (!block.text.contains("Опыт в защите."))
-                            block.tapCreature();
-                    }
-                }
-            } else {
-                if (Integer.parseInt(parameter.get(3)) == -1) {
-                    //Fight with first target
-                    Creature block = Board.creature.get(pl).get(Integer.parseInt(parameter.get(2)));
-                    cr.fightCreature(block);
-                } else {
-                    Creature block = Board.creature.get(pl).get(Integer.parseInt(parameter.get(3)));
-                    //Fight with blocker
-                    cr.fightCreature(block);
-                    if (Integer.parseInt(parameter.get(4)) == 1) {
-                        block.tapCreature();
-                    }
-                }
-            }
-        } else if (fromServer.contains("$PLAYCARD(")) {
-            //$PLAYCARD(player, numInHand, targetCreature, targetPlayer[1,2])
-            //$PLAYCARD(Jeremy,0,-1,Bob) - play 0 card to enemy.
-            //$PLAYCARD(Jeremy,2,-1,-1) - play 2th card to board.
-            //$PLAYCARD(Bob,1,1,Jeremy) - play 1th card to 1th creature of Jeremy
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int apl = (pl == 0) ? 1 : 0;
-            if (!parameter.get(3).equals("-1")) {//if card targets creature
-                if ((parameter.get(4).equals(players[apl].playerName)))
-                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null);
-                else //to self creature
-                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null);
-            } else {
-                if (parameter.get(4).equals(players[apl].playerName))//enemy
-                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, players[apl]);
-                else if (parameter.get(4).equals(players[pl].playerName))//target - self player
-                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, players[pl]);
-                else
-                    players[pl].playCard(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, null);
-            }
-        } else if (fromServer.contains("$PLAYWITHX(")) {
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int apl = (pl == 0) ? 1 : 0;
-            int x = Integer.parseInt(parameter.get(5));
-            //visible off
-            for (int i = 0; i < 9; i++) {
-                choiceXLabel[i].setVisible(false);
-            }
-            if (!parameter.get(3).equals("-1")) {//if card targets creature
-                if ((parameter.get(4).equals(players[apl].playerName)))
-                    players[pl].playCardX(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), Board.creature.get(apl).get(Integer.parseInt(parameter.get(3))), null, x);
-                else //to self creature
-                    players[pl].playCardX(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), Board.creature.get(pl).get(Integer.parseInt(parameter.get(3))), null, x);
-            } else {
-                if (parameter.get(4).equals(players[apl].playerName))//enemy
-                    players[pl].playCardX(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, players[apl], x);
-                else if (parameter.get(5).equals(players[pl].playerName))//target - self player
-                    players[pl].playCardX(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, players[pl], x);
-                else
-                    players[pl].playCardX(Integer.parseInt(parameter.get(2)),Card.getCardByName(parameter.get(1)), null, null, x);
-            }
-        } else if (fromServer.contains("$ATTACKPLAYER(")) {//$ATTACKPLAYER(Player, Creature)
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int apl = (pl == 0) ? 1 : 0;
-            printToView(0, Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + players[apl].name);
-            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackPlayer(players[apl]);
-        } else if (fromServer.contains("$ATTACKCREATURE(")) {//$ATTACKREATURE(Player, Creature, TargetCreature)
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int apl = (pl == 0) ? 1 : 0;
-            printToView(0, Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).name + " атакует " + Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))).name);
-            Board.creature.get(pl).get(Integer.parseInt(parameter.get(1))).attackCreature(Board.creature.get(apl).get(Integer.parseInt(parameter.get(2))));
-        } else if (fromServer.contains("$FOUND(")) {//$FOUND(Player, Card)
-            choiceXcolor = 0;
-            choiceXtype = 0;
-            choiceXcost = 0;
-            choiceXcostExactly = 0;
-            choiceXcreatureType = "";
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            if (parameter.get(1).equals("-1")) {
-                if (pl == 0) {
-                    printToView(0, "Вы ищете в колоде, но ничего подходящего не находите.");
-                } else {
-                    printToView(0, "Противник ищет в колоде, но ничего подходящего не находит.");
-                }
-            } else {
-                if (pl == 0) {
-                    Card card = players[0].deck.searchCard(parameter.get(1));
-                    players[0].drawSpecialCard(card);
-                    printToView(0, "Вы находите в колоде " + card.name + ".");
-                } else {
-                    Card card = players[1].deck.searchCard(parameter.get(1));
-                    players[1].drawSpecialCard(card);
-                    printToView(0, "Противник находит в колоде " + parameter.get(1) + ".");
-                }
-            }
-        }  else if (fromServer.contains("$DIGFOUND(")) {
-            choiceXcolor = 0;
-            choiceXtype = 0;
-            choiceXcost = 0;
-            choiceXcostExactly = 0;
-            choiceXcreatureType = "";
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            if (parameter.get(1).equals("-1")) {
-                if (pl == 0) {
-                    printToView(0, "Вы ищете на кладбище, но ничего подходящего не находите.");
-                } else {
-                    printToView(0, "Противник ищет на кладбище, но ничего подходящего не находит.");
-                }
-            } else {
-                if (pl == 0) {
-                    Card card = players[0].searchInGraveyard(parameter.get(1));
-                    players[0].digSpecialCard(card);
-                    printToView(0, "Вы берете с кладбища " + card.name + ".");
-                } else {
-                    Card card = players[1].searchInGraveyard(parameter.get(1));
-                    players[1].digSpecialCard(card);
-                    printToView(0, "Противник берет с кладбища " + card.name + ".");
-                }
-            }
-        } else if (fromServer.contains("$FREE")) {//It means, player choice target in queue and resume queue response
-            synchronized (Main.cretureDiedMonitor) {
-                Main.readyDied = true;
-                Card.ActivatedAbility.whatAbility=nothing;
-                Main.cretureDiedMonitor.notify();
-            }
-        } else if (fromServer.contains("$MULLIGANEND(")) {
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int pl = Board.getPlayerNumByName(parameter.get(0));
-            int nc = 0;
-            for (int i = 3; i >= 0; i--) {
-                if (Integer.parseInt(parameter.get(i + 1)) == 1) {
-                    players[pl].deck.putOnBottomDeck(players[pl].cardInHand.get(i));
-                    players[pl].cardInHand.remove(i);
-                    nc++;
-                }
-            }
-            for (int i = 0; i < nc; i++) players[pl].drawCard();
-        } else {
-            if (fromServer.contains(":")) {
-                messageArea.append(fromServer + "\n");
-                scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
+            if (players[0].playerName.equals(parameter.get(0))) {
+                Main.isMyTurn = PlayerStatus.digX;
+                Main.choiceXtype = Integer.parseInt(parameter.get(1));
+                Main.choiceXcolor = Integer.parseInt(parameter.get(2));
+                if (parameter.get(3).equals("0"))
+                    Main.choiceXcreatureType = "";
+                else Main.choiceXcreatureType = parameter.get(3);
+                Main.choiceXcost = Integer.parseInt(parameter.get(4));
+                Main.choiceXcostExactly = Integer.parseInt(parameter.get(5));
+                if (parameter.get(6).equals(" "))
+                    Main.choiceXname = "";
+                else Main.choiceXname = parameter.get(6);
+                Main.printToView(0, parameter.get(7));
             }
         }
 

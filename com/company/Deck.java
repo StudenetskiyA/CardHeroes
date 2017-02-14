@@ -1,13 +1,10 @@
 package com.company;
 
-import javax.xml.bind.DatatypeConverter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
-/**
- * Created by samsung on 30.12.2016.
- */
+//Created by StudenetskiyA on 30.12.2016.
+
+//This class is depricated. In future, pllayer knows nothing about yourself deck.
 public class Deck {
     public ArrayList<Card> cards = new ArrayList<>();
 
@@ -21,60 +18,13 @@ public class Deck {
         return cards.size();
     }
 
-    public Card searchCard(String name){
-        for (int i=0;i<=cards.size();i++){
-            if (cards.get(i).name.equals(name)) return cards.get(i);
-        }
-        return null;
-    }
-
-    public boolean haveTopDeck(){
-        if (cards.size()==0) return false;
-        else return true;
-    }
-
-    public Card topDeck(int depth){
-        if (cards.size()>=depth)
-        return cards.get(cards.size()-depth);
-        else {
-            Main.printToView(0,"Закончилась колода");
-        }
-        return null;
-    }
-
-    public Card topDeck(){
-        return topDeck(1);
-    }
-
-    public Card drawTopDeck(){
-        Card tmp=cards.get(cards.size()-1);
-        cards.remove(cards.size()-1);
-        return tmp;
-    }
-
-    public void removeTopDeck(){
-        if (haveTopDeck())
-        cards.remove(cards.size()-1);
-    }
-
-    public void putOnBottomDeck(Card _card){
-        cards.add(0,_card);
-    }
-
-    public void suffleDeck(int n){
-        //Until server know nothing
-        for (int i=0;i<cards.size();i++){
-            byte[] b = (cards.get(i).name+i+n).getBytes();
-            try {
-                byte[] hash = MessageDigest.getInstance("MD5").digest(b);
-                String a=DatatypeConverter.printHexBinary(hash);
-                cards.get(i).hash=a;
-               // System.out.println(cards.get(i).name+"/"+a);
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
+    public void removeCardFromDeckByName(String name){
+        for (Card c:cards){
+            if (c.name.equals(name)){
+                cards.remove(c);
+                break;
             }
         }
-        Collections.sort(cards, Comparator.comparing(o -> o.hash));
     }
 
     public String deckToString(){
@@ -86,6 +36,5 @@ public class Deck {
         }
         return tmp;
     }
-
 
 }

@@ -3,57 +3,13 @@ package com.company;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.company.Main.main;
+//Created by StudenetskiyA on 30.12.2016.
 
-/**
- * Created by StudenetiskiyA on 30.12.2016.
- */
 public class Board {
     static List<ArrayList<Creature>> creature;
-    static String whichTurn="";
-
     static int turnCount = 0;
 
     public Board() {
-    }
-
-    static int getPlayerNumByName(String _name) {
-        if (_name.equals(Main.players[0].playerName)) return 0;
-        else if (_name.equals(Main.players[1].playerName)) return 1;
-        else {
-            System.out.println("Error - Unknown player.");
-            return -1;
-        }
-    }
-    static Player getPlayerByName(String _name) {
-        if (_name.equals(Main.players[0].playerName)) return Main.players[0];
-        else if (_name.equals(Main.players[1].playerName)) return Main.players[1];
-        else {
-            System.out.println("Error - Unknown player.");
-            return null;
-        }
-    }
-    static void addCreatureToBoard(Card _creature, Player _player) {
-        Creature summonCreature = new Creature(_creature, _player);
-
-
-        int np = _player.numberPlayer;
-        creature.get(np).add(summonCreature);
-        Main.gameQueue.push(new GameQueue.QueueEvent("Summon",summonCreature,0));
-
-        if (summonCreature.text.contains("Уникальность.")) {
-            for (int i = Board.creature.get(_player.numberPlayer).size() - 1; i >= 0; i--) {
-                if (Board.creature.get(_player.numberPlayer).get(i).name.equals(_creature.name) && Board.creature.get(_player.numberPlayer).get(i)!=summonCreature){
-                    System.out.println("Double uniqe creature, die.");
-                    Board.creature.get(_player.numberPlayer).get(i).die();
-                    break;
-                }
-            }
-        }
-        if (summonCreature.getTougness()<=0){
-            System.out.println("Creature hp less 0, die.");
-            summonCreature.die();
-        }
     }
 
     static int opponentN(Player pl) {
@@ -70,4 +26,11 @@ public class Board {
         _owner.graveyard.add(_card);
     }
 
+    static int getDiedCreatureLeftCount(int playerNum, int nc){
+        int count=0;
+        for (int i=0;i<nc;i++){
+            if (creature.get(playerNum).get(i).isDie()) count++;
+        }
+        return count;
+    }
 }

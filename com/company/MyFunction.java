@@ -15,25 +15,165 @@ public class MyFunction {
     public static ArrayList<String> getTextBetween(String fromText) {
         ArrayList<String> rtrn = new ArrayList<String>();
         String beforeText = "(";
-        fromText = fromText.substring(fromText.indexOf(beforeText) + 1, fromText.length() - 1);
+        fromText = fromText.substring(fromText.indexOf(beforeText) + 1, fromText.indexOf(")"));
         String[] par = fromText.split(",");
         for (int i = 0; i < par.length; i++)
             rtrn.add(par[i]);
         return rtrn;
     }
 
+    public static int getEquipNumByType(String creatureType) {
+        switch(creatureType) {
+            case "Оружие":
+                return 2;
+            case "Броня":
+                return 0;
+            case "Амулет":
+                return 1;
+            case "Событие":
+                return 3;
+        }
+        return -1;
+    }
+
+    enum DamageSource {fight, spell, poison, ability, scoot}
+    enum EffectPlayer{
+        bbShield(1);
+
+        private final int value;
+
+        EffectPlayer(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static EffectPlayer fromInteger(int x) {
+            switch(x) {
+                case 1:
+                    return bbShield;
+            }
+            return null;
+        }
+    }
+
+    enum Effect{
+        poison(1), vulnerability(2),turnToDie(3), die(4), bonusPowerUEOT(5), bonusPower(6), bonusTougnessUEOT(7), bonusTougness(8),
+        bonusArmor(9), cantattackandblock(10);
+
+        private final int value;
+
+        Effect(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static Effect fromInteger(int x) {
+            switch(x) {
+                case 1:
+                    return poison;
+                case 2:
+                    return vulnerability;
+                case 3:
+                    return turnToDie;
+                case 4:
+                    return die;
+                case 5:
+                    return bonusPowerUEOT;
+                case 6:
+                    return bonusPower;
+                case 7:
+                    return bonusTougnessUEOT;
+                case 8:
+                    return bonusTougness;
+                case 9:
+                    return bonusArmor;
+                case 10:
+                    return cantattackandblock;
+            }
+            return null;
+        }
+    }
+
+
     enum Target {myPlayer,myCreature,enemyPlayer,enemyCreature}
+
+    static class ActivatedAbility {
+
+        static Creature creature;
+        static boolean creatureTap;
+        static WhatAbility whatAbility=WhatAbility.nothing;
+        static int heroAbilityCost = 0;
+
+        public static boolean isThatAbility(WhatAbility ab){
+            if (ab==whatAbility) return true;
+            return false;
+        }
+        public static boolean isNothingOrDeath(){
+            if (whatAbility==WhatAbility.nothing) return true;
+            if (whatAbility==WhatAbility.onDeathPlayed) return true;
+            if (whatAbility==WhatAbility.onUpkeepPlayed) return true;
+            if (whatAbility==WhatAbility.onOtherDeathPlayed) return true;
+            return false;
+        }
+        enum WhatAbility {
+            heroAbility(1), weaponAbility(2), toHandAbility(3), onUpkeepPlayed(4), onDeathPlayed(5), onOtherDeathPlayed(6), nothing(0);
+
+            private final int value;
+
+            WhatAbility(int value) {
+                this.value = value;
+            }
+
+            public int getValue() {
+                return value;
+            }
+
+            public static WhatAbility fromInteger(int x) {
+                switch (x) {
+                    case 0:
+                        return nothing;
+                    case 1:
+                        return heroAbility;
+                    case 2:
+                        return weaponAbility;
+                    case 3:
+                        return toHandAbility;
+                    case 4:
+                        return onUpkeepPlayed;
+                    case 5:
+                        return onDeathPlayed;
+                    case 6:
+                        return onOtherDeathPlayed;
+                }
+                return null;
+            }
+        }
+    }
+
+    public static int searchCardInHandByName(ArrayList<Card> _array,String _name){
+        for (int i=0;i<_array.size();i++) {
+            if (_array.get(i).name.equals(_name)) return i;
+        }
+        return -1;
+    }
 
     public static boolean canTarget(Target target,int targetType){
         //10 my hero or my creature, not self
         //12 my creature, not self
+        //13 any creature not self
         if (target==Target.myPlayer)
         {
             if (targetType==2 || targetType==3 || targetType==9 || targetType==10 ) return true;
         }
         else if (target==Target.myCreature)
         {
-            if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 || targetType==12 ) return true;
+            if (targetType==1 || targetType==3 || targetType==7 || targetType==9 || targetType==10 || targetType==12 || targetType==13 ) return true;
         }
         else if (target==Target.enemyPlayer)
         {
@@ -41,7 +181,7 @@ public class MyFunction {
         }
         else if (target==Target.enemyCreature)
         {
-            if (targetType==1 || targetType==3 || targetType==4 || targetType==6) return true;
+            if (targetType==1 || targetType==3 || targetType==4 || targetType==6 || targetType==13) return true;
         }
         return false;
     }
@@ -73,6 +213,17 @@ public class MyFunction {
             if (cr.getTougness()<=cr.damage) n++;
         }
         return n;
+    }
+
+    public static String getTextBetweenSymbol(String fromText, String afterText, String symbol){
+        return fromText.substring(fromText.indexOf(afterText)+afterText.length(),fromText.indexOf(symbol,fromText.indexOf(afterText)+afterText.length()));
+    }
+
+    public static String textNotInTake(String fromText){
+        if (!fromText.contains("'")) return fromText;
+        String tmp = getTextBetweenSymbol(fromText,fromText.substring(0,fromText.indexOf("'")+1),"'");
+        tmp=fromText.substring(0,fromText.indexOf(tmp))+fromText.substring(fromText.indexOf(tmp)+1+tmp.length(),fromText.length());
+        return tmp;
     }
 
     public static boolean canTargetComplex(Creature cr){
