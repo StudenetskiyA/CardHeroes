@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import static com.company.Main.main;
@@ -36,8 +37,8 @@ public class HeroLabel extends JLabel {
 //                System.out.println("Equal");
 //            }
 
-            image = ImageIO.read(Main.class.getResourceAsStream(im));
-            // image = ImageIO.read(Main.class.getResourceAsStream("cards/heroes/face/Тиша.jpg"));
+            image = ImageIO.read(new File(im));
+            // image = ImageIO.read(new File("cards/heroes/face/Тиша.jpg"));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -86,7 +87,7 @@ public class HeroLabel extends JLabel {
                     g2.setColor(NumberBackColor);
                     g2.fillRect(getCenterX() + getWidth() / 4, getCenterY() - getHeight() / 2, getWidth() / 4, getWidth() / 4);
                     try {
-                        tapClick.image = ImageIO.read(Main.class.getResourceAsStream("icons/effects/tap.png"));
+                        tapClick.image = ImageIO.read(new File("icons/effects/tap.png"));
                         tapClick.LSD(g2, getCenterX() + getWidth() / 4, getCenterY() - getHeight() / 2, getWidth() / 4, getWidth() / 4);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -99,7 +100,7 @@ public class HeroLabel extends JLabel {
             int effectsFounded=0;
             if (player.effects.bbShield) {
                 try {
-                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bbshield.png"));
+                    BufferedImage tap = ImageIO.read(new File("icons/effects/bbshield.png"));
                     g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -108,7 +109,7 @@ public class HeroLabel extends JLabel {
             }
 //            if (creature.effects.turnToDie<=2) {
 //                try {
-//                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/dienear.png"));
+//                    BufferedImage tap = ImageIO.read(new File("icons/effects/dienear.png"));
 //                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
 //                } catch (IOException e) {
 //                    e.printStackTrace();
@@ -117,7 +118,7 @@ public class HeroLabel extends JLabel {
 //            }
 //            if (creature.effects.vulnerability) {
 //                try {
-//                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/vulnerability.png"));
+//                    BufferedImage tap = ImageIO.read(new File("icons/effects/vulnerability.png"));
 //                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
 //                } catch (IOException e) {
 //                    e.printStackTrace();
@@ -127,7 +128,7 @@ public class HeroLabel extends JLabel {
 //            if (creature.effects.bonusArmor!=0) {
 //                try {
 //                    //TODO When we have more pictures, replace 3 for N.
-//                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonusarmor3.png"));
+//                    BufferedImage tap = ImageIO.read(new File("icons/effects/bonusarmor3.png"));
 //                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
 //                } catch (IOException e) {
 //                    e.printStackTrace();
@@ -137,7 +138,7 @@ public class HeroLabel extends JLabel {
 //            if (!creature.effects.additionalText.equals("")) {
 //                if (creature.effects.additionalText.contains("Не может атаковать. Не может блокировать.")) {
 //                    try {
-//                        BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/cantattactorblock.png"));
+//                        BufferedImage tap = ImageIO.read(new File("icons/effects/cantattactorblock.png"));
 //                        g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
 //                    } catch (IOException e) {
 //                        e.printStackTrace();
@@ -147,7 +148,7 @@ public class HeroLabel extends JLabel {
 //                //Unknowed additional text
 //                else {
 //                    try {
-//                        BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/additionaltext.png"));
+//                        BufferedImage tap = ImageIO.read(new File("icons/effects/additionaltext.png"));
 //                        g2.drawImage(tap, effectsX + effectsFounded * getWidth() / 3, effectsY, getWidth() / 3, getWidth() / 3, null);
 //                    } catch (IOException e) {
 //                        e.printStackTrace();

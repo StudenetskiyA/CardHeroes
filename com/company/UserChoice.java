@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import static com.company.Main.main;
@@ -22,7 +23,7 @@ public class UserChoice {
 
     UserChoice(Main.ViewField _vf, String _topImage, String _topText, String _yesText, String _noText){
         try {
-            topImage = ImageIO.read(Main.class.getResourceAsStream("cards/"+_topImage+".jpg"));
+            topImage = ImageIO.read(new File("cards/"+_topImage+".jpg"));
         } catch (IOException e) {
             System.out.println("Can't load "+_topImage);
            // e.printStackTrace();

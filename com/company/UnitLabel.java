@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import static com.company.Main.main;
@@ -27,8 +28,8 @@ public class UnitLabel extends JLabel {
         creature=_creature;
         setSize(_width,_height);
         try {
-           image = ImageIO.read(Main.class.getResourceAsStream("cards/small/"+creature.image.substring(0,creature.image.length()-4)+".png"));
-           // image = ImageIO.read(Main.class.getResourceAsStream("cards/small/Гном-легионер.png"));
+           image = ImageIO.read(new File("cards/small/"+creature.image.substring(0,creature.image.length()-4)+".png"));
+           // image = ImageIO.read(new File("cards/small/Гном-легионер.png"));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,7 +85,7 @@ public class UnitLabel extends JLabel {
                 g2.setColor(NumberBackColor);
                 g2.fillRect(getCenterX()+getWidth()/4,up,getWidth()/3,getWidth()/3);
                 try {
-                    tapClick.image= ImageIO.read(Main.class.getResourceAsStream("icons/effects/tap.png"));
+                    tapClick.image= ImageIO.read(new File("icons/effects/tap.png"));
                     tapClick.LSD(g2, getCenterX() + getWidth() / 4, up, getWidth() / 3, getWidth() / 3);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -96,7 +97,7 @@ public class UnitLabel extends JLabel {
             int effectsFounded=0;
             if (creature.effects.poison!=0) {
                 try {
-                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/poison"+creature.effects.poison+".png"));
+                    BufferedImage tap = ImageIO.read(new File("icons/effects/poison"+creature.effects.poison+".png"));
                     g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -105,7 +106,7 @@ public class UnitLabel extends JLabel {
             }
             if (creature.effects.turnToDie<=2) {
                 try {
-                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/dienear.png"));
+                    BufferedImage tap = ImageIO.read(new File("icons/effects/dienear.png"));
                     g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -114,7 +115,7 @@ public class UnitLabel extends JLabel {
             }
             if (creature.effects.vulnerability) {
                 try {
-                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/vulnerability.png"));
+                    BufferedImage tap = ImageIO.read(new File("icons/effects/vulnerability.png"));
                     g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -124,7 +125,7 @@ public class UnitLabel extends JLabel {
             if (creature.effects.bonusArmor!=0) {
                 try {
                     //TODO When we have more pictures, replace 3 for N.
-                    BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/bonusarmor3.png"));
+                    BufferedImage tap = ImageIO.read(new File("icons/effects/bonusarmor3.png"));
                     g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -134,7 +135,7 @@ public class UnitLabel extends JLabel {
             if (!creature.effects.additionalText.equals("")) {
                 if (creature.effects.additionalText.contains("Не может атаковать. Не может блокировать.")) {
                     try {
-                        BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/cantattactorblock.png"));
+                        BufferedImage tap = ImageIO.read(new File("icons/effects/cantattactorblock.png"));
                         g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -144,7 +145,7 @@ public class UnitLabel extends JLabel {
                 //Unknowed additional text
                 else {
                     try {
-                        BufferedImage tap = ImageIO.read(Main.class.getResourceAsStream("icons/effects/additionaltext.png"));
+                        BufferedImage tap = ImageIO.read(new File("icons/effects/additionaltext.png"));
                         g2.drawImage(tap, effectsX + effectsFounded * getWidth() / 3, effectsY, getWidth() / 3, getWidth() / 3, null);
                     } catch (IOException e) {
                         e.printStackTrace();
