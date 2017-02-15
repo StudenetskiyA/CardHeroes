@@ -2,6 +2,9 @@ package com.company;
 
 //Created by StudenetskiyA on 30.12.2016.
 
+import static com.company.Main.message;
+import static com.company.MyFunction.MessageType.simpleText;
+
 public class Creature extends Card {
     boolean isTapped;
     boolean isSummonedJust;
@@ -85,7 +88,7 @@ public class Creature extends Card {
 
         void takeTextEffect(String txt){
             additionalText+=txt;
-            Main.printToView(0,whis.name+ " получает '"+txt+"'.");
+            message(simpleText,whis.name+ " получает '"+txt+"'.");
         }
         void looseTextEffect(String txt){
             if (!additionalText.contains(txt)) return;
@@ -96,17 +99,17 @@ public class Creature extends Card {
             switch(effect) {
                 case poison: {
                     poison=p;
-                    Main.printToView(0,whis.name+ " получает отравление на "+p);
+                    message(simpleText,whis.name+ " получает отравление на "+p);
                     break;
                 }
                 case vulnerability:{
                     vulnerability=true;
-                    Main.printToView(0,whis.name+ " получает уязвимость.");
+                    message(simpleText,whis.name+ " получает уязвимость.");
                     break;
                 }
                 case turnToDie:{
                     turnToDie=p;
-                    Main.printToView(0,whis.name+ " получает чуму.");
+                    message(simpleText,whis.name+ " получает чуму.");
                     break;
                 }
                 case die:{
@@ -115,12 +118,12 @@ public class Creature extends Card {
                 }
                 case bonusPower:{
                     bonusPower+=p;
-                    Main.printToView(0,whis.name+ " получает +"+p+" к удару.");
+                    message(simpleText,whis.name+ " получает +"+p+" к удару.");
                     break;
                 }
                 case bonusPowerUEOT:{
                     bonusPowerUEOT+=p;
-                    Main.printToView(0,whis.name+ " получает до конца хода +"+p+" к удару.");
+                    message(simpleText,whis.name+ " получает до конца хода +"+p+" к удару.");
                     break;
                 }
 			default:

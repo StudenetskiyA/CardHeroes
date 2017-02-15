@@ -39,7 +39,7 @@ public class Player extends Card {
                 case bbShield: {
                     if (n==1) {
                         bbShield = true;
-                        Main.printToView(0, whis.name + " получает щит Бьернбона.");
+                        Main.message(MyFunction.MessageType.simpleText, whis.name + " получает щит Бьернбона.");
                     }
                     else bbShield=false;
 

@@ -22,10 +22,6 @@ public class Board {
         else return Main.players[0];
     }
 
-    static void putCardToGraveyard(Card _card, Player _owner) {
-        _owner.graveyard.add(_card);
-    }
-
     static int getDiedCreatureLeftCount(int playerNum, int nc){
         int count=0;
         for (int i=0;i<nc;i++){

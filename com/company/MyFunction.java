@@ -38,7 +38,7 @@ public class MyFunction {
 
     enum DamageSource {fight, spell, poison, ability, scoot}
     enum EffectPlayer{
-        bbShield(1);
+        bbShield(1), bonusToShoot(2);
 
         private final int value;
 
@@ -54,11 +54,12 @@ public class MyFunction {
             switch(x) {
                 case 1:
                     return bbShield;
+                case 2:
+                    return bonusToShoot;
             }
             return null;
         }
     }
-
     enum Effect{
         poison(1), vulnerability(2),turnToDie(3), die(4), bonusPowerUEOT(5), bonusPower(6), bonusTougnessUEOT(7), bonusTougness(8),
         bonusArmor(9), cantattackandblock(10);
@@ -99,8 +100,7 @@ public class MyFunction {
             return null;
         }
     }
-
-
+    enum MessageType{ simpleText, choiceTarget, error, win, loose}
     enum Target {myPlayer,myCreature,enemyPlayer,enemyCreature}
 
     static class ActivatedAbility {

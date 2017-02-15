@@ -1,15 +1,17 @@
 package com.company;
 
+import javax.swing.text.DefaultCaret;
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import static com.company.Main.*;
 import static com.company.MyFunction.ActivatedAbility;
 import static com.company.MyFunction.ActivatedAbility.WhatAbility;
+import static com.company.MyFunction.MessageType.*;
 
 //Created by StudenetskiyA on 25.01.2017.
+
 public class ResponseServerMessage extends Thread {
     String fromServer = "";
 
@@ -53,9 +55,8 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("#Surrend")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
-            String[] args = new String[0];
             if (np==0){
-                Main.printToView(1,Color.RED,"Вы проиграли.");
+               message(loose,"Вы проиграли.");
                 try {
                     TimeUnit.SECONDS.sleep(3);
                 } catch (InterruptedException e) {
@@ -63,8 +64,28 @@ public class ResponseServerMessage extends Thread {
                 }
                 main.atEndOfPlay();
             } else {
-                Main.printToView(1,Color.GREEN,"Ваш противник сдался.");
-                System.out.println("Opp surr");
+                message(win,"Ваш противник сдался.");
+                main.repaint();
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                main.atEndOfPlay();
+            }
+        } else if (fromServer.contains("#LoseGame")) {//Like surrend, but message other.
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            if (np==0){
+                message(loose,"Вы проиграли.");
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                main.atEndOfPlay();
+            } else {
+                message(win,"Вы выиграли.");
                 main.repaint();
                 try {
                     TimeUnit.SECONDS.sleep(3);
@@ -87,20 +108,20 @@ public class ResponseServerMessage extends Thread {
             int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
             //When queue response, you may target creature, but it number may not correct if left of it have died creature.
             players[np].cardInHand.add(Card.getCardByName(Board.creature.get(np).get(nc).name));
-            Main.printToView(0, Board.creature.get(np).get(nc).name + " возвращается в руку.");
+            message(simpleText, Board.creature.get(np).get(nc).name + " возвращается в руку.");
             Board.creature.get(np).remove(Integer.parseInt(parameter.get(1)));
         } else if (fromServer.contains("#PutCreatureToBoard")) {//#PutCreatureToBoard(Player, CreatureName)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             Board.creature.get(np).add(new Creature(Card.getCardByName(parameter.get(1)), players[np]));
-            Main.printToView(0, Card.getCardByName(parameter.get(1)).name + " входит в игру.");
+            message(simpleText, Card.getCardByName(parameter.get(1)).name + " входит в игру.");
         } else if (fromServer.contains("#PutEquipToBoard")) {//#PutCreatureToBoard(Player, CreatureName)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             int n=MyFunction.getEquipNumByType(Card.getCardByName(parameter.get(1)).creatureType);
             players[np].equpiment[n] = new Equpiment(Card.getCardByName(parameter.get(1)),players[np]);
             //TODO For event another text
-            Main.printToView(0, players[np].name+" экипировал "+Card.getCardByName(parameter.get(1)).name + " .");
+            message(simpleText, players[np].name+" экипировал "+Card.getCardByName(parameter.get(1)).name + " .");
         } else if (fromServer.contains("#DieCreature")) {//#DieCreature(Player, CreatureNumOnBoard)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
@@ -145,7 +166,7 @@ public class ResponseServerMessage extends Thread {
             int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
             //When queue response, you may target creature, but it number may not correct if left of it have died creature.
             Creature.takeDamage(players[np], Board.creature.get(np).get(nc), dmg);
-            Main.printToView(0, Board.creature.get(np).get(Integer.parseInt(parameter.get(1))).name + " получает " + dmg + " урона.");
+            message(simpleText, Board.creature.get(np).get(Integer.parseInt(parameter.get(1))).name + " получает " + dmg + " урона.");
         } else if (fromServer.contains("#TapCreature")) {//#TapCreature(Player, CreatureNumOnBoard, 1 - tap || 0 - untap)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
@@ -164,13 +185,14 @@ public class ResponseServerMessage extends Thread {
             players[np].tap(dmg);
         } else if (fromServer.contains("#PlaySpell")) {//#PlaySpell(Player, SpellName, TargetHalfBoard[0-self,1-enemy], TargetCreatureNum[-1 means targets player])
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            Main.printToView(0, parameter.get(0)+" разыгрывает "+parameter.get(1));
-        } else if (fromServer.contains("#Chat")) {//#Chat(Player, Text)
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            messageArea.append(parameter.get(0) + "\n");
+            message(simpleText, parameter.get(0)+" разыгрывает "+parameter.get(1));
+        } else if (fromServer.contains("#Chat")) {//#Chat(Player: Text)
+            fromServer = fromServer.substring(fromServer.indexOf("(") + 1);
+            fromServer = fromServer.substring(0, fromServer.lastIndexOf(")"));
+            messageArea.setText(fromServer);
         } else if (fromServer.contains("#Message")) {//#Message(TypeN,Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            Main.printToView(Integer.parseInt(parameter.get(0)), parameter.get(1));
+            message(simpleText, parameter.get(1));
         } else if (fromServer.contains("#Attack(")) {//Just informative command
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
@@ -180,14 +202,14 @@ public class ResponseServerMessage extends Thread {
             String t;
             if (creatureWhoAttackTarget==-1) t=players[anp].name;
             else t=Board.creature.get(anp).get(creatureWhoAttackTarget).name;
-            Main.printToView(0,Board.creature.get(np).get(creatureWhoAttack).name+" атакует "+t+".");
+            message(simpleText,Board.creature.get(np).get(creatureWhoAttack).name+" атакует "+t+".");
         } else if (fromServer.contains("#ChoiceBlocker(")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
                 isMyTurn = Main.PlayerStatus.IChoiceBlocker;
                 creatureWhoAttack = Integer.parseInt(parameter.get(1));
                 creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
-                Main.printToView(0,Color.GREEN,"Выберете защитника.");
+                message(choiceTarget,"Выберете защитника.");
             }
         } else if (fromServer.contains("#ChoiceTarget")) {//#ChoiceTarget(Player, Status, CreatureNum, WhatAbility, Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -196,7 +218,7 @@ public class ResponseServerMessage extends Thread {
                 //It may be ability of died creature
                 ActivatedAbility.creature = Board.creature.get(0).get(Integer.parseInt(parameter.get(2)));
                 ActivatedAbility.whatAbility = WhatAbility.fromInteger(Integer.parseInt(parameter.get(3)));
-                Main.printToView(2, Color.GREEN, parameter.get(4));//change it
+                message(choiceTarget, parameter.get(4));//change it
             }
         } else if (fromServer.contains("#ChoiceYesNo")) {//#ChoiceYesNo(Player, Card, Message, Yes, No)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -219,7 +241,7 @@ public class ResponseServerMessage extends Thread {
                 if (parameter.get(6).equals(" "))
                     Main.choiceXname = "";
                 else Main.choiceXname = parameter.get(6);
-                Main.printToView(0, parameter.get(7));
+                message(simpleText, parameter.get(7));
             }
         } else if (fromServer.contains("#ChoiceSearchInGraveyard")) {//#SearchInDeck(PlayerName,CardType,CardColor,CreatureType,CardCost,CardCostExactly,Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -235,7 +257,7 @@ public class ResponseServerMessage extends Thread {
                 if (parameter.get(6).equals(" "))
                     Main.choiceXname = "";
                 else Main.choiceXname = parameter.get(6);
-                Main.printToView(0, parameter.get(7));
+                message(simpleText, parameter.get(7));
             }
         }
 

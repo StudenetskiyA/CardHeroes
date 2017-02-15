@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import static com.company.Main.*;
+import static com.company.MyFunction.MessageType.loose;
 
 //Created by StudenetskiyA on 27.01.2017.
 
@@ -33,20 +34,20 @@ public class CycleServerRead extends Thread {
                 }
                 if (fromServer.contains("$DISCONNECT")) {
                     System.out.println("Disconnect");
-                    printToView(0, "Разрыв соединения!");
+                    message(MyFunction.MessageType.simpleText, "Разрыв соединения!");
                     writerToLog.close();
-                    printToView(1, "Opponent disconnected");
-//                    try {
-//                        //TODO Do something - return to first screen as example
-//                        TimeUnit.SECONDS.sleep(5);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    System.exit(1);
+                    message(MyFunction.MessageType.error, "Opponent disconnected");
+                   // message(loose,"Вы выиграли.");
+                    try {
+                        TimeUnit.SECONDS.sleep(3);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    main.atEndOfPlay();
                 } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck or other NOT correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     String code_not_ok = parameter.get(0);
-                    printToView(0, code_not_ok);
+                    message(MyFunction.MessageType.error, code_not_ok);
                     try {
                         //TODO Do something - call update client may be
                         TimeUnit.SECONDS.sleep(5);
