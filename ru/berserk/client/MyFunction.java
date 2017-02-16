@@ -105,6 +105,8 @@ public class MyFunction {
 
     static class ActivatedAbility {
 
+        static int nonCreatureTargetType;
+        static int nonCreatureTargetCost;
         static Creature creature;
         static boolean creatureTap;
         static WhatAbility whatAbility=WhatAbility.nothing;
@@ -122,7 +124,8 @@ public class MyFunction {
             return false;
         }
         enum WhatAbility {
-            heroAbility(1), weaponAbility(2), toHandAbility(3), onUpkeepPlayed(4), onDeathPlayed(5), onOtherDeathPlayed(6), nothing(0);
+            heroAbility(1), weaponAbility(2), toHandAbility(3), onUpkeepPlayed(4), onDeathPlayed(5), onOtherDeathPlayed(6),
+            spellAbility(7),nothing(0);
 
             private final int value;
 
@@ -150,6 +153,8 @@ public class MyFunction {
                         return onDeathPlayed;
                     case 6:
                         return onOtherDeathPlayed;
+                    case 7:
+                        return spellAbility;
                 }
                 return null;
             }

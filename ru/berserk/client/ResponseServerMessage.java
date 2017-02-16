@@ -102,12 +102,17 @@ public class ResponseServerMessage extends Thread {
             } else {
                 enemyHandSize--;
             }
-        } else if (fromServer.contains("#ReturnToHand")) {
+        } else if (fromServer.contains("#ChangeControll")) {//PlayerOwnerName,NCreature
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            int anp = (np==0)? 1:0;
+            int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
+            message(simpleText, Board.creature.get(np).get(nc).name + " переходит под контроль "+players[anp].playerName);
+            Board.creature.get(np).remove(Integer.parseInt(parameter.get(1)));
+        } else if (fromServer.contains("#ReturnToHand")) {//PlayerOwnerName,NCreature
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             int nc = Integer.parseInt(parameter.get(1))-Board.getDiedCreatureLeftCount(np,Integer.parseInt(parameter.get(1)));
-            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
-            players[np].cardInHand.add(Card.getCardByName(Board.creature.get(np).get(nc).name));
             message(simpleText, Board.creature.get(np).get(nc).name + " возвращается в руку.");
             Board.creature.get(np).remove(Integer.parseInt(parameter.get(1)));
         } else if (fromServer.contains("#PutCreatureToBoard")) {//#PutCreatureToBoard(Player, CreatureName)
@@ -211,6 +216,15 @@ public class ResponseServerMessage extends Thread {
                 creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
                 message(choiceTarget,"Выберете защитника.");
             }
+        } else if (fromServer.contains("#ChoiceForSpell")) {//#ChoiceForSpell(PlayerName,Status,TargetType,costN-)
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            if (players[0].playerName.equals(parameter.get(0))) {
+                Main.isMyTurn = PlayerStatus.fromInteger(Integer.parseInt(parameter.get(1)));
+                ActivatedAbility.nonCreatureTargetType = Integer.parseInt(parameter.get(2));
+                ActivatedAbility.nonCreatureTargetCost = Integer.parseInt(parameter.get(3));
+                ActivatedAbility.whatAbility = WhatAbility.spellAbility;
+                message(choiceTarget, parameter.get(4));
+            }
         } else if (fromServer.contains("#ChoiceTarget")) {//#ChoiceTarget(Player, Status, CreatureNum, WhatAbility, Message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
@@ -218,7 +232,7 @@ public class ResponseServerMessage extends Thread {
                 //It may be ability of died creature
                 ActivatedAbility.creature = Board.creature.get(0).get(Integer.parseInt(parameter.get(2)));
                 ActivatedAbility.whatAbility = WhatAbility.fromInteger(Integer.parseInt(parameter.get(3)));
-                message(choiceTarget, parameter.get(4));//change it
+                message(choiceTarget, parameter.get(4));//change it or not?
             }
         } else if (fromServer.contains("#ChoiceYesNo")) {//#ChoiceYesNo(Player, Card, Message, Yes, No)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);

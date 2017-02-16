@@ -1304,6 +1304,15 @@ public class Main extends JFrame {
                 } else {
                     message(error, "Выберите корректную цель.");
                 }
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (ActivatedAbility.isThatAbility(spellAbility))) {
+                //Spell ability on my unit
+                if (MyFunction.canTarget(MyFunction.Target.myCreature, ActivatedAbility.nonCreatureTargetType)) {
+                    //check cost
+                    Client.writeLine("$SPELLCHOICETARGET(" + players[0].playerName + ",0," + num + ")");
+                    ActivatedAbility.whatAbility = nothing;
+                } else {
+                    message(error, "Выберите корректную цель.");
+                }
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (ActivatedAbility.isThatAbility(weaponAbility))) {
                 //Weapon ability on my unit
                 if ((players[0].equpiment[2].tapTargetType == 1) || (players[0].equpiment[2].tapTargetType == 3)) {
