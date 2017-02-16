@@ -231,6 +231,7 @@ public class Main extends JFrame {
         simpleDeck.cards.remove(0);
         players[1] = new Player(simpleDeck, "", playerName, 0, 30);
         textField.setVisible(true);
+        messageArea.setVisible(true);
         PrepareBattleScreen.hideWindow();
 
         if (playerName.equals("replay")) {
@@ -298,21 +299,6 @@ public class Main extends JFrame {
             messageToShow = new MessageToShow(txt, c, 150000);
         }
     }
-
-//    static void cardAnimationShowing(Graphics g, BufferedImage image, boolean playerOrEnemy, int step) {
-//        final double steps = 100;
-//        if (step > steps / 2) step = (int) steps;
-//        System.out.println("Step=" + step);
-//        int x = playerHeroClick[0].getX();
-//        int y = playerHeroClick[0].getY() - playerHeroClick[0].getHeight();
-//        int w = smallCardW;
-//        int h = smallCardH;
-//        double stepY = Math.abs(y - main.getHeight() / 2 + bigCardH / 2) / (steps * 2);
-//        double stepW = (bigCardW - w) / (steps * 2);
-//        double stepH = Math.abs(bigCardH - h) / (steps * 2);
-//        g.drawImage(image, x, y - (int) (stepY * step), w + (int) (stepW * step), h + (int) (stepH * step), null);
-//        main.repaint();
-//    }
 
     private static void onRepaint(Graphics g) {
         try {
@@ -846,7 +832,9 @@ public class Main extends JFrame {
                 // display the JOptionPane showConfirmDialog
                 int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
                 if (reply == JOptionPane.YES_OPTION) {
-                    System.out.println("Yes exit");
+                    System.out.println("$DISCONNECT");
+                    WebsocketClient.client.sendMessage("$DISCONNECT");
+                    writerToLog.close();
                     System.exit(0);
                 }
             }
@@ -1034,6 +1022,7 @@ public class Main extends JFrame {
 
     static void atEndOfPlay(){
         cycleServerReadDo=false;
+        messageToShow = new MessageToShow(" ", null, 0);//Clear message
         gameLog.setVisible(false);
         gameLog.setText("");
         playerCoinLabel.setVisible(false);
