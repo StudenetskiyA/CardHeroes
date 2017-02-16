@@ -1,53 +1,46 @@
-package com.company;
+package ru.berserk.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import static com.company.Main.*;
-import static com.company.MyFunction.MessageType.loose;
-
 //Created by StudenetskiyA on 27.01.2017.
 
-public class CycleServerRead extends Thread {
+public class CycleServerRead{
 
-    @Override
-    public synchronized void run() {
-        super.run();
-
-        while (true) {
-            if (cycleServerReadDo){
-            String fromServer = "";
-            if (!Main.isReplay) {
-                fromServer = Client.readLine();
-            } else {
-                try {
-                    fromServer = getNextReplayLine();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+    public void  processCommand(String fromServer) {
+            //TODO replay mode
+//        if (!Main.isReplay) {
+//        	 fromServer = Client.readLine();
+//        } else {
+//            try {
+//                fromServer = getNextReplayLine();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
             if (fromServer != null) {
-                if (!fromServer.equals("")) {
-                    writerToLog.println(fromServer);
-                    System.out.println("Server: " + fromServer);
-                }
+                //waiting is obsolete
+//            if (!fromServer.equals("wait") && !fromServer.equals("")) {
+//                writerToLog.println(fromServer);
+//                System.out.println("Server: " + fromServer);
+//            }
                 if (fromServer.contains("$DISCONNECT")) {
                     System.out.println("Disconnect");
-                    message(MyFunction.MessageType.simpleText, "Разрыв соединения!");
-                    writerToLog.close();
-                    message(MyFunction.MessageType.error, "Opponent disconnected");
+                    Main.message(MyFunction.MessageType.simpleText, "Разрыв соединения!");
+                    Main.writerToLog.close();
+                    Main.message(MyFunction.MessageType.error, "Opponent disconnected");
                    // message(loose,"Вы выиграли.");
                     try {
                         TimeUnit.SECONDS.sleep(3);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    main.atEndOfPlay();
+                    Main.main.atEndOfPlay();
                 } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck or other NOT correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     String code_not_ok = parameter.get(0);
-                    message(MyFunction.MessageType.error, code_not_ok);
+                    Main.message(MyFunction.MessageType.error, code_not_ok);
                     try {
                         //TODO Do something - call update client may be
                         TimeUnit.SECONDS.sleep(5);
@@ -58,52 +51,49 @@ public class CycleServerRead extends Thread {
                 } else if (fromServer.contains("$YOUAREOK")) {//You client,deck and other correct
                     Main.isMyTurn = Main.PlayerStatus.waitOtherPlayer;
                     //Server send "wait", you must answer "wait" or server think you are gone
-                    while (true) {
-                        Client.writeLine("wait");
-                        String a = Client.readLine();
-                        //System.out.println("Sv = "+a);
-                        if (!a.equals("wait")) {
-                            break;
-                        }
-                    }
+//                    while (true) {
+//                         WebsocketClient.client.sendMessage("wait");
+//                        String a = Client.readLine();
+//                        //System.out.println("Sv = "+a);
+//                        if (!a.equals("wait")) {
+//                            break;
+//                        }
+//                    }
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//Both players connected
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-                    if (replayCounter == 0) {
+                    if (Main.replayCounter == 0) {
                     } else try {
-                        loadDeckFromFile(simpleEnemyDeck, replayDeck);//Only for replaying
+                        Main.loadDeckFromFile(Main.simpleEnemyDeck, Main.replayDeck);//Only for replaying
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     //Load information about opponent - name and heroHame.
                     Card c = Card.getCardByName(parameter.get(1));
-                    players[1] = new Player(c, simpleEnemyDeck, parameter.get(0), 1);
+                    Main.players[1] = new Player(c, Main.simpleEnemyDeck, parameter.get(0), 1);
+                    System.out.println("Opponent loaded. Name = "+Main.players[1].playerName);
                     //For tests, server may begin with any coin.
                     Main.heroLabel[1].setVisible(true);
-                    players[0].untappedCoin = Integer.parseInt(parameter.get(2));
-                    players[0].totalCoin = Integer.parseInt(parameter.get(2));
-                    players[1].untappedCoin = Integer.parseInt(parameter.get(2));
-                    players[1].totalCoin = Integer.parseInt(parameter.get(2));
-                    if (isMyTurn == Main.PlayerStatus.waitOtherPlayer) {
-                        isMyTurn = Main.PlayerStatus.MuliganPhase;
-                        main.repaint();
+                    Main.players[0].untappedCoin = Integer.parseInt(parameter.get(2));
+                    Main.players[0].totalCoin = Integer.parseInt(parameter.get(2));
+                    Main.players[1].untappedCoin = Integer.parseInt(parameter.get(2));
+                    Main.players[1].totalCoin = Integer.parseInt(parameter.get(2));
+                    if (Main.isMyTurn == Main.PlayerStatus.waitOtherPlayer) {
+                        Main.isMyTurn = Main.PlayerStatus.MuliganPhase;
+                        Main.main.repaint();
                     }
-                    System.out.println("OPP con ok");
                 } else {
-                    responseServerMessage = new ResponseServerMessage(fromServer);
-                    responseServerMessage.start();
+                    Main.responseServerMessage = new ResponseServerMessage(fromServer);
+                    Main.responseServerMessage.start();
                     //pause until response ends
-                    synchronized (monitor) {
+                    synchronized (Main.monitor) {
                         try {
-                            monitor.wait();
+                            Main.monitor.wait();
                         } catch (InterruptedException e2) {
                             e2.printStackTrace();
                         }
                     }
                 }
-                main.repaint();
+                Main.main.repaint();
             }
         }
-        else break;
-    }
-    }
 }

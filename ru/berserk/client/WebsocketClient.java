@@ -21,8 +21,6 @@ public class WebsocketClient {
 	
 	static WebsocketClient client;
 	
-	
-	
 	public static void connect(String url, CycleServerRead cycleReadFromServer) {
 		client = new WebsocketClient(URI.create(url), cycleReadFromServer);  
 	}
@@ -67,9 +65,10 @@ public class WebsocketClient {
 		th.printStackTrace();
 	}
 	
-	public static void main(String[] args) {
-		WebsocketClient client = new WebsocketClient(URI.create("ws://localhost:8080/WebsocketDemo/serverendpointdemo"), null);
-		
-		client.sendMessage("Hello world");
-	}
+//	public static void main(String[] args) {
+//		//WebsocketClient client = new WebsocketClient(URI.create("ws://test1.uralgufk.ru:8080/WebsocketDemo/serverendpointdemo"), null);
+//		WebsocketClient client = new WebsocketClient(URI.create("ws://localhost:8080/BHServer/serverendpointdemo"), null);
+//		//http://localhost:8080/BHServer/WEB-INF/web.xml
+//		client.sendMessage("Hello world");
+//	}
 }

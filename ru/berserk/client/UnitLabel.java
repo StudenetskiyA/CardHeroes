@@ -1,4 +1,4 @@
-package com.company;
+package ru.berserk.client;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static com.company.Main.main;
+import static ru.berserk.client.Main.main;
 
 // Created by StudenetskiyA on 29.01.2017.
 

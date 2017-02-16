@@ -1,4 +1,4 @@
-package com.company;
+package ru.berserk.client;
 
 import javax.swing.*;
 import java.awt.*;

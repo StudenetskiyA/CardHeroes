@@ -1,6 +1,4 @@
-package com.company;
-
-import static com.company.Main.*;
+package ru.berserk.client;
 
 /**
  * Created by StudenetskiyA on 23.01.2017.

@@ -1,4 +1,4 @@
-package com.company;
+package ru.berserk.client;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static com.company.Main.main;
+import static ru.berserk.client.Main.main;
 
 // Created by StudenetskiyA on 02.02.2017.
 
@@ -45,8 +45,8 @@ public class UserChoice {
                 _vf.remove(yesChoice);
                 _vf.remove(noChoice);
                 _vf.remove(topText);
-                main.userChoiceShow=false;
-                Client.writeLine("$CHOICEYESNO(1)");
+                Main.main.userChoiceShow=false;
+                 WebsocketClient.client.sendMessage("$CHOICEYESNO(1)");
                 System.out.println("Yes clicked");
             }
 
@@ -80,8 +80,8 @@ public class UserChoice {
                 _vf.remove(yesChoice);
                 _vf.remove(noChoice);
                 _vf.remove(topText);
-                main.userChoiceShow=false;
-                Client.writeLine("$CHOICEYESNO(0)");
+                Main.main.userChoiceShow=false;
+                 WebsocketClient.client.sendMessage("$CHOICEYESNO(0)");
             }
 
             @Override
@@ -108,12 +108,12 @@ public class UserChoice {
 
     void show(Graphics g, int _width, int _height){
         topText.setSize(_width*3/2,_height/8);
-        topText.setLocation(main.getWidth()/2-_width*2/3,main.getHeight()/2-_height/2-_height/8);
+        topText.setLocation(Main.main.getWidth()/2-_width*2/3, Main.main.getHeight()/2-_height/2-_height/8);
         yesChoice.setSize(_width,_height/8);
         noChoice.setSize(_width,_height/8);
-        yesChoice.setLocation(main.getWidth()/2-_width*2/3,main.getHeight()/2+_height/2);
-        noChoice.setLocation(main.getWidth()/2+_width/3,main.getHeight()/2+_height/2);
-        g.drawImage(topImage,main.getWidth()/2-_width/2,main.getHeight()/2-_height/2,_width,_height,null);
+        yesChoice.setLocation(Main.main.getWidth()/2-_width*2/3, Main.main.getHeight()/2+_height/2);
+        noChoice.setLocation(Main.main.getWidth()/2+_width/3, Main.main.getHeight()/2+_height/2);
+        g.drawImage(topImage, Main.main.getWidth()/2-_width/2, Main.main.getHeight()/2-_height/2,_width,_height,null);
     }
 
 }

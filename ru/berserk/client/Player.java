@@ -1,4 +1,4 @@
-package com.company;
+package ru.berserk.client;
 
 import java.util.ArrayList;
 

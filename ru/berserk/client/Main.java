@@ -1,12 +1,9 @@
-package com.company;
+package ru.berserk.client;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
-import javax.swing.text.DefaultCaret;
 import java.awt.*;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
 import java.awt.geom.Line2D;
@@ -19,15 +16,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import static com.company.MyFunction.ActivatedAbility;
-import static com.company.MyFunction.ActivatedAbility.WhatAbility.*;
-import static com.company.MyFunction.MessageType.*;
-
 public class Main extends JFrame {
     //Connect constant
     private static final String CLIENT_VERSION = "0.02";
-    static final String address = "127.0.0.1";//"test1.uralgufk.ru";//"127.0.0.1";  //"cardheroes.hldns.ru";
-    static String serverPort = "8901";
+    private static final String address = //"ws://test1.uralgufk.ru:8080/BHServer/serverendpointdemo";
+     "ws://localhost:8080/BHServer/serverendpointdemo";
     //View constant
     static final int BORDER_CREATURE = 3;
     private static final int B0RDER_RIGHT = 15;
@@ -84,7 +77,7 @@ public class Main extends JFrame {
     public static boolean cycleServerReadDo = true;
     //
     static boolean isReplay = false;
-    static Thread cycleReadFromServer = new CycleServerRead();
+    static CycleServerRead cycleReadFromServer = new CycleServerRead();
     private static ArrayList<String> replay = new ArrayList<>();
     //For repaint
     static int heroW;
@@ -132,7 +125,6 @@ public class Main extends JFrame {
     static int enemyHandSize = 0;
     static UserChoice userChoice;
     static boolean userChoiceShow = false;
-    static PrepareBattleScreen pbScreen = new PrepareBattleScreen();
 
     enum PlayerStatus {
         MyTurn(1), EnemyTurn(2), IChoiceBlocker(3), EnemyChoiceBlocker(4), EnemyChoiceTarget(5), MuliganPhase(6), waitingForConnection(7),
@@ -204,7 +196,9 @@ public class Main extends JFrame {
 
         try {
             //TODO while connect
-            Client.connect(Integer.parseInt(serverPort), address);
+            WebsocketClient.connect(address, cycleReadFromServer);
+            connected = true;
+           // Client.connect(Integer.parseInt(serverPort), address);
         } catch (Exception x) {
             System.out.println("Cloud not connect to server.");
         }
@@ -220,7 +214,6 @@ public class Main extends JFrame {
                 } else {
                     runGame(args[0], args[1], null);
                     main.repaint();
-                    //cycleReadFromServer.start();
                 }
             }
         } else {
@@ -229,12 +222,6 @@ public class Main extends JFrame {
     }
 
     static void runGame(String playerName, String deckName, String replayName) throws IOException, InterruptedException {
-        gameLog.setVisible(true);
-        playerCoinLabel.setVisible(true);
-        enemyCoinLabel.setVisible(true);
-        textField.setVisible(true);
-//        scrollPane.setVisible(true);
-        messageArea.setVisible(true);
         System.out.println("Game runs " + playerName + " " + deckName);
         simpleDeck = new Deck(deckName);
         simpleEnemyDeck = new Deck("defaultDeck");
@@ -243,9 +230,9 @@ public class Main extends JFrame {
         players[0] = new Player(c, simpleDeck, playerName, 0);
         simpleDeck.cards.remove(0);
         players[1] = new Player(simpleDeck, "", playerName, 0, 30);
-        if (PrepareBattleScreen.isVisible)
+        textField.setVisible(true);
         PrepareBattleScreen.hideWindow();
-        main.repaint();
+
         if (playerName.equals("replay")) {
             InputStream path = Main.class.getResourceAsStream("replays/" + replayName + ".txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(path, "windows-1251"));
@@ -259,25 +246,23 @@ public class Main extends JFrame {
                 System.out.println("Cloud not read replay.");
             }
             Main.gameLog.setText("<html>");
-            message(simpleText, "Player=" + players[0].playerName + ",port=" + serverPort);
+           // message(MyFunction.MessageType.simpleText, "Player=" + players[0].playerName + ",port=" + serverPort);
             isMyTurn = PlayerStatus.waitOtherPlayer;
         } else {
             Main.gameLog.setText("<html>");
-            message(simpleText, "Player=" + players[0].playerName + ",port=" + serverPort);
+           // message(MyFunction.MessageType.simpleText, "Player=" + players[0].playerName + ",port=" + serverPort);
 
             if (connected) {
                 isMyTurn = PlayerStatus.waitOtherPlayer;
-                Client.writeLine("$IAM(" + players[0].playerName + "," + players[0].deck.name + "," + CLIENT_VERSION + ")");
+                String command = "$IAM(" + players[0].playerName + "," + players[0].deck.name + "," + CLIENT_VERSION + ")\n";
                 //Send deck
-                Client.writeLine(players[0].name);
+                command += players[0].name + "\n";
                 for (Card card : players[0].deck.cards) {
-                    Client.writeLine(card.name);
+                    command += card.name + "\n";
                 }
-                Client.writeLine("$ENDDECK");
+                command += "$ENDDECK";
+                WebsocketClient.client.sendMessage(command);
             }
-            cycleServerReadDo=true;
-            cycleReadFromServer =new CycleServerRead();
-            cycleReadFromServer.start();
         }
     }
 
@@ -642,15 +627,11 @@ public class Main extends JFrame {
                 founded.remove(founded.get(i));
                 continue;
             }
-            if (((!choiceXname.equals(founded.get(i).name))) && (!choiceXname.equals(""))) {
-                founded.remove(founded.get(i));
-                continue;
-            }
         }
         if (founded.size() == 0) {
             message(MyFunction.MessageType.simpleText, "В колоде ничего подходящего не найдено.");
             System.out.println("$FOUND(" + players[0].playerName + ",-1)");
-            Client.writeLine("$FOUND(" + players[0].playerName + ",-1)");
+            WebsocketClient.client.sendMessage("$FOUND(" + players[0].playerName + ",-1)");
             isMyTurn = PlayerStatus.MyTurn;
             choiceXcolor = 0;
             choiceXtype = 0;
@@ -660,7 +641,7 @@ public class Main extends JFrame {
             for (int i = 0; i < founded.size(); i++) {
                 int ii = i % 10;
                 int jj = i / 10;
-                BufferedImage im_tmp = ImageIO.read(new File("cards/" + founded.get(i).image));
+                BufferedImage im_tmp = ImageIO.read(Main.class.getResourceAsStream("cards/" + founded.get(i).image));
                 g.drawImage(im_tmp, cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1), smallCardW, smallCardH, null);
                 searchXLabel[i].setLocation(cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1));
                 searchXLabel[i].setSize(smallCardW, smallCardH);
@@ -819,7 +800,7 @@ public class Main extends JFrame {
 
     private static void releaseCardWithX(int x) {
         System.out.println(choiceXtext + "," + x + ")");
-        Client.writeLine(choiceXtext + "," + x + ")");
+        WebsocketClient.client.sendMessage(choiceXtext + "," + x + ")");
     }
 
     private static void loadImage() {
@@ -883,7 +864,7 @@ public class Main extends JFrame {
         viewField.add(messageArea, "North");
         // Add Listeners
         textField.addActionListener(e -> {
-            Client.writeLine("$CHAT(" + textField.getText() + ")");
+            WebsocketClient.client.sendMessage("$CHAT(" + textField.getText() + ")");
             textField.setText("");
         });
         //For logs
@@ -1075,8 +1056,9 @@ public class Main extends JFrame {
         //TODO reconnect
         Main.connected=false;
         try {
-            //TODO while connect
-            Client.connect(Integer.parseInt(Main.serverPort), Main.address);
+            //TODO while connect  
+            WebsocketClient.connect(address, cycleReadFromServer);
+            connected = true;
         } catch (Exception x) {
             System.out.println("Cloud not connect to server.");
         }
@@ -1114,11 +1096,11 @@ public class Main extends JFrame {
                 fullScreenClick.setVisible(false);
                 surrendClick.setVisible(false);
                 System.out.println("$SURREND");
-                Client.writeLine("$SURREND");
+                WebsocketClient.client.sendMessage("$SURREND");
                 writerToLog.close();
             } else if (onWhat == Compo.Menu) {
                 System.out.println("$DISCONNECT");
-                Client.writeLine("$DISCONNECT");
+                WebsocketClient.client.sendMessage("$DISCONNECT");
                 writerToLog.close();
                 System.exit(0);
             } else if (onWhat == Compo.Fullscreen) {
@@ -1152,7 +1134,7 @@ public class Main extends JFrame {
                 if (wantToMulligan[num]) wantToMulligan[num] = false;
                 else wantToMulligan[num] = true;
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == PlayerStatus.MyTurn)) {
-                Client.writeLine("$ENDTURN(" + players[0].playerName + ")");
+                WebsocketClient.client.sendMessage("$ENDTURN(" + players[0].playerName + ")");
                 main.repaint();
             } else if ((onWhat == Compo.PlayerHeroTap) && (isMyTurn == PlayerStatus.MyTurn)) {
                 //My hero ability
@@ -1170,29 +1152,29 @@ public class Main extends JFrame {
                             System.out.println("hero ability cost = " + cost);
                             if (players[0].untappedCoin >= cost) {
                                 isMyTurn = PlayerStatus.choiceTarget;
-                                message(choiceTarget,"Выберите цельь для "+players[0].name+".");
-                                ActivatedAbility.whatAbility = heroAbility;
-                                ActivatedAbility.heroAbilityCost = cost;
+                                message(MyFunction.MessageType.choiceTarget,"Выберите цельь для "+players[0].name+".");
+                                MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.heroAbility;
+                                MyFunction.ActivatedAbility.heroAbilityCost = cost;
                                 main.repaint();
                             } else {
-                                message(error, "Недостаточно монет.");
+                                message(MyFunction.MessageType.error, "Недостаточно монет.");
                             }
                         } else {
-                            message(error, "Нет подходящих целей.");
+                            message(MyFunction.MessageType.error, "Нет подходящих целей.");
                         }
                     } else if (players[0].text.contains("ТАП:")) {
                         int cost = MyFunction.getNumericAfterText(players[0].text, "ТАП:");
                         System.out.println("hero ability cost = " + cost);
                         if (players[0].untappedCoin >= cost) {
                             System.out.println("$HERONOTARGET(" + players[0].playerName + "," + cost + ")");
-                            Client.writeLine("$HERONOTARGET(" + players[0].playerName + "," + cost + ")");
+                            WebsocketClient.client.sendMessage("$HERONOTARGET(" + players[0].playerName + "," + cost + ")");
                             main.repaint();
                         } else {
-                            message(error, "Недостаточно монет.");
+                            message(MyFunction.MessageType.error, "Недостаточно монет.");
                         }
                     }
                 } else {
-                    message(error, "Повернутый герой не может действовать.");
+                    message(MyFunction.MessageType.error, "Повернутый герой не может действовать.");
                 }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == PlayerStatus.MuliganPhase)) {
                 //TODO when remake server
@@ -1208,118 +1190,118 @@ public class Main extends JFrame {
                     i++;
                 }
                 ms = ms + n + c + ")";
-                Client.writeLine(ms);
+                 WebsocketClient.client.sendMessage(ms);
                 isMyTurn = PlayerStatus.waitingMulligan;
-            } else if ((onWhat == Compo.CardInHand) && (isMyTurn == PlayerStatus.choiceTarget) && ActivatedAbility.isThatAbility(toHandAbility)) {
+            } else if ((onWhat == Compo.CardInHand) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.toHandAbility)) {
                 //to my hand ability
-                Client.writeLine("$DISCARD(" + players[0].playerName + "," + num + ")");
+                 WebsocketClient.client.sendMessage("$DISCARD(" + players[0].playerName + "," + num + ")");
                 //  massCryCheckAndSetPlayerStatus(0);
-            } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == PlayerStatus.choiceTarget) && ActivatedAbility.isNothingOrDeath()) {
+            } else if ((onWhat == Compo.PlayerHero) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
                 //Battlecry, deathrattle or TAPT on my hero
-                if (MyFunction.canTarget(MyFunction.Target.myPlayer, ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.myPlayer, ActivatedAbility.creature.tapTargetType)) {
-                    int nc = Board.creature.get(0).indexOf(ActivatedAbility.creature);
-                    if (ActivatedAbility.creatureTap) {
+                if (MyFunction.canTarget(MyFunction.Target.myPlayer, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.myPlayer, MyFunction.ActivatedAbility.creature.tapTargetType)) {
+                    int nc = Board.creature.get(0).indexOf(MyFunction.ActivatedAbility.creature);
+                    if (MyFunction.ActivatedAbility.creatureTap) {
                         System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
-                        Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
+                         WebsocketClient.client.sendMessage("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     } else {
                         System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
-                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
+                         WebsocketClient.client.sendMessage("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     }
                     if (messageToShow != null) messageToShow.lenght = 0;
-                    ActivatedAbility.creatureTap = false;
+                    MyFunction.ActivatedAbility.creatureTap = false;
                 } else {
-                    message(error, "Выберите корректную цель.");
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == PlayerStatus.choiceTarget) && ActivatedAbility.isNothingOrDeath()) {
+            } else if ((onWhat == Compo.EnemyHero) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
                 //Battlecry or TAPT on enemy hero
-                if (MyFunction.canTarget(MyFunction.Target.enemyPlayer, ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyPlayer, ActivatedAbility.creature.tapTargetType)) {
-                    if ((players[1].effects.getBBShield()) && (ActivatedAbility.creature.text.contains("Выстрел")))
+                if (MyFunction.canTarget(MyFunction.Target.enemyPlayer, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyPlayer, MyFunction.ActivatedAbility.creature.tapTargetType)) {
+                    if ((players[1].effects.getBBShield()) && (MyFunction.ActivatedAbility.creature.text.contains("Выстрел")))
                         players[1].effects.bbShield = false;
-                    int nc = Board.creature.get(0).indexOf(ActivatedAbility.creature);
-                    if (ActivatedAbility.creatureTap) {
-                        Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
+                    int nc = Board.creature.get(0).indexOf(MyFunction.ActivatedAbility.creature);
+                    if (MyFunction.ActivatedAbility.creatureTap) {
+                         WebsocketClient.client.sendMessage("$TAPTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                     } else {
-                        Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
+                         WebsocketClient.client.sendMessage("$CRYTARGET(" + players[0].playerName + "," + nc + ",1,-1)");
                     }
                     if (messageToShow != null) messageToShow.lenght = 0;
-                    ActivatedAbility.creatureTap = false;
+                    MyFunction.ActivatedAbility.creatureTap = false;
                 } else {
-                    message(error, "Выберите корректную цель.");
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && ActivatedAbility.isNothingOrDeath()) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
                 //Battlecry or TAPT on my unit
-                if (MyFunction.canTarget(MyFunction.Target.myCreature, ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.myCreature, ActivatedAbility.creature.tapTargetType)) {
-                    int nc = Board.creature.get(0).indexOf(ActivatedAbility.creature);
-                    if ((ActivatedAbility.creature.targetType == 10 || ActivatedAbility.creature.targetType == 12) && nc == num) {
-                        message(error, "Существо не может целить само себя.");
+                if (MyFunction.canTarget(MyFunction.Target.myCreature, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.myCreature, MyFunction.ActivatedAbility.creature.tapTargetType)) {
+                    int nc = Board.creature.get(0).indexOf(MyFunction.ActivatedAbility.creature);
+                    if ((MyFunction.ActivatedAbility.creature.targetType == 10 || MyFunction.ActivatedAbility.creature.targetType == 12) && nc == num) {
+                        message(MyFunction.MessageType.error, "Существо не может целить само себя.");
                     } else {
-                        if (ActivatedAbility.creatureTap) {
+                        if (MyFunction.ActivatedAbility.creatureTap) {
                             System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
-                            Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                             WebsocketClient.client.sendMessage("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                         } else {
                             System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
-                            Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
+                             WebsocketClient.client.sendMessage("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                         }
                         if (messageToShow != null) messageToShow.lenght = 0;
-                        ActivatedAbility.creatureTap = false;
+                        MyFunction.ActivatedAbility.creatureTap = false;
                     }
                 } else {
-                    message(error, "Выберите корректную цель.");
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == PlayerStatus.choiceTarget) && ActivatedAbility.isNothingOrDeath()) {
+            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
                 //Battlecry or TAPT on enemy unit
-                if (MyFunction.canTarget(MyFunction.Target.enemyCreature, ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyCreature, ActivatedAbility.creature.tapTargetType)) {
+                if (MyFunction.canTarget(MyFunction.Target.enemyCreature, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyCreature, MyFunction.ActivatedAbility.creature.tapTargetType)) {
                     //Bjornbon check attack or not this cry or tap.
-                    if ((players[1].effects.getBBShield()) && (ActivatedAbility.creature.text.contains("Выстрел"))) {
-                        message(error, "Целью первой атаки должен быть Бьорнбон.");
+                    if ((players[1].effects.getBBShield()) && (MyFunction.ActivatedAbility.creature.text.contains("Выстрел"))) {
+                        message(MyFunction.MessageType.error, "Целью первой атаки должен быть Бьорнбон.");
                     } else {
-                        int nc = Board.creature.get(0).indexOf(ActivatedAbility.creature);
+                        int nc = Board.creature.get(0).indexOf(MyFunction.ActivatedAbility.creature);
                         //Check correct target or it not able?
-                        if (ActivatedAbility.creatureTap) {
-                            Client.writeLine("$TAPTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
+                        if (MyFunction.ActivatedAbility.creatureTap) {
+                             WebsocketClient.client.sendMessage("$TAPTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
                         } else {
-                            Client.writeLine("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
+                             WebsocketClient.client.sendMessage("$CRYTARGET(" + players[0].playerName + "," + nc + ",1," + num + ")");
                         }
                         if (messageToShow != null) messageToShow.lenght = 0;
-                        ActivatedAbility.creatureTap = false;
+                        MyFunction.ActivatedAbility.creatureTap = false;
                     }
                 } else {
-                    message(error, "Выберите корректную цель.");
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == PlayerStatus.choiceTarget) && ActivatedAbility.isThatAbility(heroAbility)) {
+            } else if ((onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.heroAbility)) {
                 //Hero ability on enemy unit
                 if ((players[0].tapTargetType == 1) || (players[0].tapTargetType == 3)) {
-                    System.out.println("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + ActivatedAbility.heroAbilityCost + ")");
-                    Client.writeLine("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + ActivatedAbility.heroAbilityCost + ")");
-                    ActivatedAbility.whatAbility = nothing;
+                    System.out.println("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + MyFunction.ActivatedAbility.heroAbilityCost + ")");
+                     WebsocketClient.client.sendMessage("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + MyFunction.ActivatedAbility.heroAbilityCost + ")");
+                    MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                     if (messageToShow != null) messageToShow.lenght = 0;
                 } else {
-                    message(error, "Выберите корректную цель.");
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (ActivatedAbility.isThatAbility(heroAbility))) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.heroAbility))) {
                 //Hero ability on my unit
                 if (MyFunction.canTarget(MyFunction.Target.myCreature, players[0].tapTargetType)) {
-                    Client.writeLine("$HEROTARGET(" + players[0].playerName + ",0," + num + "," + ActivatedAbility.heroAbilityCost + ")");
-                    ActivatedAbility.whatAbility = nothing;
+                     WebsocketClient.client.sendMessage("$HEROTARGET(" + players[0].playerName + ",0," + num + "," + MyFunction.ActivatedAbility.heroAbilityCost + ")");
+                    MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                 } else {
-                    message(error, "Выберите корректную цель.");
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (ActivatedAbility.isThatAbility(spellAbility))) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.spellAbility))) {
                 //Spell ability on my unit
-                if (MyFunction.canTarget(MyFunction.Target.myCreature, ActivatedAbility.nonCreatureTargetType)) {
+                if (MyFunction.canTarget(MyFunction.Target.myCreature, MyFunction.ActivatedAbility.nonCreatureTargetType)) {
                     //check cost
-                    Client.writeLine("$SPELLCHOICETARGET(" + players[0].playerName + ",0," + num + ")");
-                    ActivatedAbility.whatAbility = nothing;
+                     WebsocketClient.client.sendMessage("$SPELLCHOICETARGET(" + players[0].playerName + ",0," + num + ")");
+                    MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                 } else {
-                    message(error, "Выберите корректную цель.");
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (ActivatedAbility.isThatAbility(weaponAbility))) {
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.weaponAbility))) {
                 //Weapon ability on my unit
                 if ((players[0].equpiment[2].tapTargetType == 1) || (players[0].equpiment[2].tapTargetType == 3)) {
-                    Client.writeLine("$EQUIPTARGET(" + players[0].playerName + ",2,0," + num + ")");
-                    ActivatedAbility.whatAbility = nothing;
+                     WebsocketClient.client.sendMessage("$EQUIPTARGET(" + players[0].playerName + ",2,0," + num + ")");
+                    MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                 } else {
-                    message(error, "Выберите корректную цель.");
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.CreatureInMyPlayTap) && (isMyTurn == PlayerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАПТ:"))) {
                 //TAP creature with target ability - first step
@@ -1327,58 +1309,58 @@ public class Main extends JFrame {
                     if (!Board.creature.get(0).get(num).isTapped) {
                         System.out.println("tapt ability.");
                         isMyTurn = PlayerStatus.choiceTarget;
-                        ActivatedAbility.creature = Board.creature.get(0).get(num);
-                        ActivatedAbility.creature.targetType = Board.creature.get(0).get(num).targetType;
-                        ActivatedAbility.creature.tapTargetType = Board.creature.get(0).get(num).tapTargetType;
-                        ActivatedAbility.creatureTap = true;
-                        message(choiceTarget, ActivatedAbility.creature.name + " просит выбрать цель.");//change it
+                        MyFunction.ActivatedAbility.creature = Board.creature.get(0).get(num);
+                        MyFunction.ActivatedAbility.creature.targetType = Board.creature.get(0).get(num).targetType;
+                        MyFunction.ActivatedAbility.creature.tapTargetType = Board.creature.get(0).get(num).tapTargetType;
+                        MyFunction.ActivatedAbility.creatureTap = true;
+                        message(MyFunction.MessageType.choiceTarget, MyFunction.ActivatedAbility.creature.name + " просит выбрать цель.");//change it
                         main.repaint();
                     } else {
-                        message(error, "Повернутое существо не может это сделать.");
+                        message(MyFunction.MessageType.error, "Повернутое существо не может это сделать.");
                     }
                 } else {
-                    message(error, "Это существо недавно вошло в игру.");
+                    message(MyFunction.MessageType.error, "Это существо недавно вошло в игру.");
                 }
             } else if ((onWhat == Compo.CreatureInMyPlayTap) && (isMyTurn == PlayerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАП:"))) {
                 //TAP creature with no target ability - first step
                 if (!Board.creature.get(0).get(num).getIsSummonedJust()) {
                     if (!Board.creature.get(0).get(num).isTapped) {
-                        Client.writeLine("$TAPNOTARGET(" + players[0].playerName + "," + num + ")");
+                         WebsocketClient.client.sendMessage("$TAPNOTARGET(" + players[0].playerName + "," + num + ")");
                     } else {
-                        message(error, "Повернутое существо не может это сделать.");
+                        message(MyFunction.MessageType.error, "Повернутое существо не может это сделать.");
                     }
                 } else {
-                    message(error, "Это существо недавно вошло в игру.");
+                    message(MyFunction.MessageType.error, "Это существо недавно вошло в игру.");
                 }
             } else if (onWhat == Compo.Weapon && isMyTurn == PlayerStatus.MyTurn && players[0].equpiment[2].text.contains("ТАПТ:")) {
                 //TAP weapon with target ability - first step
                 if (!players[0].equpiment[2].isTapped) {
                     System.out.println("tapt weapon ability.");
                     if ((players[0].equpiment[2].tapTargetType == 1) && (Board.creature.get(0).isEmpty()) && (Board.creature.get(1).isEmpty())) {
-                        message(error, "Нет подходящей цели.");
+                        message(MyFunction.MessageType.error, "Нет подходящей цели.");
                     } else {
                         isMyTurn = PlayerStatus.choiceTarget;
-                        ActivatedAbility.creature = new Creature(Card.simpleCard, players[0]);//
-                        ActivatedAbility.creature.targetType = players[0].equpiment[2].targetType;
-                        ActivatedAbility.creature.tapTargetType = players[0].equpiment[2].tapTargetType;
-                        ActivatedAbility.whatAbility = weaponAbility;
+                        MyFunction.ActivatedAbility.creature = new Creature(Card.simpleCard, players[0]);//
+                        MyFunction.ActivatedAbility.creature.targetType = players[0].equpiment[2].targetType;
+                        MyFunction.ActivatedAbility.creature.tapTargetType = players[0].equpiment[2].tapTargetType;
+                        MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.weaponAbility;
                         main.repaint();
                     }
                 } else {
-                    message(error, "Повернутое оружие не может это сделать.");
+                    message(MyFunction.MessageType.error, "Повернутое оружие не может это сделать.");
                 }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == PlayerStatus.IChoiceBlocker)) {
                 System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
-                Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
+                 WebsocketClient.client.sendMessage("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
             } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.IChoiceBlocker)) {
                 if ((Board.creature.get(0).get(num).isTapped) || (Board.creature.get(0).get(num).blockThisTurn)) {
-                    message(error, "Повернутые/уже блокировавшие существа не могут блокировать.");
+                    message(MyFunction.MessageType.error, "Повернутые/уже блокировавшие существа не могут блокировать.");
                 } else if (creatureWhoAttackTarget == num) {
                     System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
-                    Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
+                     WebsocketClient.client.sendMessage("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",0)");
                 } else {
                     System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",1)");
-                    Client.writeLine("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",1)");
+                     WebsocketClient.client.sendMessage("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + num + ",1)");
                 }
             } else if ((onWhat == Compo.ChoiseX) && (isMyTurn == PlayerStatus.choiseX)) {
                 isMyTurn = PlayerStatus.MyTurn;
@@ -1388,12 +1370,12 @@ public class Main extends JFrame {
                 isMyTurn = PlayerStatus.MyTurn;
                 main.repaint();
                 System.out.println("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
-                Client.writeLine("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
+                 WebsocketClient.client.sendMessage("$FOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
             } else if ((onWhat == Compo.SearchX) && (isMyTurn == PlayerStatus.digX)) {
                 isMyTurn = PlayerStatus.MyTurn;
                 main.repaint();
                 System.out.println("$DIGFOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
-                Client.writeLine("$DIGFOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
+                 WebsocketClient.client.sendMessage("$DIGFOUND(" + players[0].playerName + "," + founded.get(num).name + ")");
             } else if ((onWhat == Compo.PlayerGraveyard)) {
                 if (isShowGraveyard != 0) isShowGraveyard = 0;
                 else isShowGraveyard = -1;
@@ -1459,51 +1441,51 @@ public class Main extends JFrame {
                             choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + ",-1,-1";
                             main.repaint();
                         } else {
-                            Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + ",-1,-1)");
+                             WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + ",-1,-1)");
                         }
                     } else {
-                        message(error, "Заклинание требует цели.");
+                        message(MyFunction.MessageType.error, "Заклинание требует цели.");
                     }
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (creatureMem != null)) {
                     //enemy hero attack by creature
                     if (!creatureMem.getCanAttack()) {
-                        message(error, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
+                        message(MyFunction.MessageType.error, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
                     } else {
                         if (creatureMem.getIsSummonedJust()) {
-                            message(error, "Это существо вошло в игру на этом ходу.");
+                            message(MyFunction.MessageType.error, "Это существо вошло в игру на этом ходу.");
                         } else {
                             players[1].effects.bbShield = false;
                             System.out.println("$ATTACKPLAYER(" + players[0].playerName + "," + num + ")");
-                            Client.writeLine("$ATTACKPLAYER(" + players[0].playerName + "," + num + ")");
+                             WebsocketClient.client.sendMessage("$ATTACKPLAYER(" + players[0].playerName + "," + num + ")");
                         }
                     }
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (creatureMem != null)) {
                     //enemy creature attack by player creature
                     if (players[1].effects.getBBShield()) {
-                        message(error, "Первая атака должна быть в Бьорнбона.");
+                        message(MyFunction.MessageType.error, "Первая атака должна быть в Бьорнбона.");
                     } else {
                         if (!creatureMem.getCanAttack()) {
-                            message(error, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
+                            message(MyFunction.MessageType.error, "Повернутое/атаковавшее/т.д. существо не может атаковать.");
                         } else {
                             if (creatureMem.getIsSummonedJust()) {
-                                message(error, "Это существо вошло в игру на этом ходу.");
+                                message(MyFunction.MessageType.error, "Это существо вошло в игру на этом ходу.");
                             } else {
                                 System.out.println("$ATTACKCREATURE(" + players[0].playerName + "," + num + "," + whereMyMouseNum + ")");
-                                Client.writeLine("$ATTACKCREATURE(" + players[0].playerName + "," + num + "," + whereMyMouseNum + ")");
+                                 WebsocketClient.client.sendMessage("$ATTACKCREATURE(" + players[0].playerName + "," + num + "," + whereMyMouseNum + ")");
                             }
                         }
                     }
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (cardMem != null)) {
                     //enemy hero attack by spell from hand
                     if (cardMem.targetType == 2) {
-                        Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + ",-1," + players[1].playerName + ")");
+                         WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + ",-1," + players[1].playerName + ")");
                     } else {
-                        message(error, "Некорректная цель для данного заклинания.");
+                        message(MyFunction.MessageType.error, "Некорректная цель для данного заклинания.");
                     }
                 } else if ((whereMyMouse == Compo.CreatureInMyPlay.toString()) && (cardMem != null)) {
                     //spell from hand to my creature in play
                     if (Board.creature.get(0).get(whereMyMouseNum).text.contains("Защита от заклинаний.")) {
-                        message(error, "У цели защита от заклинаний.");
+                        message(MyFunction.MessageType.error, "У цели защита от заклинаний.");
                     } else {
                         if ((cardMem.targetType == 1) || (cardMem.targetType == 3)) {
                             if (cardMem.text.contains("Доплатите Х *")) {
@@ -1513,16 +1495,16 @@ public class Main extends JFrame {
                                 choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
                                 main.repaint();
                             } else {
-                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
+                                 WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
                             }
                         } else {
-                            message(error, "Некорректная цель для данного заклинания.");
+                            message(MyFunction.MessageType.error, "Некорректная цель для данного заклинания.");
                         }
                     }
                 } else if ((whereMyMouse == Compo.EnemyUnitInPlay.toString()) && (cardMem != null)) {
                     //spell from hand to enemy creature in play
                     if (Board.creature.get(1).get(whereMyMouseNum).text.contains("Защита от заклинаний.")) {
-                        message(error, "У цели защита от заклинаний.");
+                        message(MyFunction.MessageType.error, "У цели защита от заклинаний.");
                     } else {
                         if ((cardMem.targetType == 1) || (cardMem.targetType == 3)) {
                             if (cardMem.text.contains("Доплатите Х *")) {
@@ -1532,16 +1514,16 @@ public class Main extends JFrame {
                                 choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
                                 main.repaint();
                             } else {
-                                Client.writeLine("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
+                                 WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
                             }
                         } else {
-                            message(error, "Некорректная цель для данного заклинания.");
+                            message(MyFunction.MessageType.error, "Некорректная цель для данного заклинания.");
                         }
                     }
                 }
             } else {
                 if (onWhat!=Compo.Settings && isMyTurn == PlayerStatus.EnemyTurn || isMyTurn == PlayerStatus.EnemyChoiceBlocker || isMyTurn == PlayerStatus.EnemyChoiceTarget) {
-                    message(error, "Сейчас идет не ваш ход.");
+                    message(MyFunction.MessageType.error, "Сейчас идет не ваш ход.");
                 }
                 main.repaint();
             }

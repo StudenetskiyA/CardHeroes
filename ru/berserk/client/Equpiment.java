@@ -1,6 +1,4 @@
-package com.company;
-
-import java.util.ArrayList;
+package ru.berserk.client;
 
 // Created by StudenetskiyA on 18.01.2017.
 

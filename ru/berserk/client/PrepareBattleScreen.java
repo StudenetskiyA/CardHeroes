@@ -1,4 +1,4 @@
-package com.company;
+package ru.berserk.client;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 
-import static com.company.Main.main;
+import static ru.berserk.client.Main.main;
 
 public class PrepareBattleScreen {
 
@@ -26,13 +26,13 @@ public class PrepareBattleScreen {
     static ArrayList<String> decksChoice ;//= new ArrayList<>();
     static ArrayList<String> decksChoiceHeroes ;//= new ArrayList<>();
     static JTextField enterNameFieled;// = new JTextField(40);
-   // static Thread cycleReadFromServer;// = new CycleServerRead();
     //For repaint
     //Elements of view
     private static JLabel deckChoiseClick[] = new JLabel[10];
     //Static image for button, background and etc.
     private static Image background;
     static boolean isVisible=false;
+    static boolean showed = false;
     enum PlayerStatus {
         MyTurn(1), EnemyTurn(2), IChoiceBlocker(3), EnemyChoiceBlocker(4), EnemyChoiceTarget(5), MuliganPhase(6), waitingForConnection(7),
         waitOtherPlayer(8), waitingMulligan(9), choiseX(10), searchX(11), choiceTarget(12), digX(13), endGame(14), prepareForBattle(15),
@@ -90,22 +90,23 @@ public class PrepareBattleScreen {
     }
 
     public static void showWindow() throws IOException {
+
         decksChoice = new ArrayList<>();
         decksChoiceHeroes = new ArrayList<>();
         enterNameFieled = new JTextField(40);
-       // cycleReadFromServer = new CycleServerRead();
         prepareListOfDeck();
         loadImage();
         setInitialProperties();
 
         Main.viewField.setVisible(true);
         isVisible=true;
-
+        showed=true;
     }
 
     public static void hideWindow(){
+        if (showed){
         isVisible=false;
-        Main.viewField.remove(enterNameFieled);
+        Main.viewField.remove(enterNameFieled);}
     }
 
     static void onRepaint(Graphics g) {
@@ -250,18 +251,5 @@ public class PrepareBattleScreen {
         }
 
         enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton, Fullscreen, Settings, DeckChoice, PlayerGraveyard, CreatureInMyPlayTap, PlayerHeroTap, EnemyGraveyard}
-    }
-
-    static class ViewField extends JPanel {
-        ViewField() {
-            super();
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            onRepaint(g);//its too slow!! TODO repaint not many time
-        }
-
     }
 }

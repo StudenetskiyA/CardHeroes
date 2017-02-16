@@ -1,7 +1,4 @@
-package com.company;
-
-import static com.company.MyFunction.ActivatedAbility.WhatAbility;
-import static com.company.MyFunction.ActivatedAbility.whatAbility;
+package ru.berserk.client;
 
 //Created by StudenetskiyA on 30.12.2016.
 
@@ -22,16 +19,16 @@ class Card {
 
     static int heroAbilityCost = 0;
 
-    public static boolean isThatAbility(WhatAbility ab) {
-        if (ab == whatAbility) return true;
+    public static boolean isThatAbility(MyFunction.ActivatedAbility.WhatAbility ab) {
+        if (ab == MyFunction.ActivatedAbility.whatAbility) return true;
         return false;
     }
 
     public static boolean isNothingOrDeath() {
-        if (whatAbility == WhatAbility.nothing) return true;
-        if (whatAbility == WhatAbility.onDeathPlayed) return true;
-        if (whatAbility == WhatAbility.onUpkeepPlayed) return true;
-        if (whatAbility == WhatAbility.onOtherDeathPlayed) return true;
+        if (MyFunction.ActivatedAbility.whatAbility == MyFunction.ActivatedAbility.WhatAbility.nothing) return true;
+        if (MyFunction.ActivatedAbility.whatAbility == MyFunction.ActivatedAbility.WhatAbility.onDeathPlayed) return true;
+        if (MyFunction.ActivatedAbility.whatAbility == MyFunction.ActivatedAbility.WhatAbility.onUpkeepPlayed) return true;
+        if (MyFunction.ActivatedAbility.whatAbility == MyFunction.ActivatedAbility.WhatAbility.onOtherDeathPlayed) return true;
         return false;
     }
 

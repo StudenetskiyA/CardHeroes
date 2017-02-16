@@ -1,9 +1,6 @@
-package com.company;
+package ru.berserk.client;
 
 //Created by StudenetskiyA on 30.12.2016.
-
-import static com.company.Main.message;
-import static com.company.MyFunction.MessageType.simpleText;
 
 public class Creature extends Card {
     boolean isTapped;
@@ -88,7 +85,7 @@ public class Creature extends Card {
 
         void takeTextEffect(String txt){
             additionalText+=txt;
-            message(simpleText,whis.name+ " получает '"+txt+"'.");
+            Main.message(MyFunction.MessageType.simpleText,whis.name+ " получает '"+txt+"'.");
         }
         void looseTextEffect(String txt){
             if (!additionalText.contains(txt)) return;
@@ -99,17 +96,17 @@ public class Creature extends Card {
             switch(effect) {
                 case poison: {
                     poison=p;
-                    message(simpleText,whis.name+ " получает отравление на "+p);
+                    Main.message(MyFunction.MessageType.simpleText,whis.name+ " получает отравление на "+p);
                     break;
                 }
                 case vulnerability:{
                     vulnerability=true;
-                    message(simpleText,whis.name+ " получает уязвимость.");
+                    Main.message(MyFunction.MessageType.simpleText,whis.name+ " получает уязвимость.");
                     break;
                 }
                 case turnToDie:{
                     turnToDie=p;
-                    message(simpleText,whis.name+ " получает чуму.");
+                    Main.message(MyFunction.MessageType.simpleText,whis.name+ " получает чуму.");
                     break;
                 }
                 case die:{
@@ -118,12 +115,12 @@ public class Creature extends Card {
                 }
                 case bonusPower:{
                     bonusPower+=p;
-                    message(simpleText,whis.name+ " получает +"+p+" к удару.");
+                    Main.message(MyFunction.MessageType.simpleText,whis.name+ " получает +"+p+" к удару.");
                     break;
                 }
                 case bonusPowerUEOT:{
                     bonusPowerUEOT+=p;
-                    message(simpleText,whis.name+ " получает до конца хода +"+p+" к удару.");
+                    Main.message(MyFunction.MessageType.simpleText,whis.name+ " получает до конца хода +"+p+" к удару.");
                     break;
                 }
 			default:
