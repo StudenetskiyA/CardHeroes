@@ -121,7 +121,8 @@ public class MyFunction {
             return false;
         }
         public static boolean isNothingOrDeath(){
-            if (whatAbility==WhatAbility.nothing) return true;
+            //if (whatAbility==WhatAbility.nothing) return true;
+            if (whatAbility==WhatAbility.onCryAbility) return true;
             if (whatAbility==WhatAbility.onDeathPlayed) return true;
             if (whatAbility==WhatAbility.onUpkeepPlayed) return true;
             if (whatAbility==WhatAbility.onOtherDeathPlayed) return true;
@@ -129,7 +130,7 @@ public class MyFunction {
         }
         enum WhatAbility {
             heroAbility(1), weaponAbility(2), toHandAbility(3), onUpkeepPlayed(4), onDeathPlayed(5), onOtherDeathPlayed(6),
-            spellAbility(7),nothing(0);
+            spellAbility(7), onCryAbility(8), nothing(0);
 
             private final int value;
 
@@ -159,6 +160,8 @@ public class MyFunction {
                         return onOtherDeathPlayed;
                     case 7:
                         return spellAbility;
+                    case 8:
+                        return onCryAbility;
                 }
                 return null;
             }

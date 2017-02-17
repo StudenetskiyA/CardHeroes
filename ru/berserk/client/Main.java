@@ -1206,10 +1206,8 @@ public class Main extends JFrame {
                 if (MyFunction.canTarget(MyFunction.Target.myPlayer, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.myPlayer, MyFunction.ActivatedAbility.creature.tapTargetType)) {
                     int nc = Board.creature.get(0).indexOf(MyFunction.ActivatedAbility.creature);
                     if (MyFunction.ActivatedAbility.creatureTap) {
-                        System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                          WebsocketClient.client.sendMessage("$TAPTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     } else {
-                        System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                          WebsocketClient.client.sendMessage("$CRYTARGET(" + players[0].playerName + "," + nc + ",0,-1)");
                     }
                     if (messageToShow != null) messageToShow.lenght = 0;
@@ -1241,14 +1239,13 @@ public class Main extends JFrame {
                         message(MyFunction.MessageType.error, "Существо не может целить само себя.");
                     } else {
                         if (MyFunction.ActivatedAbility.creatureTap) {
-                            System.out.println("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                              WebsocketClient.client.sendMessage("$TAPTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                         } else {
-                            System.out.println("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                              WebsocketClient.client.sendMessage("$CRYTARGET(" + players[0].playerName + "," + nc + ",0," + num + ")");
                         }
                         if (messageToShow != null) messageToShow.lenght = 0;
                         MyFunction.ActivatedAbility.creatureTap = false;
+                        MyFunction.ActivatedAbility.whatAbility= MyFunction.ActivatedAbility.WhatAbility.nothing;
                     }
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
@@ -1269,6 +1266,7 @@ public class Main extends JFrame {
                         }
                         if (messageToShow != null) messageToShow.lenght = 0;
                         MyFunction.ActivatedAbility.creatureTap = false;
+                        MyFunction.ActivatedAbility.whatAbility= MyFunction.ActivatedAbility.WhatAbility.nothing;
                     }
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
@@ -1280,6 +1278,7 @@ public class Main extends JFrame {
                      WebsocketClient.client.sendMessage("$HEROTARGET(" + players[0].playerName + ",1," + num + "," + MyFunction.ActivatedAbility.heroAbilityCost + ")");
                     MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                     if (messageToShow != null) messageToShow.lenght = 0;
+                    MyFunction.ActivatedAbility.whatAbility= MyFunction.ActivatedAbility.WhatAbility.nothing;
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
@@ -1295,8 +1294,14 @@ public class Main extends JFrame {
                 //Spell ability on my unit
                 if (MyFunction.canTarget(MyFunction.Target.myCreature, MyFunction.ActivatedAbility.nonCreatureTargetType)) {
                     //check cost
-                     WebsocketClient.client.sendMessage("$SPELLCHOICETARGET(" + players[0].playerName + ",0," + num + ")");
-                    MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
+                    if (Board.creature.get(0).get(num).getCost(players[0])<=MyFunction.ActivatedAbility.nonCreatureTargetCost) {
+                        String id = Board.creature.get(0).get(num).id;
+                        WebsocketClient.client.sendMessage("$SPELLCHOICECREATURETARGET(" + id + ")");
+                        MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
+                    }
+                    else {
+                        message(MyFunction.MessageType.error, "Выберите существо корректной стоимости.");
+                    }
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }

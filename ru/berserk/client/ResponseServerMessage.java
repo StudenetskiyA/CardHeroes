@@ -93,11 +93,19 @@ public class ResponseServerMessage extends Thread {
                 }
                 main.atEndOfPlay();
             }
-        } else if (fromServer.contains("#RemoveCardFromHand")) {
+        } else if (fromServer.contains("#RemoveCardFromHand")) {//Depricated
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             if (np==0){
                 players[0].cardInHand.remove(Card.getCardByName(parameter.get(1)));
+            } else {
+                enemyHandSize--;
+            }
+        } else if (fromServer.contains("#RemoveCardFromHandById")) {
+            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+            if (np==0){
+                players[0].cardInHand.remove(Card.getCardFromHandById(players[0],parameter.get(1)));
             } else {
                 enemyHandSize--;
             }
@@ -234,12 +242,12 @@ public class ResponseServerMessage extends Thread {
                 creatureWhoAttackTarget = Integer.parseInt(parameter.get(2));
                 message(MyFunction.MessageType.choiceTarget,"Выберете защитника.");
             }
-        } else if (fromServer.contains("#ChoiceForSpell")) {//#ChoiceForSpell(PlayerName,Status,TargetType,costN-)
+        } else if (fromServer.contains("#ChoiceForSpell")) {// #ChoiceForSpell(PlayerName,Status,TargetType,costN-,message)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             if (players[0].playerName.equals(parameter.get(0))) {
                 Main.isMyTurn = PlayerStatus.fromInteger(Integer.parseInt(parameter.get(1)));
                 MyFunction.ActivatedAbility.nonCreatureTargetType = Integer.parseInt(parameter.get(2));
-                MyFunction.ActivatedAbility.nonCreatureTargetCost = Integer.parseInt(parameter.get(3));
+                MyFunction.ActivatedAbility.nonCreatureTargetCost = (Integer.parseInt(parameter.get(3))==0)? 999:Integer.parseInt(parameter.get(3)) ;
                 MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.spellAbility;
                 message(MyFunction.MessageType.choiceTarget, parameter.get(4));
             }

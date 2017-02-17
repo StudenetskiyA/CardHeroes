@@ -267,9 +267,39 @@ class Card {
                 return new Card(4, name, "Событие", 2, 4, 0, 0, "Статичный эффект.", 0, 0);
             case "Пустошь Тул-Багара":
                 return new Card(1, name, "Событие", 5, 4, 0, 0, "Статичный эффект.", 0, 0);
+            case "Гипноз":
+                return new Card(7, name, "", 1, 1, 0, 0, "Противник выбирает существо, оно переходит под ваш контроль.", 0, 0);
+            case "Дурные советы":
+                return new Card(5, name, "", 1, 1, 0, 0, "Противник выбирает существо по стоимости, оно переходит под ваш контроль, стоимость не больше 3.", 0,0);
             default:
                 System.out.println("Ошибка - Неопознанная карта:" + name);
                 return null;
         }
+    }
+
+    public static Card getCardFromHandById(Player pl,String _id){
+        for (int i=0;i<pl.cardInHand.size();i++){
+            if (pl.cardInHand.get(i).id.equals(_id)) return pl.cardInHand.get(i);
+        }
+        return null;
+    }
+
+    int getCost(Player pl) {
+        int effectiveCost = cost;
+        // Gnome cost less
+        if (creatureType.equals("Гном")) {
+            int runopevecFounded = 0;
+            for (int i = 0; i < Board.creature.get(pl.numberPlayer).size(); i++) {
+                if (Board.creature.get(pl.numberPlayer).get(i).name.equals("Рунопевец"))
+                    runopevecFounded++;
+            }
+            effectiveCost -= runopevecFounded;
+        }
+
+        if (name.equals("Трюкач")) {
+            effectiveCost += pl.cardInHand.size() - 1;
+        }
+
+        return effectiveCost;
     }
 }
