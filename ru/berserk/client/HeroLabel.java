@@ -52,6 +52,15 @@ public class HeroLabel extends JLabel {
         return BorderOval+4+BorderOval/2;
     }
 
+    void drawAttackTarget(Graphics g){
+        try {
+            BufferedImage tap = ImageIO.read(new File("icons/effects/attacktarget.png"));
+            g.drawImage(tap, getCenterX()-getWidth()/6, getCenterY()-getWidth() / 3, getWidth() / 3, getWidth() / 3, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     void drawImage(Graphics g, boolean isMyHero) {
         if (isVisible()) {
             Graphics2D g2 = (Graphics2D) g;

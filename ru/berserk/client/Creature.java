@@ -28,6 +28,7 @@ public class Creature extends Card {
         public int bonusArmor = 0;
         public int turnToDie = 999;
         boolean vulnerability = false;
+        boolean changeControl = false;
 
         Effects(Creature _cr) {
             whis = _cr;
@@ -123,6 +124,11 @@ public class Creature extends Card {
                     Main.message(MyFunction.MessageType.simpleText,whis.name+ " получает до конца хода +"+p+" к удару.");
                     break;
                 }
+                case controlChanged:{
+                    changeControl=true;
+                    Main.message(MyFunction.MessageType.simpleText,whis.name+ " переходит на сторону противника.");
+                    break;
+                }
 			default:
 				break;
             }
@@ -207,6 +213,13 @@ public class Creature extends Card {
         Board.creature.get(pl.numberPlayer).get(Board.creature.get(pl.numberPlayer).indexOf(cr)).damage+=dmg;
         if (Board.creature.get(pl.numberPlayer).get(Board.creature.get(pl.numberPlayer).indexOf(cr)).damage<0)
             Board.creature.get(pl.numberPlayer).get(Board.creature.get(pl.numberPlayer).indexOf(cr)).damage=0;
+    }
+
+    void takeDamage(int dmg){
+        //Animation
+        this.damage+=dmg;
+        if (this.damage<0)
+           this.damage=0;
     }
 
     Creature(Card _card, Player _owner) {

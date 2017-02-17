@@ -738,6 +738,7 @@ public class Main extends JFrame {
                 numUnit++;
             }
             numUnit = 0;
+
             //Draw hilight creature AFTER draw other.
             for (int i = 0; i < Board.creature.get(np).size(); i++)//{
             {
@@ -756,31 +757,46 @@ public class Main extends JFrame {
 
 
             //TODO Do it
-            int hBottom = battlegroundClick.getY() + battlegroundClick.getHeight() - crH - B0RDER_BETWEEN - UnitLabel.plusSize();
-            int hTop = battlegroundClick.getY() + B0RDER_BETWEEN + UnitLabel.plusSize();
             if (isMyTurn == PlayerStatus.IChoiceBlocker) {
-                im = ImageIO.read(new File("icons/effects/attackinitiator.png"));
-                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 +
-                        creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE) + crW / 2 - heroW / 10;
-                g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
-                if (creatureWhoAttackTarget != -1) {
-                    crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttackTarget * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);
-                    g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
-                } else {//TODO Arrow to hero
-                    g.drawImage(im, heroLabel[0].getX() + heroW / 2 - heroH / 10, heroLabel[0].getY(), heroH / 5, heroH / 5, null);
-                }
+                unitClick[1][creatureWhoAttack].drawAttackInitiator(g);
+                if (creatureWhoAttackTarget!=-1)
+            unitClick[0][creatureWhoAttackTarget].drawAttackTarget(g);
+                else
+                {}
             }
-            if ((isMyTurn == PlayerStatus.EnemyChoiceBlocker) && (Main.replayCounter == 0)) {
-                im = ImageIO.read(new File("icons/effects/attackinitiatorrevert.png"));
-                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE) + crW / 2 - heroW / 10;
-                g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
-                if (creatureWhoAttackTarget != -1) {
-                    crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttackTarget * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);
-                    g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
-                } else {
-                    g.drawImage(im, heroLabel[1].getX() + heroW / 2 - heroH / 10, heroLabel[1].getY() + heroLabel[1].getHeight() - heroH / 5, heroH / 5, heroH / 5, null);
-                }
+            else if (isMyTurn == PlayerStatus.EnemyChoiceBlocker) {
+                unitClick[0][creatureWhoAttack].drawAttackInitiator(g);
+                if (creatureWhoAttackTarget!=-1)
+                    unitClick[1][creatureWhoAttackTarget].drawAttackTarget(g);
+                else
+                {}
             }
+//            int hBottom = battlegroundClick.getY() + battlegroundClick.getHeight() - crH - B0RDER_BETWEEN - UnitLabel.plusSize();
+//            int hTop = battlegroundClick.getY() + B0RDER_BETWEEN + UnitLabel.plusSize();
+//            if (isMyTurn == PlayerStatus.IChoiceBlocker) {
+//
+//                im = ImageIO.read(new File("icons/effects/attackinitiator.png"));
+//                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 +
+//                        creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE) + crW / 2 - heroW / 10;
+//                g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
+//                if (creatureWhoAttackTarget != -1) {
+//                    crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttackTarget * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);
+//                    g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
+//                } else {//TODO Arrow to hero
+//                    g.drawImage(im, heroLabel[0].getX() + heroW / 2 - heroH / 10, heroLabel[0].getY(), heroH / 5, heroH / 5, null);
+//                }
+//            }
+//            if ((isMyTurn == PlayerStatus.EnemyChoiceBlocker) && (Main.replayCounter == 0)) {
+//                im = ImageIO.read(new File("icons/effects/attackinitiatorrevert.png"));
+//                int crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttack * (crW + UnitLabel.plusSize() + BORDER_CREATURE) + crW / 2 - heroW / 10;
+//                g.drawImage(im, crX, hBottom - heroH / 5, heroH / 5, heroH / 5, null);
+//                if (creatureWhoAttackTarget != -1) {
+//                    crX = battlegroundClick.getX() + B0RDER_BETWEEN * 2 + creatureWhoAttackTarget * (crW + UnitLabel.plusSize() + BORDER_CREATURE + B0RDER_BETWEEN);
+//                    g.drawImage(im, crX, hTop + crH, heroH / 5, heroH / 5, null);
+//                } else {
+//                    g.drawImage(im, heroLabel[1].getX() + heroW / 2 - heroH / 10, heroLabel[1].getY() + heroLabel[1].getHeight() - heroH / 5, heroH / 5, heroH / 5, null);
+//                }
+//            }
         }
     }
 
@@ -1427,10 +1443,10 @@ public class Main extends JFrame {
                             //TODO If X==0
                             isMyTurn = PlayerStatus.choiseX;
                             //choiseXnum = num;
-                            choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + ",-1,-1";
+                            choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).id + "," + num + ",-1,-1";
                             main.repaint();
                         } else {
-                             WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + ",-1,-1)");
+                             WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).id + "," + num + ",-1,-1)");
                         }
                     } else {
                         message(MyFunction.MessageType.error, "Заклинание требует цели.");
@@ -1467,7 +1483,7 @@ public class Main extends JFrame {
                 } else if ((whereMyMouse == Compo.EnemyHero.toString()) && (cardMem != null)) {
                     //enemy hero attack by spell from hand
                     if (cardMem.targetType == 2) {
-                         WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + ",-1," + players[1].playerName + ")");
+                         WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).id + "," + num + ",-1," + players[1].playerName + ")");
                     } else {
                         message(MyFunction.MessageType.error, "Некорректная цель для данного заклинания.");
                     }
@@ -1481,10 +1497,10 @@ public class Main extends JFrame {
                                 //TODO If X==0
                                 isMyTurn = PlayerStatus.choiseX;
                                 //choiseXnum = num;
-                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
+                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).id + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
                                 main.repaint();
                             } else {
-                                 WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
+                                 WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).id + "," + num + "," + whereMyMouseNum + "," + players[0].playerName + ")");
                             }
                         } else {
                             message(MyFunction.MessageType.error, "Некорректная цель для данного заклинания.");
@@ -1500,10 +1516,10 @@ public class Main extends JFrame {
                                 //TODO If X==0
                                 isMyTurn = PlayerStatus.choiseX;
                                 //choiseXnum = num;
-                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
+                                choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).id + "," + num + "," + whereMyMouseNum + "," + players[1].playerName;
                                 main.repaint();
                             } else {
-                                 WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).name + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
+                                 WebsocketClient.client.sendMessage("$PLAYCARD(" + players[0].playerName + "," + players[0].cardInHand.get(num).id + "," + num + "," + whereMyMouseNum + "," + players[1].playerName + ")");
                             }
                         } else {
                             message(MyFunction.MessageType.error, "Некорректная цель для данного заклинания.");

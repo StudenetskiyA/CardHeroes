@@ -4,6 +4,7 @@ package ru.berserk.client;
 
 class Card {
     int cost;
+    String id="";
     String name;
     String text;
     String image = "cards/Гном.jpg";//null

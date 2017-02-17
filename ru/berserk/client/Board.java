@@ -12,6 +12,24 @@ public class Board {
     public Board() {
     }
 
+    public static Creature getCreatureByID(int playerNum, String id){
+        for (int i=0;i<Board.creature.get(playerNum).size();i++){
+            if (creature.get(playerNum).get(i).id.equals(id)) return creature.get(playerNum).get(i);
+        }
+        System.out.println("Not found creature by ID");
+        return null;
+    }
+    public static Creature getCreatureByID(String id){
+        for (int i=0;i<Board.creature.get(0).size();i++){
+            if (creature.get(0).get(i).id.equals(id)) return creature.get(0).get(i);
+        }
+        for (int i=0;i<Board.creature.get(1).size();i++){
+            if (creature.get(1).get(i).id.equals(id)) return creature.get(1).get(i);
+        }
+        System.out.println("Not found creature by ID");
+        return null;
+    }
+
     static int opponentN(Player pl) {
         if (pl.numberPlayer == 0) return 1;
         else return 0;

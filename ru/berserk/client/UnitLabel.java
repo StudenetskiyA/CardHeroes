@@ -44,6 +44,23 @@ public class UnitLabel extends JLabel {
         return BorderOval+4+BorderOval/2;
     }
 
+    void drawAttackInitiator(Graphics g){
+            try {
+                BufferedImage tap = ImageIO.read(new File("icons/effects/attackinitiator.png"));
+                g.drawImage(tap, getCenterX()-getWidth()/6, getCenterY()-getWidth() / 3, getWidth() / 3, getWidth() / 3, null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+    }
+    void drawAttackTarget(Graphics g){
+        try {
+            BufferedImage tap = ImageIO.read(new File("icons/effects/attacktarget.png"));
+            g.drawImage(tap, getCenterX()-getWidth()/6, getCenterY()-getWidth() / 3, getWidth() / 3, getWidth() / 3, null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     void drawImage(Graphics g){
         if (isVisible()) {
             Graphics2D g2 = (Graphics2D) g;
@@ -126,6 +143,15 @@ public class UnitLabel extends JLabel {
                 try {
                     //TODO When we have more pictures, replace 3 for N.
                     BufferedImage tap = ImageIO.read(new File("icons/effects/bonusarmor3.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
+            if (creature.effects.changeControl) {
+                try {
+                    BufferedImage tap = ImageIO.read(new File("icons/effects/changecontrol.png"));
                     g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
                 } catch (IOException e) {
                     e.printStackTrace();
