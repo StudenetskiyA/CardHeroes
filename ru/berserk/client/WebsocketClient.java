@@ -22,6 +22,7 @@ public class WebsocketClient {
 	static WebsocketClient client;
 	
 	public static void connect(String url, CycleServerRead cycleReadFromServer) {
+		System.out.println("Try to connect url: "+url);
 		client = new WebsocketClient(URI.create(url), cycleReadFromServer);  
 	}
 	

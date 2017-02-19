@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 public class Main extends JFrame {
     //Connect constant
     private static final String CLIENT_VERSION = "0.02";
-    private static final String address = //"ws://test1.uralgufk.ru:8080/BHServer/serverendpointdemo";
-     "ws://localhost:8080/BHServer/serverendpointdemo";
+    private static final String address = "ws://test1.uralgufk.ru:8080/BHServer/serverendpointdemo";
+    // "ws://localhost:8080/BHServer/serverendpointdemo";
     //View constant
     static final int BORDER_CREATURE = 3;
     private static final int B0RDER_RIGHT = 15;
