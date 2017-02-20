@@ -12,6 +12,19 @@ public class Board {
     public Board() {
     }
 
+    public static Equpiment getEqupimentByID(String id){
+        for (int i=0;i<Main.players[0].equpiment.length;i++){
+            if (Main.players[0].equpiment[i]!=null && Main.players[0].equpiment[i].id.equals(id))
+                return Main.players[0].equpiment[i];
+        }
+        for (int i=0;i<Main.players[1].equpiment.length;i++){
+            if (Main.players[1].equpiment[i]!=null && Main.players[1].equpiment[i].id.equals(id))
+                return Main.players[1].equpiment[i];
+        }
+        System.out.println("Not found equpiment by ID");
+        return null;
+    }
+
     public static Creature getCreatureByID(int playerNum, String id){
         for (int i=0;i<Board.creature.get(playerNum).size();i++){
             if (creature.get(playerNum).get(i).id.equals(id)) return creature.get(playerNum).get(i);
@@ -19,6 +32,7 @@ public class Board {
         System.out.println("Not found creature by ID");
         return null;
     }
+
     public static Creature getCreatureByID(String id){
         for (int i=0;i<Board.creature.get(0).size();i++){
             if (creature.get(0).get(i).id.equals(id)) return creature.get(0).get(i);

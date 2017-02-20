@@ -90,11 +90,14 @@ public class Main extends JFrame {
     //Elements of view
     static ViewField viewField = new ViewField();
     private static JLabel deckClick = new JLabel();
-    private static MyFunction.ClickImage weaponClick = new MyFunction.ClickImage();
+   // private static MyFunction.ClickImage weaponClick = new MyFunction.ClickImage();
     private static JLabel cardClick[] = new JLabel[10];//TODO 10 card maximum??
+
     private static UnitLabel unitClick[][] = new UnitLabel[2][10];
+    private static EquipLabel equipLabel[][] = new EquipLabel[2][5];
     static HeroLabel[] heroLabel = new HeroLabel[2];
     private static JLabel battlegroundClick = new JLabel();
+
     static JLabel playerCoinLabel = new JLabel();
     static JLabel enemyCoinLabel = new JLabel();
     private static JLabel playerGraveyardClick = new JLabel();
@@ -120,8 +123,8 @@ public class Main extends JFrame {
     private static int whereMyMouseNum;
     private static int repainted;//For test how many times called onRepaint
     private static MessageToShow messageToShow = new MessageToShow(" ", 0);
-    private static MessageToShow messageSayHero = new MessageToShow(" ", 0);
-    private static MessageToShow messageSayOpponent= new MessageToShow(" ", 0);
+   // private static MessageToShow messageSayHero = new MessageToShow(" ", 0);
+   // private static MessageToShow messageSayOpponent = new MessageToShow(" ", 0);
     static int enemyHandSize = 0;
     static UserChoice userChoice;
     static boolean userChoiceShow = false;
@@ -232,6 +235,10 @@ public class Main extends JFrame {
         players[1] = new Player(simpleDeck, "", playerName, 0, 30);
         textField.setVisible(true);
         messageArea.setVisible(true);
+        gameLog.setVisible(true);
+        playerCoinLabel.setVisible(true);
+        enemyCoinLabel.setVisible(true);
+
         PrepareBattleScreen.hideWindow();
 
         if (playerName.equals("replay")) {
@@ -370,8 +377,6 @@ public class Main extends JFrame {
           }
             drawPlayerEquipment(g, 0);
             drawPlayerEquipment(g, 1);
-           /// drawPlayerDamageEffects(g, 0);
-          ///  drawPlayerDamageEffects(g, 1);
 
             //Decks
             deckClick.setLocation(B0RDER_LEFT, main.getHeight() - smallCardH - B0RDER_BOTTOM);
@@ -658,54 +663,24 @@ public class Main extends JFrame {
             }
         }
     }
+
     private static void drawPlayerEquipment(Graphics g, int p) throws IOException {
-        BufferedImage im;
-        //TODO durability of armor
-        int found = 0;
+        //TODO EqupimentLabel class
         int h;
-        if (p == 0) h = main.getHeight() - smallCardH - B0RDER_BOTTOM;
+        int found=0;
+        if (p == 0) h = main.getHeight() - smallCardH - B0RDER_BOTTOM - EquipLabel.plusSize() / 2;
         else h = B0RDER_TOP;
         int x = main.getWidth() - B0RDER_RIGHT - smallCardH - B0RDER_BETWEEN;
 
-        if (players[p].equpiment[0] == null) {
-            // g.drawImage(heroNoArmorImage, x, h, smallCardW, smallCardH, null);
-        } else {
-            im = ImageIO.read(new File("cards/" + players[p].equpiment[0].image));
-            g.drawImage(im, x, h, smallCardW, smallCardH, null);
-            if (players[p].equpiment[0].hp != 0) {
-                int a = 6 - players[p].equpiment[0].hp;
-                if (a != 0) {
-                    im = ImageIO.read(new File("icons/damage/" + a + ".png"));
-                    g.drawImage(im, x + smallCardW / 2 - heroH / 10, h + smallCardH / 2 - heroH / 10, heroH / 5, heroH / 5, null);
-                }
+        for (int i = 0; i < players[p].equpiment.length; i++)//{
+        {
+            if (players[p].equpiment[i]!=null) {
+                equipLabel[p][i].setAll(players[p].equpiment[i], smallCardW, smallCardH);
+                equipLabel[p][i].setLocation(x - (smallCardW + B0RDER_BETWEEN + EquipLabel.plusSize()) * found, h);
+                equipLabel[p][i].drawImage(g, (p == 0));
+                found++;
             }
-            found++;
         }
-        //amulet
-        if (players[p].equpiment[1] == null) {
-            // g.drawImage(heroNoAmuletImage, x-smallCardH-B0RDER_BETWEEN, h, smallCardW, smallCardH, null);
-        } else {
-            im = ImageIO.read(new File("cards/" + players[p].equpiment[1].image));
-            g.drawImage(im, x - (smallCardH + B0RDER_BETWEEN) * found, h, smallCardW, smallCardH, null);
-            found++;
-        }
-        //weapon
-        if (players[p].equpiment[2] != null) {
-            weaponClick.setVisible(true);
-            weaponClick.image = ImageIO.read(new File("cards/" + players[p].equpiment[2].image));
-            weaponClick.LSDiftap(g, players[p].equpiment[2].isTapped, x - (smallCardH + B0RDER_BETWEEN) * found, h, smallCardW, smallCardH);
-            found++;
-        }
-
-        //event
-        if (players[p].equpiment[3] == null) {
-            //    g.drawImage(heroNoEventImage, x-smallCardH*3-B0RDER_BETWEEN*3, h, smallCardW, smallCardH, null);
-        } else {
-            im = ImageIO.read(new File("cards/" + players[p].equpiment[3].image));
-            g.drawImage(im, x - (smallCardH + B0RDER_BETWEEN) * found, h, smallCardW, smallCardH, null);
-            found++;
-        }
-
     }
 
     private static void drawNewCreatures(Graphics g, int np) throws IOException {
@@ -824,7 +799,6 @@ public class Main extends JFrame {
     static void loadDeckFromFile(Deck deck, String deckName) throws IOException {
         File path = new File("decks/" + deckName + ".txt");
 
-
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(path), "windows-1251"));
         try {
             String line = "";
@@ -898,8 +872,6 @@ public class Main extends JFrame {
         enemyCoinLabel.setVerticalAlignment(SwingConstants.TOP);
         enemyCoinLabel.setForeground(Color.WHITE);
 
-       // gameLog.setLocation(0, 0);
-       // gameLog.setSize(1, 1);
         gameLog.setHorizontalAlignment(SwingConstants.LEFT);
         gameLog.setVerticalAlignment(SwingConstants.TOP);
         gameLog.setForeground(Color.WHITE);
@@ -918,9 +890,6 @@ public class Main extends JFrame {
         fullScreenClick.addMouseListener(new MyListener(MyListener.Compo.Fullscreen, 0));
 
         menuClick.addMouseListener(new MyListener(MyListener.Compo.Menu, 0));
-
-        weaponClick.addMouseMotionListener(new MyListener(MyListener.Compo.Weapon, 0));
-        weaponClick.addMouseListener(new MyListener(MyListener.Compo.Weapon, 0));
 
         endTurnClick.addMouseListener(new MyListener(MyListener.Compo.EndTurnButton, 0));
 
@@ -963,7 +932,6 @@ public class Main extends JFrame {
         viewField.add(fullScreenClick);
         viewField.add(settingsClick);
         viewField.add(surrendClick);
-        viewField.add(weaponClick);
         viewField.add(playerGraveyardClick);
         viewField.add(enemyGraveyardClick);
         viewField.add(playerCoinLabel);
@@ -972,6 +940,23 @@ public class Main extends JFrame {
         //Battleground block
         battlegroundClick.addMouseMotionListener(new MyListener(MyListener.Compo.Board, 0));
         battlegroundClick.addMouseListener(new MyListener(MyListener.Compo.Board, 0));
+
+        for (int ii = 0; ii <= 1; ii++) {
+            for (int i = 0; i < equipLabel[ii].length; i++) {
+                equipLabel[ii][i] = new EquipLabel();
+                equipLabel[ii][i].tapClick = new MyFunction.ClickImage();
+                viewField.add(equipLabel[ii][i], 0);
+                viewField.add(equipLabel[ii][i].tapClick, 0);
+                if (ii == 0) {
+                    equipLabel[ii][i].addMouseListener(new MyListener(MyListener.Compo.MyEqupiment, i));
+                    equipLabel[ii][i].addMouseMotionListener(new MyListener(MyListener.Compo.MyEqupiment, i));
+                    equipLabel[ii][i].tapClick.addMouseListener(new MyListener(MyListener.Compo.MyEqupimentTap, i));
+                } else {
+                    equipLabel[ii][i].addMouseListener(new MyListener(MyListener.Compo.EnemyEqupiment, i));
+                    equipLabel[ii][i].addMouseMotionListener(new MyListener(MyListener.Compo.EnemyEqupiment, i));
+                }
+            }
+        }
 
         for (int ii = 0; ii <= 1; ii++) {
             for (int i = 0; i < unitClick[ii].length; i++) {
@@ -1018,11 +1003,6 @@ public class Main extends JFrame {
 
         viewField.validate();
         main.add(viewField);
-
-       // gameLog.setAutoscrolls(true);
-       // Border border = LineBorder.createGrayLineBorder();
-       // gameLog.setBorder(border);
-
     }
 
     static void calculateCardSize(){
@@ -1042,11 +1022,11 @@ public class Main extends JFrame {
         messageToShow = new MessageToShow(" ", null, 0);//Clear message
         gameLog.setVisible(false);
         gameLog.setText("");
-        playerCoinLabel.setVisible(false);
-        enemyCoinLabel.setVisible(false);
         textField.setVisible(false);
         textField.setText("");
         messageArea.setVisible(false);
+        playerCoinLabel.setVisible(false);
+        enemyCoinLabel.setVisible(false);
         heroLabel[1].setVisible(false);
         for (int i=0;i<wantToMulligan.length;i++) wantToMulligan[i]=false;
         Board.creature = new ArrayList<>(2);
@@ -1158,7 +1138,7 @@ public class Main extends JFrame {
                             System.out.println("hero ability cost = " + cost);
                             if (players[0].untappedCoin >= cost) {
                                 isMyTurn = PlayerStatus.choiceTarget;
-                                message(MyFunction.MessageType.choiceTarget,"Выберите цельь для "+players[0].name+".");
+                                message(MyFunction.MessageType.choiceTarget,"Выберите цель для "+players[0].name+".");
                                 MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.heroAbility;
                                 MyFunction.ActivatedAbility.heroAbilityCost = cost;
                                 main.repaint();
@@ -1307,6 +1287,26 @@ public class Main extends JFrame {
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
+            } else if ((onWhat == Compo.EnemyEqupiment) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
+                //enemy equip target
+                if (MyFunction.canTarget(MyFunction.Target.enemyEquip, MyFunction.ActivatedAbility.creature.targetType)) {
+                    String id = MyFunction.ActivatedAbility.creature.id;
+                    String idTarget = players[1].equpiment[num].id;
+                    WebsocketClient.client.sendMessage("$CRYEQUIPTARGET(" + id + "," + idTarget + ")");
+                    MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
+                } else {
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
+                }
+            } else if ((onWhat == Compo.MyEqupiment) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
+                //enemy equip target
+                if (MyFunction.canTarget(MyFunction.Target.enemyEquip, MyFunction.ActivatedAbility.creature.targetType)) {
+                    String id = MyFunction.ActivatedAbility.creature.id;
+                    String idTarget = players[0].equpiment[num].id;
+                    WebsocketClient.client.sendMessage("CRYEQUIPTARGET(" + id + "," + idTarget + ")");
+                    MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
+                } else {
+                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
+                }
             } else if ((onWhat == Compo.CreatureInMyPlayTap) && (isMyTurn == PlayerStatus.MyTurn) && (Board.creature.get(0).get(num).text.contains("ТАПТ:"))) {
                 //TAP creature with target ability - first step
                 if (!Board.creature.get(0).get(num).getIsSummonedJust()) {
@@ -1336,8 +1336,8 @@ public class Main extends JFrame {
                 } else {
                     message(MyFunction.MessageType.error, "Это существо недавно вошло в игру.");
                 }
-            } else if (onWhat == Compo.Weapon && isMyTurn == PlayerStatus.MyTurn && players[0].equpiment[2].text.contains("ТАПТ:")) {
-                //TAP weapon with target ability - first step
+            } else if (onWhat == Compo.MyEqupiment && isMyTurn == PlayerStatus.MyTurn && players[0].equpiment[num].text.contains("ТАПТ:")) {
+                //TAP equip with target ability - first step
                 if (!players[0].equpiment[2].isTapped) {
                     System.out.println("tapt weapon ability.");
                     if ((players[0].equpiment[2].tapTargetType == 1) && (Board.creature.get(0).isEmpty()) && (Board.creature.get(1).isEmpty())) {
@@ -1348,6 +1348,7 @@ public class Main extends JFrame {
                         MyFunction.ActivatedAbility.creature.targetType = players[0].equpiment[2].targetType;
                         MyFunction.ActivatedAbility.creature.tapTargetType = players[0].equpiment[2].tapTargetType;
                         MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.weaponAbility;
+                        message(MyFunction.MessageType.choiceTarget,"Выберите цель для "+players[0].equpiment[2].name+".");
                         main.repaint();
                     }
                 } else {
@@ -1495,7 +1496,6 @@ public class Main extends JFrame {
                             if (cardMem.text.contains("Доплатите Х *")) {
                                 //TODO If X==0
                                 isMyTurn = PlayerStatus.choiseX;
-                                //choiseXnum = num;
                                 choiceXtext = "$PLAYWITHX(" + players[0].playerName + "," + players[0].cardInHand.get(num).id + "," + num + "," + whereMyMouseNum + "," + players[0].playerName;
                                 main.repaint();
                             } else {
@@ -1526,7 +1526,7 @@ public class Main extends JFrame {
                     }
                 }
             } else {
-                if (onWhat!=Compo.Settings && isMyTurn == PlayerStatus.EnemyTurn || isMyTurn == PlayerStatus.EnemyChoiceBlocker || isMyTurn == PlayerStatus.EnemyChoiceTarget) {
+                if (onWhat!=Compo.Settings && onWhat!=Compo.PlayerGraveyard && onWhat!=Compo.EnemyGraveyard && isMyTurn == PlayerStatus.EnemyTurn || isMyTurn == PlayerStatus.EnemyChoiceBlocker || isMyTurn == PlayerStatus.EnemyChoiceTarget) {
                     message(MyFunction.MessageType.error, "Сейчас идет не ваш ход.");
                 }
                 main.repaint();
@@ -1550,7 +1550,9 @@ public class Main extends JFrame {
             main.repaint();
         }
 
-        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero, EnemyUnitInPlay, ChoiseX, SearchX, Weapon, Menu, EndTurnButton, Fullscreen, Settings, DeckChoice, PlayerGraveyard, CreatureInMyPlayTap, PlayerHeroTap, Surrend, EnemyGraveyard}
+        enum Compo {Deck, CardInHand, CreatureInMyPlay, Board, EnemyHero, PlayerHero,
+            EnemyUnitInPlay, ChoiseX, SearchX, MyEqupiment, EnemyEqupiment, Weapon, Menu, EndTurnButton, Fullscreen,
+            Settings, PlayerGraveyard, CreatureInMyPlayTap, PlayerHeroTap, Surrend, MyEqupimentTap, EnemyGraveyard}
     }
 
     static class ViewField extends JPanel {

@@ -93,6 +93,41 @@ public class Creature extends Card {
             additionalText = additionalText.replaceFirst(txt,"");
         }
 
+        void looseEffect(MyFunction.Effect effect){
+            switch(effect) {
+                case poison: {
+                    poison=0;
+                    break;
+                }
+                case vulnerability:{
+                    vulnerability=false;
+                    break;
+                }
+                case turnToDie:{
+                    turnToDie=0;
+                    break;
+                }
+                case die:{
+                    isDie=false;
+                    break;
+                }
+                case bonusPower:{
+                    bonusPower=0;
+                    break;
+                }
+                case bonusPowerUEOT:{
+                    bonusPowerUEOT=0;
+                    break;
+                }
+                case controlChanged:{
+                    changeControl=false;
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
         void takeEffect(MyFunction.Effect effect,int p){
             switch(effect) {
                 case poison: {
@@ -202,10 +237,10 @@ public class Creature extends Card {
         Board.creature.get(pl.numberPlayer).remove(Board.creature.get(pl.numberPlayer).indexOf(cr));
     }
 
-    static void tap(Player pl, Creature cr, int dmg) {
+    void tap(int dmg) {
         //Animation
         boolean t=(dmg==1)? true:false;
-        Board.creature.get(pl.numberPlayer).get(Board.creature.get(pl.numberPlayer).indexOf(cr)).isTapped=t;
+        isTapped=t;
     }
 
     static void takeDamage(Player pl, Creature cr, int dmg){
