@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 public class Main extends JFrame {
     //Connect constant
     private static final String CLIENT_VERSION = "0.02";
-    private static final String address = "ws://test1.uralgufk.ru:8080/BHServer/serverendpointdemo";
-    // "ws://localhost:8080/BHServer/serverendpointdemo";
+    private static final String address = //"ws://test1.uralgufk.ru:8080/BHServer/serverendpointdemo";
+     "ws://localhost:8080/BHServer/serverendpointdemo";
     //View constant
     static final int BORDER_CREATURE = 3;
     private static final int B0RDER_RIGHT = 15;
@@ -411,7 +411,8 @@ public class Main extends JFrame {
             cardX = heroLabel[0].getX() + heroLabel[0].getHeight() +HeroLabel.plusSize()+ B0RDER_BETWEEN;
 
             if (!players[0].cardInHand.isEmpty()) {
-                for (int i = players[0].cardInHand.size() - 1; i >= 0; i--) {
+            //    for (int i = players[0].cardInHand.size() - 1; i >= 0; i--) {
+                for (int i = 0;i<players[0].cardInHand.size(); i++) {
                     if (players[0].cardInHand.get(i).image != null) {
                         try {
                             im = ImageIO.read(new File("cards/" + players[0].cardInHand.get(i).image));
@@ -430,7 +431,7 @@ public class Main extends JFrame {
                                         cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75), main.getHeight() - bigCardH - B0RDER_BOTTOM);
                                         cardClick[i].setSize(bigCardW, bigCardH);
                                     } else {
-                                        if ((hilightMyCard > i) && (hilightMyCard != -1)) {
+                                        if ((hilightMyCard < i) && (hilightMyCard != -1)) {
                                             g.drawImage(im, cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75) + bigCardW - smallCardW, main.getHeight() - smallCardH - B0RDER_BOTTOM, smallCardW, smallCardH, null);
                                             cardClick[i].setLocation(cardX + smallCardW + (int) (numCardInHand * smallCardW * 0.75) + bigCardW - smallCardW, main.getHeight() - smallCardH - B0RDER_BOTTOM);
                                             cardClick[i].setSize(smallCardW, smallCardH);
@@ -627,7 +628,7 @@ public class Main extends JFrame {
             for (int i = 0; i < founded.size(); i++) {
                 int ii = i % 10;
                 int jj = i / 10;
-                BufferedImage im_tmp = ImageIO.read(Main.class.getResourceAsStream("cards/" + founded.get(i).image));
+                BufferedImage im_tmp = ImageIO.read(new File("cards/" + founded.get(i).image));
                 g.drawImage(im_tmp, cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1), smallCardW, smallCardH, null);
                 searchXLabel[i].setLocation(cardX + B0RDER_BETWEEN * ii + smallCardW * ii, main.getHeight() / 2 - smallCardH / 2 + B0RDER_BETWEEN * jj + smallCardH * (jj - 1));
                 searchXLabel[i].setSize(smallCardW, smallCardH);
@@ -1182,19 +1183,12 @@ public class Main extends JFrame {
                     message(MyFunction.MessageType.error, "Повернутый герой не может действовать.");
                 }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == PlayerStatus.MuliganPhase)) {
-                //TODO when remake server
-                String ms = "$MULLIGANEND(" + players[0].playerName + ",";
-                int n = 0;
-                String c = "";
-                int i = 0;
-                for (Boolean b : wantToMulligan) {
-                    if (b) {
-                        n++;
-                        c = c + "," + players[0].cardInHand.get(i).name;
-                    }
-                    i++;
+                String ms = "$MULLIGANEND(";
+                for (int i=0;i<wantToMulligan.length;i++) {
+                    ms+=(wantToMulligan[i])? 1:0;
+                    ms+=",";
                 }
-                ms = ms + n + c + ")";
+                ms += ")";
                  WebsocketClient.client.sendMessage(ms);
                 isMyTurn = PlayerStatus.waitingMulligan;
             } else if ((onWhat == Compo.CardInHand) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.toHandAbility)) {

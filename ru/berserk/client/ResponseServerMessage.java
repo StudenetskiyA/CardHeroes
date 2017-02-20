@@ -93,15 +93,17 @@ public class ResponseServerMessage extends Thread {
                 }
                 main.atEndOfPlay();
             }
-        } else if (fromServer.contains("#RemoveCardFromHand")) {//Depricated
-            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
-            if (np==0){
-                players[0].cardInHand.remove(Card.getCardByName(parameter.get(1)));
-            } else {
-                enemyHandSize--;
-            }
-        } else if (fromServer.contains("#RemoveCardFromHandById")) {
+        }
+//        else if (fromServer.contains("#RemoveCardFromHand")) {//Depricated
+//            ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+//            int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
+//            if (np==0){
+//                players[0].cardInHand.remove(Card.getCardByName(parameter.get(1)));
+//            } else {
+//                enemyHandSize--;
+//            }
+//        }
+        else if (fromServer.contains("#RemoveCardFromHandById")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             if (np==0){

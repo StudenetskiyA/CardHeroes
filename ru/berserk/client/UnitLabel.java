@@ -47,7 +47,7 @@ public class UnitLabel extends JLabel {
     void drawAttackInitiator(Graphics g){
             try {
                 BufferedImage tap = ImageIO.read(new File("icons/effects/attackinitiator.png"));
-                g.drawImage(tap, getCenterX()-getWidth()/6, getCenterY()-getWidth() / 3, getWidth() / 3, getWidth() / 3, null);
+                g.drawImage(tap, getCenterX()-getWidth()/4, getCenterY()-getWidth() / 2, getWidth() / 2, getWidth() / 2, null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -55,7 +55,7 @@ public class UnitLabel extends JLabel {
     void drawAttackTarget(Graphics g){
         try {
             BufferedImage tap = ImageIO.read(new File("icons/effects/attacktarget.png"));
-            g.drawImage(tap, getCenterX()-getWidth()/6, getCenterY()-getWidth() / 3, getWidth() / 3, getWidth() / 3, null);
+            g.drawImage(tap, getCenterX()-getWidth()/4, getCenterY()-getWidth() / 2, getWidth() / 2, getWidth() / 2, null);
         } catch (IOException e) {
             e.printStackTrace();
         }
