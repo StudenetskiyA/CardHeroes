@@ -670,7 +670,7 @@ public class Main extends JFrame {
         int found=0;
         if (p == 0) h = main.getHeight() - smallCardH - B0RDER_BOTTOM - EquipLabel.plusSize() / 2;
         else h = B0RDER_TOP;
-        int x = main.getWidth() - B0RDER_RIGHT - smallCardH - B0RDER_BETWEEN;
+        int x = main.getWidth() - B0RDER_RIGHT - smallCardH - B0RDER_BETWEEN*2;
 
         for (int i = 0; i < players[p].equpiment.length; i++)//{
         {
@@ -1282,12 +1282,12 @@ public class Main extends JFrame {
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.weaponAbility))) {
-                //Weapon ability on my unit
+            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.equipAbility))) {
+                //Equip ability on my unit
                 String tid = Board.creature.get(0).get(num).id;
-                //TODO call equip by id
+                //TODO call equip by id?
                 if ((players[0].equpiment[2].tapTargetType == 1) || (players[0].equpiment[2].tapTargetType == 3)) {
-                    WebsocketClient.client.sendMessage("$EQUIPTARGET(" + players[0].playerName + ",2,0," + tid + ")");
+                    WebsocketClient.client.sendMessage("$EQUIPTARGET(" + players[0].playerName + ","+ MyFunction.ActivatedAbility.whatEquip+",-1," + tid + ")");
                     MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
@@ -1353,12 +1353,13 @@ public class Main extends JFrame {
                         MyFunction.ActivatedAbility.creature = new Creature(Card.simpleCard, players[0]);//
                         MyFunction.ActivatedAbility.creature.targetType = players[0].equpiment[2].targetType;
                         MyFunction.ActivatedAbility.creature.tapTargetType = players[0].equpiment[2].tapTargetType;
-                        MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.weaponAbility;
+                        MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.equipAbility;
+                        MyFunction.ActivatedAbility.whatEquip = num;
                         message(MyFunction.MessageType.choiceTarget,"Выберите цель для "+players[0].equpiment[2].name+".");
                         main.repaint();
                     }
                 } else {
-                    message(MyFunction.MessageType.error, "Повернутое оружие не может это сделать.");
+                    message(MyFunction.MessageType.error, "Повернутая экипировка не может это сделать.");
                 }
             } else if ((onWhat == Compo.EndTurnButton) && (isMyTurn == PlayerStatus.IChoiceBlocker)) {
                 System.out.println("$BLOCKER(" + players[0].playerName + "," + creatureWhoAttack + "," + creatureWhoAttackTarget + "," + "-1,0)");
