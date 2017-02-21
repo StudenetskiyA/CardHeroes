@@ -29,8 +29,8 @@ public class EquipLabel extends JLabel {
         equip=_eq;
         setSize(_width,_height);
         try {
-            //String im = "cards/equip/"+equip.image.substring(0,equip.image.length()-4)+".png";
-            String im = "cards/equip/Молот прародителя.png";
+            String im = "cards/equip/"+equip.image.substring(0,equip.image.length()-4)+".png";
+            //String im = "cards/equip/Молот прародителя.png";
 
             image = ImageIO.read(new File(im));
         } catch (IOException e) {
@@ -69,8 +69,8 @@ public class EquipLabel extends JLabel {
             int down = getCenterY() + getHeight() / 2 + BorderOval / 2 + 1;
             int up = getCenterY() - getHeight() / 2 - BorderOval / 2 - 1;
 
-            Rectangle att = new Rectangle(getCenterX() , down - getWidth() / 3, getWidth() / 2, getWidth() / 3);
-            g2.setColor(Color.red);
+            Rectangle att = new Rectangle(getX() , down - getWidth() / 2, getWidth(), getWidth() / 2);
+            g2.setColor(Color.white);
             if (equip.hp!=0)
             drawCenteredString(g2, String.valueOf(equip.hp), att, font);
 

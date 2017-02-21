@@ -1289,7 +1289,7 @@ public class Main extends JFrame {
                 }
             } else if ((onWhat == Compo.EnemyEqupiment) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
                 //enemy equip target
-                if (MyFunction.canTarget(MyFunction.Target.enemyEquip, MyFunction.ActivatedAbility.creature.targetType)) {
+                if (MyFunction.canTarget(MyFunction.Target.enemyEquip, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyEvent, MyFunction.ActivatedAbility.creature.targetType)) {
                     String id = MyFunction.ActivatedAbility.creature.id;
                     String idTarget = players[1].equpiment[num].id;
                     WebsocketClient.client.sendMessage("$CRYEQUIPTARGET(" + id + "," + idTarget + ")");
@@ -1298,8 +1298,8 @@ public class Main extends JFrame {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.MyEqupiment) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
-                //my equip target
-                if (MyFunction.canTarget(MyFunction.Target.myEquip, MyFunction.ActivatedAbility.creature.targetType)) {
+                //my equip/event target
+                if (MyFunction.canTarget(MyFunction.Target.myEquip, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.myEvent, MyFunction.ActivatedAbility.creature.targetType)) {
                     String id = MyFunction.ActivatedAbility.creature.id;
                     String idTarget = players[0].equpiment[num].id;
                     WebsocketClient.client.sendMessage("$CRYEQUIPTARGET(" + id + "," + idTarget + ")");
@@ -1336,7 +1336,7 @@ public class Main extends JFrame {
                 } else {
                     message(MyFunction.MessageType.error, "Это существо недавно вошло в игру.");
                 }
-            } else if (onWhat == Compo.MyEqupiment && isMyTurn == PlayerStatus.MyTurn && players[0].equpiment[num].text.contains("ТАПТ:")) {
+            } else if (onWhat == Compo.MyEqupimentTap && isMyTurn == PlayerStatus.MyTurn && players[0].equpiment[num].text.contains("ТАПТ:")) {
                 //TAP equip with target ability - first step
                 if (!players[0].equpiment[2].isTapped) {
                     System.out.println("tapt weapon ability.");
