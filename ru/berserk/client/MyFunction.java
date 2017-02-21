@@ -114,6 +114,7 @@ public class MyFunction {
         static Creature creature;
         static boolean creatureTap;
         static WhatAbility whatAbility=WhatAbility.nothing;
+        static int whatEquip;
         static int heroAbilityCost = 0;
 
         public static boolean isThatAbility(WhatAbility ab){
@@ -130,7 +131,7 @@ public class MyFunction {
         }
         enum WhatAbility {
             heroAbility(1), weaponAbility(2), toHandAbility(3), onUpkeepPlayed(4), onDeathPlayed(5), onOtherDeathPlayed(6),
-            spellAbility(7), onCryAbility(8), nothing(0);
+            spellAbility(7), onCryAbility(8), equipAbility(9), nothing(0);
 
             private final int value;
 
@@ -162,6 +163,8 @@ public class MyFunction {
                         return spellAbility;
                     case 8:
                         return onCryAbility;
+                    case 9:
+                        return equipAbility;
                 }
                 return null;
             }

@@ -2,6 +2,8 @@ package ru.berserk.client;
 
 //Created by StudenetskiyA on 30.12.2016.
 
+import static ru.berserk.client.Main.players;
+
 public class Creature extends Card {
     boolean isTapped;
     boolean isSummonedJust;
@@ -83,6 +85,16 @@ public class Creature extends Card {
         int getBonusTougness(){
             return bonusTougness;
         }
+
+        boolean getVulnerability() {
+            int op = (whis.owner.numberPlayer==0) ? 1:0;
+            if (players[op].equpiment[3] != null && players[op].equpiment[3].name.equals("Аккения")) {
+                System.out.println("Аккения детектед");
+                return true;
+            }
+            return vulnerability;
+        }
+
 
         void takeTextEffect(String txt){
             additionalText+=txt;

@@ -130,7 +130,7 @@ public class UnitLabel extends JLabel {
                 }
                 effectsFounded++;
             }
-            if (creature.effects.vulnerability) {
+            if (creature.effects.getVulnerability()) {
                 try {
                     BufferedImage tap = ImageIO.read(new File("icons/effects/vulnerability.png"));
                     g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
