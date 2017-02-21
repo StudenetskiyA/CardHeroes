@@ -1282,11 +1282,14 @@ public class Main extends JFrame {
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.CreatureInMyPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.equipAbility))) {
-                //Equip ability on my unit
-                String tid = Board.creature.get(0).get(num).id;
+            } else if ((onWhat == Compo.CreatureInMyPlay || onWhat == Compo.EnemyUnitInPlay) && (isMyTurn == PlayerStatus.choiceTarget) && (MyFunction.ActivatedAbility.isThatAbility(MyFunction.ActivatedAbility.WhatAbility.equipAbility))) {
+                //Equip ability on my or enemy unit
+                int halfBoard = (onWhat == Compo.CreatureInMyPlay) ? 0:1;
+                String tid = Board.creature.get(halfBoard).get(num).id;
                 //TODO call equip by id?
-                if ((players[0].equpiment[2].tapTargetType == 1) || (players[0].equpiment[2].tapTargetType == 3)) {
+                int en =  MyFunction.ActivatedAbility.whatEquip;
+                //TODO TargetComplex
+                if ((players[0].equpiment[en].tapTargetType == 1) || (players[0].equpiment[en].tapTargetType == 3)) {
                     WebsocketClient.client.sendMessage("$EQUIPTARGET(" + players[0].playerName + ","+ MyFunction.ActivatedAbility.whatEquip+",-1," + tid + ")");
                     MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                 } else {
