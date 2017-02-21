@@ -114,6 +114,7 @@ public class ResponseServerMessage extends Thread {
             Equpiment tmp = Board.getEqupimentByID(parameter.get(1));
             int n =  MyFunction.getEquipNumByType(tmp.creatureType);
             players[np].equpiment[n] = null;
+            message(MyFunction.MessageType.simpleText, tmp.name + " уничтожена.");
         } else if (fromServer.contains("#ChangeControll")) {//PlayerOwnerName,CreatureID
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
@@ -122,7 +123,6 @@ public class ResponseServerMessage extends Thread {
             Board.creature.get(np).remove(Board.getCreatureByID(np, parameter.get(1)));//Here need to call with playerN
         } else if (fromServer.contains("#ReturnToHand")) {//CreatureID
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
-           // int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             Creature tmp = Board.getCreatureByID(parameter.get(0));
             //TODO If null
             message(MyFunction.MessageType.simpleText, tmp.name + " возвращается в руку.");
@@ -152,7 +152,6 @@ public class ResponseServerMessage extends Thread {
         } else if (fromServer.contains("#DieCreature")) {//#DieCreature(Player, CreatureID)
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
-            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
             Creature.die(players[np], Board.getCreatureByID(parameter.get(1)));
         } else if (fromServer.contains("#UntapAll")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -163,7 +162,6 @@ public class ResponseServerMessage extends Thread {
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             String text = parameter.get(2);
             int nc = Integer.parseInt(parameter.get(1)) - Board.getDiedCreatureLeftCount(np, Integer.parseInt(parameter.get(1)));
-            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
             Board.creature.get(np).get(nc).effects.takeTextEffect(text);
         } else if (fromServer.contains("#TakeCreatureIdText")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -175,7 +173,6 @@ public class ResponseServerMessage extends Thread {
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             String text = parameter.get(2);
             int nc = Integer.parseInt(parameter.get(1)) - Board.getDiedCreatureLeftCount(np, Integer.parseInt(parameter.get(1)));
-            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
             Board.creature.get(np).get(nc).effects.looseTextEffect(text);
         } else if (fromServer.contains("#LooseCreatureIdText")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
@@ -187,7 +184,6 @@ public class ResponseServerMessage extends Thread {
             int np = (players[0].playerName.equals(parameter.get(0))) ? 0 : 1;
             int dmg = Integer.parseInt(parameter.get(3));
             int nc = Integer.parseInt(parameter.get(1)) - Board.getDiedCreatureLeftCount(np, Integer.parseInt(parameter.get(1)));
-            //When queue response, you may target creature, but it number may not correct if left of it have died creature.
             Board.creature.get(np).get(nc).effects.takeEffect(MyFunction.Effect.fromInteger(Integer.parseInt(parameter.get(2))), dmg);
         } else if (fromServer.contains("#TakeCreatureIdEffect")) {
             ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);

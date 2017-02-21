@@ -1298,11 +1298,11 @@ public class Main extends JFrame {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
             } else if ((onWhat == Compo.MyEqupiment) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
-                //enemy equip target
-                if (MyFunction.canTarget(MyFunction.Target.enemyEquip, MyFunction.ActivatedAbility.creature.targetType)) {
+                //my equip target
+                if (MyFunction.canTarget(MyFunction.Target.myEquip, MyFunction.ActivatedAbility.creature.targetType)) {
                     String id = MyFunction.ActivatedAbility.creature.id;
                     String idTarget = players[0].equpiment[num].id;
-                    WebsocketClient.client.sendMessage("CRYEQUIPTARGET(" + id + "," + idTarget + ")");
+                    WebsocketClient.client.sendMessage("$CRYEQUIPTARGET(" + id + "," + idTarget + ")");
                     MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
