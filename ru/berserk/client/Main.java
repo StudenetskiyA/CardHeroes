@@ -1295,21 +1295,15 @@ public class Main extends JFrame {
                 } else {
                     message(MyFunction.MessageType.error, "Выберите корректную цель.");
                 }
-            } else if ((onWhat == Compo.EnemyEqupiment) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
-                //enemy equip target
-                if (MyFunction.canTarget(MyFunction.Target.enemyEquip, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyEvent, MyFunction.ActivatedAbility.creature.targetType)) {
+            } else if ((onWhat == Compo.MyEqupiment || onWhat == Compo.EnemyEqupiment) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
+                //my or enemy equip or event target
+                int halfBoard = (onWhat == Compo.MyEqupiment) ? 0:1;
+                boolean t=false;
+                if (halfBoard==0) t = (MyFunction.canTarget(MyFunction.Target.myEquip, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.myEvent, MyFunction.ActivatedAbility.creature.targetType));
+                else t = (MyFunction.canTarget(MyFunction.Target.enemyEquip, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.enemyEvent, MyFunction.ActivatedAbility.creature.targetType));
+                if (t) {
                     String id = MyFunction.ActivatedAbility.creature.id;
-                    String idTarget = players[1].equpiment[num].id;
-                    WebsocketClient.client.sendMessage("$CRYEQUIPTARGET(" + id + "," + idTarget + ")");
-                    MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
-                } else {
-                    message(MyFunction.MessageType.error, "Выберите корректную цель.");
-                }
-            } else if ((onWhat == Compo.MyEqupiment) && (isMyTurn == PlayerStatus.choiceTarget) && MyFunction.ActivatedAbility.isNothingOrDeath()) {
-                //my equip/event target
-                if (MyFunction.canTarget(MyFunction.Target.myEquip, MyFunction.ActivatedAbility.creature.targetType) || MyFunction.canTarget(MyFunction.Target.myEvent, MyFunction.ActivatedAbility.creature.targetType)) {
-                    String id = MyFunction.ActivatedAbility.creature.id;
-                    String idTarget = players[0].equpiment[num].id;
+                    String idTarget = players[halfBoard].equpiment[num].id;
                     WebsocketClient.client.sendMessage("$CRYEQUIPTARGET(" + id + "," + idTarget + ")");
                     MyFunction.ActivatedAbility.whatAbility = MyFunction.ActivatedAbility.WhatAbility.nothing;
                 } else {
