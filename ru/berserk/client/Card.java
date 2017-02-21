@@ -275,6 +275,8 @@ class Card {
                 return new Card(3, name, "Инквизитор", 6, 2, 21, 0, "Наймт: Уничтожить выбранную экипировку.", 3, 3);
             case "Сдерживающий":
                 return new Card(3, name, "Драконид", 6, 2, 22, 0, "Наймт: Уничтожить выбранную экипировку.", 5, 5);
+            case "Кутила":
+                return new Card(10, name, "Пират", 6, 2, 0, 0, "Статичный эффект.", 6, 6);
             default:
                 System.out.println("Ошибка - Неопознанная карта:" + name);
                 return null;
@@ -302,6 +304,9 @@ class Card {
 
         if (name.equals("Трюкач")) {
             effectiveCost += pl.cardInHand.size() - 1;
+        }
+        if (name.equals("Кутила")) {
+            effectiveCost -= pl.cardInHand.size();
         }
 
         return effectiveCost;
