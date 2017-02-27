@@ -25,13 +25,13 @@ public class Board {
         return null;
     }
 
-    public static Creature getCreatureByID(int playerNum, String id){
-        for (int i=0;i<Board.creature.get(playerNum).size();i++){
-            if (creature.get(playerNum).get(i).id.equals(id)) return creature.get(playerNum).get(i);
-        }
-        System.out.println("Not found creature by ID");
-        return null;
-    }
+//    public static Creature getCreatureByID(int playerNum, String id){
+//        for (int i=0;i<Board.creature.get(playerNum).size();i++){
+//            if (creature.get(playerNum).get(i).id.equals(id)) return creature.get(playerNum).get(i);
+//        }
+//        System.out.println("Not found creature by ID");
+//        return null;
+//    }
 
     public static Creature getCreatureByID(String id){
         for (int i=0;i<Board.creature.get(0).size();i++){
@@ -40,7 +40,27 @@ public class Board {
         for (int i=0;i<Board.creature.get(1).size();i++){
             if (creature.get(1).get(i).id.equals(id)) return creature.get(1).get(i);
         }
-        System.out.println("Not found creature by ID");
+        System.out.println("Error: Not found creature by ID");
+        return null;
+    }
+
+    public static Card getCardFromHandById(String _id){
+        for (int i=0;i<Main.players[0].cardInHand.size();i++){
+            if (Main.players[0].cardInHand.get(i).id.equals(_id)) return Main.players[0].cardInHand.get(i);
+        }
+        for (int i=0;i<Main.players[1].cardInHand.size();i++){
+            if (Main.players[1].cardInHand.get(i).id.equals(_id)) return Main.players[1].cardInHand.get(i);
+        }
+        return null;
+    }
+
+    public static Card getCardFromGraveyardById(String _id){
+        for (int i=0;i<Main.players[0].graveyard.size();i++){
+            if (Main.players[0].graveyard.get(i).id.equals(_id)) return Main.players[0].graveyard.get(i);
+        }
+        for (int i=0;i<Main.players[1].cardInHand.size();i++){
+            if (Main.players[1].graveyard.get(i).id.equals(_id)) return Main.players[1].graveyard.get(i);
+        }
         return null;
     }
 

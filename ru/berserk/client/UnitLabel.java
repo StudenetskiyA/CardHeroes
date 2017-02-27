@@ -158,6 +158,15 @@ public class UnitLabel extends JLabel {
                 }
                 effectsFounded++;
             }
+            if (creature.effects.getBonusToShoot()!=0) {
+                try {
+                    BufferedImage tap = ImageIO.read(new File("icons/effects/bonustoshoot.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
             if (!creature.effects.additionalText.equals("")) {
                 if (creature.effects.additionalText.contains("Не может атаковать. Не может блокировать.")) {
                     try {

@@ -29,6 +29,7 @@ public class Creature extends Card {
         public int bonusTougness = 0;
         public int bonusArmor = 0;
         public int turnToDie = 999;
+        int bonusToShoot = 0;
         boolean vulnerability = false;
         boolean changeControl = false;
 
@@ -43,6 +44,12 @@ public class Creature extends Card {
         int getBonusPower(){
             //TODO Remove logic from it. Server knows, it must say it to client.
             int staticBonus = 0;
+            //TODO Instead of name use have text.
+            //Rage ors
+            if (text.contains("Пока у вас есть другое существо, получает +2 к удару") &&
+                    Board.creature.get(owner.numberPlayer).size()>1) {
+                staticBonus+=2;
+            }
             //TanGnome take + for power
             if ((creatureType.equals("Гном")) && (!name.equals("Тан гномов"))) {
                 int tanFounded = 0;
@@ -84,6 +91,10 @@ public class Creature extends Card {
 
         int getBonusTougness(){
             return bonusTougness;
+        }
+
+        int getBonusToShoot(){
+            return bonusToShoot;
         }
 
         boolean getVulnerability() {

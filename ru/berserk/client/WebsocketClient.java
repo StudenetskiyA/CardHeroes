@@ -1,5 +1,6 @@
 package ru.berserk.client;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 
 import javax.websocket.ClientEndpoint;
@@ -48,9 +49,10 @@ public class WebsocketClient {
 	}
 	
 	@OnMessage
-	public void onMessage(String message) {
+	public void onMessage(String message) throws UnsupportedEncodingException {
 		System.out.println("Recieve message: " + message);
 		synchronized (monitor) {
+			Main.writerToLog.println(message);
 			commandHandler.processCommand(message);
 		}
 	}

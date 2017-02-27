@@ -16,6 +16,7 @@ public class HeroLabel extends JLabel {
     static final Color NumberColor=Color.red;
     static final Color NumberBackColor=Color.gray;
     MyFunction.ClickImage tapClick = new MyFunction.ClickImage();
+    MyFunction.ClickImage tapClick2 = new MyFunction.ClickImage();
 
     public BufferedImage image;
     Player player;
@@ -102,6 +103,20 @@ public class HeroLabel extends JLabel {
                     }
                 }
             }
+            if (isMyHero) {
+                if (player.text.contains("2ТАП")) {
+                    g2.setColor(Color.BLACK);
+                    g2.drawRect(getCenterX() + getWidth() / 4, getCenterY() - getHeight() / 2+getWidth()/3, getWidth() / 4, getWidth() / 4);
+                    g2.setColor(NumberBackColor);
+                    g2.fillRect(getCenterX() + getWidth() / 4, getCenterY() - getHeight() / 2+getWidth()/3, getWidth() / 4, getWidth() / 4);
+                    try {
+                        tapClick2.image = ImageIO.read(new File("icons/effects/tap.png"));
+                        tapClick2.LSD(g2, getCenterX() + getWidth() / 4, getCenterY() - getHeight() / 2+getWidth()/3, getWidth() / 4, getWidth() / 4);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
             //TODO Calculate effects count.
             int effectsX=getCenterX()-getWidth()/2;
             int effectsY=down-2*getWidth()/3;
@@ -115,6 +130,16 @@ public class HeroLabel extends JLabel {
                 }
                 effectsFounded++;
             }
+            if (player.effects.bonusToShoot!=0) {
+                try {
+                    BufferedImage tap = ImageIO.read(new File("icons/effects/bonustoshoot.png"));
+                    g2.drawImage(tap, effectsX+effectsFounded*getWidth()/3, effectsY, getWidth() / 3, getWidth() / 3, null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                effectsFounded++;
+            }
+
 //            if (creature.effects.turnToDie<=2) {
 //                try {
 //                    BufferedImage tap = ImageIO.read(new File("icons/effects/dienear.png"));

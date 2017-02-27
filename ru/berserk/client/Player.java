@@ -5,13 +5,15 @@ import java.util.ArrayList;
 //Created by StudenetskiyA on 30.12.2016.
 
 public class Player extends Card {
-
     int numberPlayer;
     int damage;
     String playerName;
     int totalCoin;
     int untappedCoin;
     int temporaryCoin = 0;
+    int tapAbilityCanBePlayed = 999;
+    int tapAbilityCanBePlayed2 = 999;
+
     boolean isTapped = false;
     public Deck deck;
     ArrayList<Card> cardInHand;
@@ -24,6 +26,7 @@ public class Player extends Card {
         Player whis;
         String additionalText = "";
         boolean bbShield = false;
+        int bonusToShoot = 0;
 
         Effects(Player _pl) {
             whis = _pl;
@@ -33,7 +36,7 @@ public class Player extends Card {
             return bbShield;
         }
 
-        //#TakeCreatureEffect(Player, CreatureNumOnBoard,Effect,EffectCount)
+        //#TakePlayerEffect(Player,Effect,EffectCount)
         public void takeEffect(MyFunction.EffectPlayer ef, int n) {
             switch (ef) {
                 case bbShield: {
@@ -42,7 +45,14 @@ public class Player extends Card {
                         Main.message(MyFunction.MessageType.simpleText, whis.name + " получает щит Бьернбона.");
                     }
                     else bbShield=false;
-
+                    break;
+                }
+                case bonusToShoot: {
+                    if (n==1) {
+                        bonusToShoot = n;
+                        Main.message(MyFunction.MessageType.simpleText, whis.name + " получает +"+n+" к выстрелам.");
+                    }
+                    else bonusToShoot=0;
                     break;
                 }
             }
@@ -63,6 +73,7 @@ public class Player extends Card {
         equpiment[1] = null;
         equpiment[2] = null;
         equpiment[3] = null;
+        setCanBePlayedAbility(_card.name);
     }
 
     Player(Deck _deck, String _heroName, String _playerName, int _n, int _hp) {
@@ -78,11 +89,31 @@ public class Player extends Card {
         equpiment[1] = null;
         equpiment[2] = null;
         equpiment[3] = null;
+        setCanBePlayedAbility(_heroName);
+    }
+
+    void setCanBePlayedAbility(String _heroName) {
+        //TODO On server
+        switch (_heroName) {
+            case "Илариэль":
+                tapAbilityCanBePlayed2=1;
+                break;
+            case "Нархи":
+                tapAbilityCanBePlayed=2;
+                break;
+        }
     }
 
     void takeDamage(int dmg) {
         this.damage += dmg;
         if (this.damage < 0) this.damage = 0;
+        if (dmg>0){
+            Main.message(MyFunction.MessageType.simpleText,this.name+ " получает "+dmg+" урона.");
+        }
+        else {
+            dmg=-dmg;
+            Main.message(MyFunction.MessageType.simpleText,this.name+ " излечивает "+dmg+" урона.");
+        }
     }
 
     void tap(int dmg) {

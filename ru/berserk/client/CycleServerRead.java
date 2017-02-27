@@ -1,14 +1,17 @@
 package ru.berserk.client;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+
+import static ru.berserk.client.Main.main;
 
 //Created by StudenetskiyA on 27.01.2017.
 
 public class CycleServerRead{
 
-    public void  processCommand(String fromServer) {
+    public void  processCommand(String fromServer) throws UnsupportedEncodingException {
             //TODO replay mode
 //        if (!Main.isReplay) {
 //        	 fromServer = Client.readLine();
@@ -36,8 +39,20 @@ public class CycleServerRead{
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    Main.main.atEndOfPlay();
-                } else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck or other NOT correct
+                    main.atEndOfPlay();
+                }   else if (fromServer.startsWith("#Connect")) {
+                   System.out.println("#Connect: "+fromServer);
+                    ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
+                    if (parameter.get(0).equals("ok")){
+                        PrepareBattleScreen.fromServerMessage="Соединение успешно.";
+                        PrepareBattleScreen.rating = Integer.parseInt(parameter.get(1));
+                        PrepareBattleScreen.gold = Integer.parseInt(parameter.get(2));
+                        PrepareBattleScreen.connectOk();
+                    }
+                    else {
+                        PrepareBattleScreen.fromServerMessage=parameter.get(1);
+                    }
+                }  else if (fromServer.contains("$YOUARENOTOK")) {//You client,deck or other NOT correct
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     String code_not_ok = parameter.get(0);
                     Main.message(MyFunction.MessageType.error, code_not_ok);
@@ -50,15 +65,6 @@ public class CycleServerRead{
                     System.exit(1);
                 } else if (fromServer.contains("$YOUAREOK")) {//You client,deck and other correct
                     Main.isMyTurn = Main.PlayerStatus.waitOtherPlayer;
-                    //Server send "wait", you must answer "wait" or server think you are gone
-//                    while (true) {
-//                         WebsocketClient.client.sendMessage("wait");
-//                        String a = Client.readLine();
-//                        //System.out.println("Sv = "+a);
-//                        if (!a.equals("wait")) {
-//                            break;
-//                        }
-//                    }
                 } else if (fromServer.contains("$OPPONENTCONNECTED")) {//Both players connected
                     ArrayList<String> parameter = MyFunction.getTextBetween(fromServer);
                     if (Main.replayCounter == 0) {
@@ -79,7 +85,7 @@ public class CycleServerRead{
                     Main.players[1].totalCoin = Integer.parseInt(parameter.get(2));
                     if (Main.isMyTurn == Main.PlayerStatus.waitOtherPlayer) {
                         Main.isMyTurn = Main.PlayerStatus.MuliganPhase;
-                        Main.main.repaint();
+                        main.repaint();
                     }
                 } else {
                     Main.responseServerMessage = new ResponseServerMessage(fromServer);
@@ -93,7 +99,7 @@ public class CycleServerRead{
                         }
                     }
                 }
-                Main.main.repaint();
+                main.repaint();
             }
         }
 }

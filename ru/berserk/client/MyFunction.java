@@ -116,6 +116,7 @@ public class MyFunction {
         static WhatAbility whatAbility=WhatAbility.nothing;
         static int whatEquip;
         static int heroAbilityCost = 0;
+        static int heroAbilityN=0;
 
         public static boolean isThatAbility(WhatAbility ab){
             if (ab==whatAbility) return true;
@@ -127,11 +128,12 @@ public class MyFunction {
             if (whatAbility==WhatAbility.onDeathPlayed) return true;
             if (whatAbility==WhatAbility.onUpkeepPlayed) return true;
             if (whatAbility==WhatAbility.onOtherDeathPlayed) return true;
+            if (whatAbility==WhatAbility.onTapAbility) return true;
             return false;
         }
         enum WhatAbility {
             heroAbility(1), weaponAbility(2), toHandAbility(3), onUpkeepPlayed(4), onDeathPlayed(5), onOtherDeathPlayed(6),
-            spellAbility(7), onCryAbility(8), equipAbility(9), nothing(0);
+            spellAbility(7), onCryAbility(8), equipAbility(9), nothing(0), onTapAbility(10);
 
             private final int value;
 
@@ -165,6 +167,8 @@ public class MyFunction {
                         return onCryAbility;
                     case 9:
                         return equipAbility;
+                    case 10:
+                        return onTapAbility;
                 }
                 return null;
             }
@@ -201,6 +205,7 @@ public class MyFunction {
         {
             if (targetType==22) return true;
         }
+        if (targetType==0) return true;
         return false;
     }
 
@@ -236,12 +241,12 @@ public class MyFunction {
         return tmp;
     }
 
-    public static boolean canTargetComplex(Creature cr){
+    public static boolean canTargetComplex(int targetType){
         boolean canTarget=false;
-        if (Board.creature.get(0).size() > 0 && MyFunction.canTarget(MyFunction.Target.myCreature,cr.targetType)) canTarget=true;
-        if (Board.creature.get(1).size() > 0 && MyFunction.canTarget(MyFunction.Target.enemyCreature,cr.targetType)) canTarget=true;
-        if (MyFunction.canTarget(MyFunction.Target.enemyPlayer,cr.targetType)) canTarget=true;//Both players always stay on board
-        if (MyFunction.canTarget(MyFunction.Target.myPlayer,cr.targetType)) canTarget=true;
+        if (Board.creature.get(0).size() > 0 && MyFunction.canTarget(MyFunction.Target.myCreature,targetType)) canTarget=true;
+        if (Board.creature.get(1).size() > 0 && MyFunction.canTarget(MyFunction.Target.enemyCreature,targetType)) canTarget=true;
+        if (MyFunction.canTarget(MyFunction.Target.enemyPlayer,targetType)) canTarget=true;//Both players always stay on board
+        if (MyFunction.canTarget(MyFunction.Target.myPlayer,targetType)) canTarget=true;
         return canTarget;
     }
 
